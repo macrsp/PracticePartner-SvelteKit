@@ -82,7 +82,6 @@ Do **not** preserve:
 - route structure
 - controller graph shape
 - DOM wiring style
-- “workspace” style surfaces that no longer fit the new product direction
 
 ### Prefer current product direction over legacy architecture
 
@@ -103,6 +102,7 @@ Prefer a smaller correct structure over a larger aspirational one.
 - Do **not** move or duplicate routes just to satisfy an example structure.
 - If a shared shell is needed, prefer a minimal `+layout.svelte` approach unless a more complex structure is justified.
 - If a suggested structure conflicts with filesystem routing behavior, prefer routing correctness.
+- Do **not** add the workspace concept back! It is is the reference repo, but it is explicitly deleted!!!
 
 ### Routing-specific tie-breaker
 
@@ -183,7 +183,7 @@ If the codebase or a prompt example points in a different direction than `planni
 When migrating a slice:
 
 - prefer behavior-preserving rewrites over literal ports
-- prefer planner-first/library-first surfaces over reviving overly broad legacy “workspace” surfaces when the product direction has changed
+- prefer planner-first/library-first surfaces. DO NOT revive the overly broad legacy “workspace” surfaces - the product direction has changed and that concept is reference only.
 - prefer reusable UI surfaces such as drawers/panels over dedicated routes when the product direction calls for them
 - keep the current slice minimal and prove the architecture before adding downstream complexity
 
