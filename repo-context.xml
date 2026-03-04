@@ -76,54 +76,6 @@ vite.config.ts
 <files>
 This section contains the contents of the repository's files.
 
-<file path=".github/workflows/ci.yml">
-# @role workflow
-# @owns pull-request and branch validation for build health and repo-context generation
-# @not-owns GitHub Pages deployment, runtime behavior, or branch protection settings
-# @notes Mark the validate job as a required status check for main once this is on the default branch.
-
-name: CI
-
-on:
-  pull_request:
-  push:
-    branches-ignore:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build app
-        run: npm run build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}
-
-      - name: Validate repo context generation
-        run: npx --yes repomix --config repomix.config.json
-</file>
-
 <file path=".github/workflows/deploy-pages.yml">
 # @role workflow
 # @owns build-and-deploy of the static SvelteKit site to GitHub Pages
@@ -525,6 +477,56 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [sveltekit()]
 });
+</file>
+
+<file path=".github/workflows/ci.yml">
+# @role workflow
+# @owns pull-request and branch validation for build health and repo-context generation
+# @not-owns GitHub Pages deployment, runtime behavior, or branch protection settings
+# @notes Mark the validate job as a required status check for main once this is on the default branch.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - repo-context.xml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+
+      - name: Validate repo context generation
+        run: npx --yes repomix --config repomix.config.json
 </file>
 
 <file path="package.json">
