@@ -31,3 +31,10 @@ This SvelteKit repository
 
 ## Next recommended slice
 - Shell + profile selection
+
+## Disposable scaffold
+
+The following are temporary bootstrap artifacts and may be removed or reshaped freely if a migration slice no longer needs them:
+- placeholder route content
+- temporary workspace scaffolding
+- example starter files

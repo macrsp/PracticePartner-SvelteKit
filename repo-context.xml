@@ -306,67 +306,6 @@ _attic/
 engine-strict=true
 </file>
 
-<file path="migration-context.md">
-<!--
-  @role migration-context
-  @owns source-to-target migration status, completed slices, parity gaps, and next slice guidance
-  @not-owns product requirements or repository-wide implementation rules
-  @notes Keep this operational and current.
--->
-
-# Migration Context
-
-## Source repo
-Legacy browser app repository
-
-## Target repo
-This SvelteKit repository
-
-## Completed slices
-- Repo bootstrap
-- GitHub Pages deployment setup
-- Repo-context generation workflow
-- Minimal route skeleton
-
-## Not yet migrated
-- Profiles
-- IndexedDB layer
-- Track loading
-- Audio engine
-- Waveform UI
-- Sections
-- Activities
-- Plans
-
-## Next recommended slice
-- Shell + profile selection
-</file>
-
-<file path="planning-context.md">
-<!--
-  @role planning-context
-  @owns accepted product behavior, planning decisions, and active deltas
-  @not-owns repository-wide implementation rules or file-level ownership details
-  @notes Keep this user-facing and implementation-agnostic.
--->
-
-# Planning Context
-
-This repository is the SvelteKit migration target for the Suzuki Practice Partner app.
-
-## Current status
-
-- Infrastructure bootstrap only
-- No feature parity yet
-
-## Stable goals
-
-- GitHub Pages hosting
-- Modular SvelteKit architecture
-- AI-friendly repository context
-- Audio playback controls with future Tone.js integration
-</file>
-
 <file path="repomix.config.json">
 {
   "$schema": "https://repomix.com/schemas/latest/schema.json",
@@ -505,6 +444,49 @@ jobs:
         run: npx --yes repomix --config repomix.config.json
 </file>
 
+<file path="migration-context.md">
+<!--
+  @role migration-context
+  @owns source-to-target migration status, completed slices, parity gaps, and next slice guidance
+  @not-owns product requirements or repository-wide implementation rules
+  @notes Keep this operational and current.
+-->
+
+# Migration Context
+
+## Source repo
+Legacy browser app repository
+
+## Target repo
+This SvelteKit repository
+
+## Completed slices
+- Repo bootstrap
+- GitHub Pages deployment setup
+- Repo-context generation workflow
+- Minimal route skeleton
+
+## Not yet migrated
+- Profiles
+- IndexedDB layer
+- Track loading
+- Audio engine
+- Waveform UI
+- Sections
+- Activities
+- Plans
+
+## Next recommended slice
+- Shell + profile selection
+
+## Disposable scaffold
+
+The following are temporary bootstrap artifacts and may be removed or reshaped freely if a migration slice no longer needs them:
+- placeholder route content
+- temporary workspace scaffolding
+- example starter files
+</file>
+
 <file path="package.json">
 {
 	"name": "practicepartner-sveltekit",
@@ -530,6 +512,36 @@ jobs:
 		"vite": "^7.3.1"
 	}
 }
+</file>
+
+<file path="planning-context.md">
+<!--
+  @role planning-context
+  @owns accepted product behavior, planning decisions, and active deltas
+  @not-owns repository-wide implementation rules or file-level ownership details
+  @notes Keep this user-facing and implementation-agnostic.
+-->
+
+# Planning Context
+
+This repository is the SvelteKit migration target for the Suzuki Practice Partner app.
+
+## Current status
+
+- Infrastructure bootstrap only
+- No feature parity yet
+
+## Stable goals
+
+- GitHub Pages hosting
+- Modular SvelteKit architecture
+- AI-friendly repository context
+- Audio playback controls with future Tone.js integration
+
+- ## Current UX direction
+
+The main application surface is planner/library-oriented.
+Playback is expected to evolve toward a reusable drawer or panel surface rather than a dedicated workspace route unless a later decision explicitly changes that direction.
 </file>
 
 <file path="repomix-instruction.md">
