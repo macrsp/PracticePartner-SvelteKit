@@ -10,6 +10,8 @@ on:
   push:
     branches-ignore:
       - main
+    paths-ignore:
+      - repo-context.xml
   workflow_dispatch:
 
 permissions:
