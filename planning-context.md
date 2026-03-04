@@ -20,3 +20,8 @@ This repository is the SvelteKit migration target for the Suzuki Practice Partne
 - Modular SvelteKit architecture
 - AI-friendly repository context
 - Audio playback controls with future Tone.js integration
+
+- ## Current UX direction
+
+The main application surface is planner/library-oriented.
+Playback is expected to evolve toward a reusable drawer or panel surface rather than a dedicated workspace route unless a later decision explicitly changes that direction.
