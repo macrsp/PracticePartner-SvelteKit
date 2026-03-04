@@ -306,31 +306,6 @@ _attic/
 engine-strict=true
 </file>
 
-<file path="planning-context.md">
-<!--
-  @role planning-context
-  @owns accepted product behavior, planning decisions, and active deltas
-  @not-owns repository-wide implementation rules or file-level ownership details
-  @notes Keep this user-facing and implementation-agnostic.
--->
-
-# Planning Context
-
-This repository is the SvelteKit migration target for the Suzuki Practice Partner app.
-
-## Current status
-
-- Infrastructure bootstrap only
-- No feature parity yet
-
-## Stable goals
-
-- GitHub Pages hosting
-- Modular SvelteKit architecture
-- AI-friendly repository context
-- Audio playback controls with future Tone.js integration
-</file>
-
 <file path="repomix.config.json">
 {
   "$schema": "https://repomix.com/schemas/latest/schema.json",
@@ -537,6 +512,36 @@ The following are temporary bootstrap artifacts and may be removed or reshaped f
 		"vite": "^7.3.1"
 	}
 }
+</file>
+
+<file path="planning-context.md">
+<!--
+  @role planning-context
+  @owns accepted product behavior, planning decisions, and active deltas
+  @not-owns repository-wide implementation rules or file-level ownership details
+  @notes Keep this user-facing and implementation-agnostic.
+-->
+
+# Planning Context
+
+This repository is the SvelteKit migration target for the Suzuki Practice Partner app.
+
+## Current status
+
+- Infrastructure bootstrap only
+- No feature parity yet
+
+## Stable goals
+
+- GitHub Pages hosting
+- Modular SvelteKit architecture
+- AI-friendly repository context
+- Audio playback controls with future Tone.js integration
+
+- ## Current UX direction
+
+The main application surface is planner/library-oriented.
+Playback is expected to evolve toward a reusable drawer or panel surface rather than a dedicated workspace route unless a later decision explicitly changes that direction.
 </file>
 
 <file path="repomix-instruction.md">
