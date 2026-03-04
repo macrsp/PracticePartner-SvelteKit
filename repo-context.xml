@@ -53,8 +53,6 @@ src/
   routes/
     planner/
       +page.svelte
-    workspace/
-      +page.svelte
     +layout.ts
     +page.ts
   app.d.ts
@@ -222,22 +220,8 @@ jobs:
 <p>Hello from the SvelteKit target repo.</p>
 </file>
 
-<file path="src/routes/workspace/+page.svelte">
-<h1>Workspace</h1>
-<p>Hello from the SvelteKit target repo.</p>
-</file>
-
 <file path="src/routes/+layout.ts">
 export const prerender = true;
-</file>
-
-<file path="src/routes/+page.ts">
-import { redirect } from '@sveltejs/kit';
-import { resolve } from '$app/paths';
-
-export function load() {
-  throw redirect(307, resolve('/workspace'));
-}
 </file>
 
 <file path="src/app.d.ts">
@@ -444,47 +428,13 @@ jobs:
         run: npx --yes repomix --config repomix.config.json
 </file>
 
-<file path="migration-context.md">
-<!--
-  @role migration-context
-  @owns source-to-target migration status, completed slices, parity gaps, and next slice guidance
-  @not-owns product requirements or repository-wide implementation rules
-  @notes Keep this operational and current.
--->
+<file path="src/routes/+page.ts">
+import { redirect } from '@sveltejs/kit';
+import { resolve } from '$app/paths';
 
-# Migration Context
-
-## Source repo
-Legacy browser app repository
-
-## Target repo
-This SvelteKit repository
-
-## Completed slices
-- Repo bootstrap
-- GitHub Pages deployment setup
-- Repo-context generation workflow
-- Minimal route skeleton
-
-## Not yet migrated
-- Profiles
-- IndexedDB layer
-- Track loading
-- Audio engine
-- Waveform UI
-- Sections
-- Activities
-- Plans
-
-## Next recommended slice
-- Shell + profile selection
-
-## Disposable scaffold
-
-The following are temporary bootstrap artifacts and may be removed or reshaped freely if a migration slice no longer needs them:
-- placeholder route content
-- temporary workspace scaffolding
-- example starter files
+export function load() {
+  throw redirect(307, resolve('/planner'));
+}
 </file>
 
 <file path="package.json">
@@ -542,6 +492,48 @@ This repository is the SvelteKit migration target for the Suzuki Practice Partne
 
 The main application surface is planner/library-oriented.
 Playback is expected to evolve toward a reusable drawer or panel surface rather than a dedicated workspace route unless a later decision explicitly changes that direction.
+</file>
+
+<file path="migration-context.md">
+<!--
+  @role migration-context
+  @owns source-to-target migration status, completed slices, parity gaps, and next slice guidance
+  @not-owns product requirements or repository-wide implementation rules
+  @notes Keep this operational and current.
+-->
+
+# Migration Context
+
+## Source repo
+Legacy browser app repository
+
+## Target repo
+This SvelteKit repository
+
+## Completed slices
+- Repo bootstrap
+- GitHub Pages deployment setup
+- Repo-context generation workflow
+- Minimal route skeleton
+
+## Not yet migrated
+- Profiles
+- IndexedDB layer
+- Track loading
+- Audio engine
+- Waveform UI
+- Sections
+- Activities
+- Plans
+
+## Next recommended slice
+- Shell + profile selection
+
+## Disposable scaffold
+
+The following are temporary bootstrap artifacts and may be removed or reshaped freely if a migration slice no longer needs them:
+- placeholder route content
+- example starter files
 </file>
 
 <file path="repomix-instruction.md">
@@ -629,7 +621,6 @@ Do **not** preserve:
 - route structure
 - controller graph shape
 - DOM wiring style
-- “workspace” style surfaces that no longer fit the new product direction
 
 ### Prefer current product direction over legacy architecture
 
@@ -650,6 +641,7 @@ Prefer a smaller correct structure over a larger aspirational one.
 - Do **not** move or duplicate routes just to satisfy an example structure.
 - If a shared shell is needed, prefer a minimal `+layout.svelte` approach unless a more complex structure is justified.
 - If a suggested structure conflicts with filesystem routing behavior, prefer routing correctness.
+- Do **not** add the workspace concept back! It is is the reference repo, but it is explicitly deleted!!!
 
 ### Routing-specific tie-breaker
 
@@ -730,7 +722,7 @@ If the codebase or a prompt example points in a different direction than `planni
 When migrating a slice:
 
 - prefer behavior-preserving rewrites over literal ports
-- prefer planner-first/library-first surfaces over reviving overly broad legacy “workspace” surfaces when the product direction has changed
+- prefer planner-first/library-first surfaces. DO NOT revive the overly broad legacy “workspace” surfaces - the product direction has changed and that concept is reference only.
 - prefer reusable UI surfaces such as drawers/panels over dedicated routes when the product direction calls for them
 - keep the current slice minimal and prove the architecture before adding downstream complexity
 
@@ -833,7 +825,6 @@ Do **not** preserve:
 - route structure
 - controller graph shape
 - DOM wiring style
-- “workspace” style surfaces that no longer fit the new product direction
 
 ### Prefer current product direction over legacy architecture
 
@@ -854,6 +845,7 @@ Prefer a smaller correct structure over a larger aspirational one.
 - Do **not** move or duplicate routes just to satisfy an example structure.
 - If a shared shell is needed, prefer a minimal `+layout.svelte` approach unless a more complex structure is justified.
 - If a suggested structure conflicts with filesystem routing behavior, prefer routing correctness.
+- Do **not** add the workspace concept back! It is is the reference repo, but it is explicitly deleted!!!
 
 ### Routing-specific tie-breaker
 
@@ -934,7 +926,7 @@ If the codebase or a prompt example points in a different direction than `planni
 When migrating a slice:
 
 - prefer behavior-preserving rewrites over literal ports
-- prefer planner-first/library-first surfaces over reviving overly broad legacy “workspace” surfaces when the product direction has changed
+- prefer planner-first/library-first surfaces. DO NOT revive the overly broad legacy “workspace” surfaces - the product direction has changed and that concept is reference only.
 - prefer reusable UI surfaces such as drawers/panels over dedicated routes when the product direction calls for them
 - keep the current slice minimal and prove the architecture before adding downstream complexity
 
