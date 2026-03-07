@@ -9,22 +9,20 @@
 
 | State area | Authoritative owner | Writes through | Primary observers |
 | --- | --- | --- | --- |
-| active profile | profile-service | profile-service, continuity-service | app-shell, planner-screen, history-service |
-| profiles collection | profile-service | profile-service | app-shell, planner-screen |
-| folder connection state | library-service | library-service, continuity-service | planner-screen, player-session-service, error-recovery-coordinator |
-| track inventory | library-service | library-service | planner-screen, activity-composer-service, player-session-service |
-| active track | player-session-service | player-session-service, library-service | player-drawer-surface, planner-screen, history-service |
-| playback transport state | audio-engine | audio-engine | player-drawer-surface, player-session-service, history-service |
-| waveform viewport state | waveform-engine | waveform-engine | player-drawer-surface, player-session-service |
-| A/B selection state | selection-engine | selection-engine | player-drawer-surface, section-service, activity-composer-service |
-| focused section | player-session-service | player-session-service, section-service | player-drawer-surface, planner-screen |
-| saved sections collection | section-service | section-service | planner-screen, player-drawer-surface, activity-service |
-| practice history ledger | history-service | history-service | planner-screen, section-service, activity-service |
-| mastery summaries | history-service | history-service | planner-screen, section-service |
-| activities collection | activity-service | activity-service | planner-screen, activity-composer-service, plan-service |
-| activity draft | activity-composer-service | activity-composer-service | planner-screen |
-| practice plan | plan-service | plan-service | planner-screen, player-session-service |
-| continuity snapshot | continuity-service | continuity-service | app-shell, profile-service, library-service, player-session-service |
-| recovery state | error-recovery-coordinator | error-recovery-coordinator | app-shell, planner-screen, player-drawer-surface |
-| overlay and drawer navigation state | navigation-service | navigation-service | app-shell, planner-screen, player-drawer-surface |
-| install and update affordances | app-shell | app-shell | planner-screen, player-drawer-surface |
+| active profile | Session context store | Profile service | App shell, planner screen, player session service |
+| profiles collection | Durable app store | Profile service | App shell, planner screen |
+| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
+| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
+| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
+| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
+| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
+| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
+| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
+| sections collection | Durable app store | Section service | Music player drawer, activity service |
+| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
+| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
+| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
+| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
+| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
+| overlay stack | Ephemeral UI registry | Navigation service | App shell |
+| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |

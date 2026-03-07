@@ -8,10 +8,9 @@ branch_aliases:
   - shell
 collaborators:
   - navigation-service
-  - player-drawer-surface
+  - player-session-service
   - error-recovery-coordinator
   - profile-service
-  - continuity-service
 code_paths:
   - src/routes/+layout.ts
   - src/routes/+layout.svelte
@@ -21,37 +20,26 @@ code_paths:
 # App Shell
 
 ## Responsibility
-Own the persistent application chrome and mount points that stay alive across planner interactions, drawer interactions, refresh recovery, and install or update affordances.
+Define and maintain the runtime contract for app shell.
 
 ## Owns
-- shared layout composition and root shell structure
-- profile selector placement and shell-level controls
-- shell-level recovery and status banners
-- drawer host placement and install or update affordances
-- top-level loading gates while continuity and profile state resolve
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
 ## Does not own
-- planner route composition
-- player session rules, playback state, or waveform state
-- low-level persistence adapters
-- domain collections such as activities, sections, plans, or tracks
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
 
 ## Collaborators
 - navigation-service
-- player-drawer-surface
+- player-session-service
 - error-recovery-coordinator
 - profile-service
-- continuity-service
-
-## Lifecycle notes
-The shell mounts once on application bootstrap and remains mounted until full page unload.
-Route changes and drawer state changes must not remount the shell.
 
 ## Invariants
-- `/` resolves into the planner-first shell flow
-- shell composition survives planner and drawer transitions
-- shell-level recovery UI can surface blocking and non-blocking states without owning their domain logic
-- install and update prompts are shell concerns and never become hidden domain state
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
 ## Code ownership hints
 - src/routes/+layout.ts
