@@ -34,7 +34,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/section-service.md, architecture/elements/selection-engine.md, architecture/elements/player-session-service.md, architecture/elements/library-service.md, architecture/elements/continuity-service.md, architecture/elements/activity-service.md, src/lib/domains/sections/**, src/lib/app/sections/**, src/lib/engines/selection/**, src/lib/ui/player/**, src/lib/app/selection/**, src/lib/app/player-session/**, src/routes/+layout.ts, src/lib/domains/library/**, src/lib/platform/browser/fs/**, src/lib/platform/browser/permissions/**, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/domains/activities/**, src/lib/app/activities/**
+- Only files matching these patterns are included: architecture/context-manifests/section-service.context-code-path-coverage.md, planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/section-service.md, architecture/elements/selection-engine.md, architecture/elements/player-session-service.md, architecture/elements/library-service.md, architecture/elements/continuity-service.md, architecture/elements/activity-service.md, src/lib/domains/sections/**, src/lib/app/sections/**, src/lib/engines/selection/**, src/lib/ui/player/**, src/lib/app/selection/**, src/lib/app/player-session/**, src/routes/+layout.ts, src/lib/domains/library/**, src/lib/platform/browser/fs/**, src/lib/platform/browser/permissions/**, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/domains/activities/**, src/lib/app/activities/**
 - Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, architecture/contexts, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -49,6 +49,8 @@ Focused architectural context for Section Service.
 
 <directory_structure>
 architecture/
+  context-manifests/
+    section-service.context-code-path-coverage.md
   elements/
     activity-service.md
     continuity-service.md
@@ -68,6 +70,146 @@ repomix-instruction.md
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="architecture/context-manifests/section-service.context-code-path-coverage.md">
+# Section Service Context Coverage Manifest
+
+This generated manifest helps distinguish between code that is present in the repository and code paths that are declared architecturally but are still empty or missing.
+
+Use this manifest before assuming that a missing file in the packed context means the repository has no implementation for that area.
+
+## How to use this manifest
+
+- Start with the focus element rows, then inspect collaborator rows that the requested change depends on.
+- Treat `path missing` and `directory exists but empty` as signals that the architecture may be ahead of implementation or that the next step is first-time implementation.
+- Treat `no matches for glob` as a sign to clarify whether the declared ownership path is stale, overly broad, or simply not populated yet.
+- If the needed collaborator area is sparse or missing, clarify architectural intent before spreading implementation into adjacent undeclared areas.
+
+## Status meanings
+
+| Status | Meaning |
+| --- | --- |
+| `present` | One or more files matched the declared path. |
+| `directory exists but empty` | The owned directory exists, but it does not contain files yet. |
+| `path missing` | The declared file or directory root does not exist in the repository yet. |
+| `no matches for glob` | The root exists, but nothing currently matches the declared glob. |
+
+## Elements in this context
+
+- `library-service` (collaborator)
+- `section-service` (focus)
+- `activity-service` (collaborator)
+- `player-session-service` (collaborator)
+- `selection-engine` (collaborator)
+- `continuity-service` (collaborator)
+
+## Code path coverage
+
+| Context role | Architectural element | Declared code path | Status | Matched files |
+| --- | --- | --- | --- | --- |
+| collaborator | library-service | `src/lib/domains/library/**` | path missing | 0 |
+| collaborator | library-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+| collaborator | library-service | `src/lib/platform/browser/permissions/**` | path missing | 0 |
+| focus | section-service | `src/lib/app/sections/**` | path missing | 0 |
+| focus | section-service | `src/lib/domains/sections/**` | path missing | 0 |
+| collaborator | activity-service | `src/lib/app/activities/**` | path missing | 0 |
+| collaborator | activity-service | `src/lib/domains/activities/**` | path missing | 0 |
+| collaborator | player-session-service | `src/lib/app/player-session/**` | path missing | 0 |
+| collaborator | player-session-service | `src/lib/ui/player/**` | path missing | 0 |
+| collaborator | player-session-service | `src/routes/+layout.ts` | present | 1 |
+| collaborator | selection-engine | `src/lib/app/selection/**` | path missing | 0 |
+| collaborator | selection-engine | `src/lib/engines/selection/**` | path missing | 0 |
+| collaborator | selection-engine | `src/lib/ui/player/**` | path missing | 0 |
+| collaborator | continuity-service | `src/lib/app/continuity/**` | path missing | 0 |
+| collaborator | continuity-service | `src/lib/platform/browser/db/**` | path missing | 0 |
+| collaborator | continuity-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+
+## Relevant filesystem tree
+
+### `src/lib/app/activities`
+
+```text
+src/lib/app/activities (missing)
+```
+
+### `src/lib/app/continuity`
+
+```text
+src/lib/app/continuity (missing)
+```
+
+### `src/lib/app/player-session`
+
+```text
+src/lib/app/player-session (missing)
+```
+
+### `src/lib/app/sections`
+
+```text
+src/lib/app/sections (missing)
+```
+
+### `src/lib/app/selection`
+
+```text
+src/lib/app/selection (missing)
+```
+
+### `src/lib/domains/activities`
+
+```text
+src/lib/domains/activities (missing)
+```
+
+### `src/lib/domains/library`
+
+```text
+src/lib/domains/library (missing)
+```
+
+### `src/lib/domains/sections`
+
+```text
+src/lib/domains/sections (missing)
+```
+
+### `src/lib/engines/selection`
+
+```text
+src/lib/engines/selection (missing)
+```
+
+### `src/lib/platform/browser/db`
+
+```text
+src/lib/platform/browser/db (missing)
+```
+
+### `src/lib/platform/browser/fs`
+
+```text
+src/lib/platform/browser/fs (missing)
+```
+
+### `src/lib/platform/browser/permissions`
+
+```text
+src/lib/platform/browser/permissions (missing)
+```
+
+### `src/lib/ui/player`
+
+```text
+src/lib/ui/player (missing)
+```
+
+### `src/routes/+layout.ts`
+
+```text
+src/routes/+layout.ts
+```
+</file>
 
 <file path="architecture/elements/activity-service.md">
 ---
@@ -744,11 +886,13 @@ The architecture set is split as follows:
 - `architecture/target-architecture.template.md` is the template for the generated architecture document
 - `architecture/target-architecture.md` is a generated artifact
 - `architecture/contexts/*.xml` are generated artifacts
+- `architecture/context-manifests/*.md` are generated code-path coverage manifests used to clarify whether declared architectural areas are present, empty, or missing in the repository
 
 Do not hand-edit:
 
 - `architecture/target-architecture.md`
 - `architecture/contexts/*.xml`
+- `architecture/context-manifests/*.md`
 
 Those are generated and maintained automatically by GitHub Actions.
 
@@ -758,15 +902,18 @@ Those are generated and maintained automatically by GitHub Actions.
 
 Every meaningful coding session should have a **focus architectural element**.
 
-The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+The preferred way to select the focus element is by interpreting user request. Guide the user to make a branch name matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
 
-If a branch name does not match any declared alias, the repository falls back to the default focus element:
+If the user does not declare a focus fall back to the default focus element:
 
 - `architecture-governance`
 
 That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
 
-The first step in any coding session is to update the focus element’s architecture file, including:
+The first steps in any coding session are
+1. Determine what behavior changes need to be implemented, and choose the focus element to work on (user may require advise on this - ensure that they provide you the target-architecture.md for this). Choose the focus element with the least missing dependencies required to implement the behavior changes first. 
+2. Create a branch matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+3. Update the focus element’s architecture file, including:
 
 - collaborators
 - ownership boundaries
@@ -774,9 +921,29 @@ The first step in any coding session is to update the focus element’s architec
 - lifecycle notes
 - any architecture details that are changing in the session
 
-Do not start implementation by changing code first and updating architecture later.
+4. Finally, start making code changes. 
 
-Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+**Do not start implementation by changing code first and updating architecture later.**
+
+Alias-based branch naming is preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Context Sufficiency and Architecture Clarification
+
+Generated repository and focused architectural contexts may include a code-path coverage manifest and a relevant filesystem tree.
+
+When working from one of those contexts:
+
+- inspect the manifest before assuming a declared architectural area has implementation
+- do not assume omitted files are absent from the repository
+- use the manifest statuses to distinguish between `present`, `directory exists but empty`, `path missing`, and `no matches for glob`
+- if the focus element or a key collaborator area needed for the task is sparse or missing, call that out explicitly before proposing substantive implementation
+- treat sparse or missing declared paths as a clarification point: determine whether the architecture is intentionally ahead of implementation, whether additional collaborator context is needed, or whether the work is first-time implementation
+- do not spread implementation into nearby undeclared areas just because the declared area is sparse
+- if manifest coverage conflicts with the architecture description, treat that as an architecture clarification issue to surface directly rather than silently reinterpreting boundaries
+
+When the manifest shows that a needed path is missing or empty, prefer tightening the plan and clarifying intent before writing cross-cutting code.
 
 ---
 
@@ -1064,11 +1231,13 @@ The architecture set is split as follows:
 - `architecture/target-architecture.template.md` is the template for the generated architecture document
 - `architecture/target-architecture.md` is a generated artifact
 - `architecture/contexts/*.xml` are generated artifacts
+- `architecture/context-manifests/*.md` are generated code-path coverage manifests used to clarify whether declared architectural areas are present, empty, or missing in the repository
 
 Do not hand-edit:
 
 - `architecture/target-architecture.md`
 - `architecture/contexts/*.xml`
+- `architecture/context-manifests/*.md`
 
 Those are generated and maintained automatically by GitHub Actions.
 
@@ -1078,15 +1247,18 @@ Those are generated and maintained automatically by GitHub Actions.
 
 Every meaningful coding session should have a **focus architectural element**.
 
-The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+The preferred way to select the focus element is by interpreting user request. Guide the user to make a branch name matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
 
-If a branch name does not match any declared alias, the repository falls back to the default focus element:
+If the user does not declare a focus fall back to the default focus element:
 
 - `architecture-governance`
 
 That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
 
-The first step in any coding session is to update the focus element’s architecture file, including:
+The first steps in any coding session are
+1. Determine what behavior changes need to be implemented, and choose the focus element to work on (user may require advise on this - ensure that they provide you the target-architecture.md for this). Choose the focus element with the least missing dependencies required to implement the behavior changes first. 
+2. Create a branch matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+3. Update the focus element’s architecture file, including:
 
 - collaborators
 - ownership boundaries
@@ -1094,9 +1266,29 @@ The first step in any coding session is to update the focus element’s architec
 - lifecycle notes
 - any architecture details that are changing in the session
 
-Do not start implementation by changing code first and updating architecture later.
+4. Finally, start making code changes. 
 
-Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+**Do not start implementation by changing code first and updating architecture later.**
+
+Alias-based branch naming is preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Context Sufficiency and Architecture Clarification
+
+Generated repository and focused architectural contexts may include a code-path coverage manifest and a relevant filesystem tree.
+
+When working from one of those contexts:
+
+- inspect the manifest before assuming a declared architectural area has implementation
+- do not assume omitted files are absent from the repository
+- use the manifest statuses to distinguish between `present`, `directory exists but empty`, `path missing`, and `no matches for glob`
+- if the focus element or a key collaborator area needed for the task is sparse or missing, call that out explicitly before proposing substantive implementation
+- treat sparse or missing declared paths as a clarification point: determine whether the architecture is intentionally ahead of implementation, whether additional collaborator context is needed, or whether the work is first-time implementation
+- do not spread implementation into nearby undeclared areas just because the declared area is sparse
+- if manifest coverage conflicts with the architecture description, treat that as an architecture clarification issue to surface directly rather than silently reinterpreting boundaries
+
+When the manifest shows that a needed path is missing or empty, prefer tightening the plan and clarifying intent before writing cross-cutting code.
 
 ---
 

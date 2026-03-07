@@ -35,7 +35,7 @@ The content is organized as follows:
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
 - Only files matching these patterns are included: **/*
-- Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, ci-context.xml, architecture/target-architecture.md, architecture/contexts, .tmp
+- Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, ci-context.xml, architecture/target-architecture.md, architecture/contexts, architecture/context-manifests/*.context-code-path-coverage.md, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -52,6 +52,8 @@ The content is organized as follows:
     update-generated-artifacts.yml
   PULL_REQUEST_TEMPLATE.md
 architecture/
+  context-manifests/
+    repo-code-path-coverage.md
   elements/
     activity-composer-service.md
     activity-service.md
@@ -109,6 +111,350 @@ vite.config.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="architecture/context-manifests/repo-code-path-coverage.md">
+# Repository Code Path Coverage Manifest
+
+This generated manifest summarizes how the architecture maps onto the current filesystem so implementation sessions can tell the difference between missing code, empty owned areas, and genuinely populated code paths.
+
+Use this manifest before concluding that an architectural area is absent or before borrowing nearby files that are outside the declared ownership paths.
+
+## How to use this manifest
+
+- When a requested slice depends on paths marked `present`, start from those files.
+- When a requested slice depends on paths marked `path missing`, `directory exists but empty`, or `no matches for glob`, clarify whether the architecture is intentionally ahead of implementation.
+- When several collaborator areas are sparse, prefer expanding or refreshing architectural context before making cross-cutting implementation changes.
+
+## Code path coverage
+
+| Architectural element | Declared code path | Status | Matched files |
+| --- | --- | --- | --- |
+| architecture-governance | `.github/workflows/ci.yml` | present | 1 |
+| architecture-governance | `.github/workflows/update-repo-context.yml` | path missing | 0 |
+| architecture-governance | `architecture/**` | present | 41 |
+| architecture-governance | `repomix-instruction.md` | present | 1 |
+| architecture-governance | `repomix.config.json` | present | 1 |
+| architecture-governance | `scripts/architecture/**` | present | 4 |
+| app-shell | `src/app.html` | present | 1 |
+| app-shell | `src/lib/ui/shell/**` | path missing | 0 |
+| app-shell | `src/routes/+layout.svelte` | path missing | 0 |
+| app-shell | `src/routes/+layout.ts` | present | 1 |
+| planner-screen | `src/lib/ui/planner/**` | path missing | 0 |
+| planner-screen | `src/routes/planner/+page.svelte` | present | 1 |
+| profile-service | `src/lib/app/profile/**` | path missing | 0 |
+| profile-service | `src/lib/domains/profiles/**` | path missing | 0 |
+| navigation-service | `src/lib/app/navigation/**` | path missing | 0 |
+| navigation-service | `src/routes/+layout.ts` | present | 1 |
+| navigation-service | `src/routes/+page.ts` | present | 1 |
+| library-service | `src/lib/domains/library/**` | path missing | 0 |
+| library-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+| library-service | `src/lib/platform/browser/permissions/**` | path missing | 0 |
+| section-service | `src/lib/app/sections/**` | path missing | 0 |
+| section-service | `src/lib/domains/sections/**` | path missing | 0 |
+| activity-service | `src/lib/app/activities/**` | path missing | 0 |
+| activity-service | `src/lib/domains/activities/**` | path missing | 0 |
+| activity-composer-service | `src/lib/app/activity-composer/**` | path missing | 0 |
+| activity-composer-service | `src/lib/ui/planner/**` | path missing | 0 |
+| activity-composer-service | `src/lib/ui/player/**` | path missing | 0 |
+| plan-service | `src/lib/app/plans/**` | path missing | 0 |
+| plan-service | `src/lib/domains/plans/**` | path missing | 0 |
+| player-session-service | `src/lib/app/player-session/**` | path missing | 0 |
+| player-session-service | `src/lib/ui/player/**` | path missing | 0 |
+| player-session-service | `src/routes/+layout.ts` | present | 1 |
+| audio-engine | `src/lib/engines/audio/**` | path missing | 0 |
+| audio-engine | `src/lib/platform/browser/audio/**` | path missing | 0 |
+| audio-engine | `src/lib/platform/browser/media/**` | path missing | 0 |
+| waveform-engine | `src/lib/engines/waveform/**` | path missing | 0 |
+| waveform-engine | `src/lib/platform/browser/media/**` | path missing | 0 |
+| waveform-engine | `src/lib/ui/player/**` | path missing | 0 |
+| selection-engine | `src/lib/app/selection/**` | path missing | 0 |
+| selection-engine | `src/lib/engines/selection/**` | path missing | 0 |
+| selection-engine | `src/lib/ui/player/**` | path missing | 0 |
+| continuity-service | `src/lib/app/continuity/**` | path missing | 0 |
+| continuity-service | `src/lib/platform/browser/db/**` | path missing | 0 |
+| continuity-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+| error-recovery-coordinator | `src/lib/app/recovery/**` | path missing | 0 |
+| error-recovery-coordinator | `src/lib/ui/shared/**` | path missing | 0 |
+| error-recovery-coordinator | `src/routes/+layout.ts` | present | 1 |
+
+## Relevant filesystem tree
+
+### `.github/workflows/ci.yml`
+
+```text
+.github/workflows/ci.yml
+```
+
+### `.github/workflows/update-repo-context.yml`
+
+```text
+.github/workflows/update-repo-context.yml (missing)
+```
+
+### `architecture`
+
+```text
+architecture
+├── context-manifests/
+├── contexts/
+│   ├── activity-composer-service.context.xml
+│   ├── activity-service.context.xml
+│   ├── app-shell.context.xml
+│   ├── architecture-governance.context.xml
+│   ├── audio-engine.context.xml
+│   ├── continuity-service.context.xml
+│   ├── current-focus.context.xml
+│   ├── error-recovery-coordinator.context.xml
+│   ├── library-service.context.xml
+│   ├── navigation-service.context.xml
+│   ├── plan-service.context.xml
+│   ├── planner-screen.context.xml
+│   ├── player-session-service.context.xml
+│   ├── profile-service.context.xml
+│   ├── section-service.context.xml
+│   ├── selection-engine.context.xml
+│   └── waveform-engine.context.xml
+├── elements/
+│   ├── activity-composer-service.md
+│   ├── activity-service.md
+│   ├── app-shell.md
+│   ├── architecture-governance.md
+│   ├── audio-engine.md
+│   ├── continuity-service.md
+│   ├── error-recovery-coordinator.md
+│   ├── library-service.md
+│   ├── navigation-service.md
+│   ├── plan-service.md
+│   ├── planner-screen.md
+│   ├── player-session-service.md
+│   ├── profile-service.md
+│   ├── section-service.md
+│   ├── selection-engine.md
+│   └── waveform-engine.md
+├── context-settings.json
+├── element-seed-metadata.json
+├── lifecycle-map.md
+├── ownership-matrix.md
+├── README.md
+├── recovery-map.md
+├── target-architecture.md
+└── target-architecture.template.md
+```
+
+### `repomix-instruction.md`
+
+```text
+repomix-instruction.md
+```
+
+### `repomix.config.json`
+
+```text
+repomix.config.json
+```
+
+### `scripts/architecture`
+
+```text
+scripts/architecture
+├── generate-context-configs.mjs
+├── generate-target-architecture.mjs
+├── lib.mjs
+└── validate-architecture-consistency.mjs
+```
+
+### `src/app.html`
+
+```text
+src/app.html
+```
+
+### `src/lib/app/activities`
+
+```text
+src/lib/app/activities (missing)
+```
+
+### `src/lib/app/activity-composer`
+
+```text
+src/lib/app/activity-composer (missing)
+```
+
+### `src/lib/app/continuity`
+
+```text
+src/lib/app/continuity (missing)
+```
+
+### `src/lib/app/navigation`
+
+```text
+src/lib/app/navigation (missing)
+```
+
+### `src/lib/app/plans`
+
+```text
+src/lib/app/plans (missing)
+```
+
+### `src/lib/app/player-session`
+
+```text
+src/lib/app/player-session (missing)
+```
+
+### `src/lib/app/profile`
+
+```text
+src/lib/app/profile (missing)
+```
+
+### `src/lib/app/recovery`
+
+```text
+src/lib/app/recovery (missing)
+```
+
+### `src/lib/app/sections`
+
+```text
+src/lib/app/sections (missing)
+```
+
+### `src/lib/app/selection`
+
+```text
+src/lib/app/selection (missing)
+```
+
+### `src/lib/domains/activities`
+
+```text
+src/lib/domains/activities (missing)
+```
+
+### `src/lib/domains/library`
+
+```text
+src/lib/domains/library (missing)
+```
+
+### `src/lib/domains/plans`
+
+```text
+src/lib/domains/plans (missing)
+```
+
+### `src/lib/domains/profiles`
+
+```text
+src/lib/domains/profiles (missing)
+```
+
+### `src/lib/domains/sections`
+
+```text
+src/lib/domains/sections (missing)
+```
+
+### `src/lib/engines/audio`
+
+```text
+src/lib/engines/audio (missing)
+```
+
+### `src/lib/engines/selection`
+
+```text
+src/lib/engines/selection (missing)
+```
+
+### `src/lib/engines/waveform`
+
+```text
+src/lib/engines/waveform (missing)
+```
+
+### `src/lib/platform/browser/audio`
+
+```text
+src/lib/platform/browser/audio (missing)
+```
+
+### `src/lib/platform/browser/db`
+
+```text
+src/lib/platform/browser/db (missing)
+```
+
+### `src/lib/platform/browser/fs`
+
+```text
+src/lib/platform/browser/fs (missing)
+```
+
+### `src/lib/platform/browser/media`
+
+```text
+src/lib/platform/browser/media (missing)
+```
+
+### `src/lib/platform/browser/permissions`
+
+```text
+src/lib/platform/browser/permissions (missing)
+```
+
+### `src/lib/ui/planner`
+
+```text
+src/lib/ui/planner (missing)
+```
+
+### `src/lib/ui/player`
+
+```text
+src/lib/ui/player (missing)
+```
+
+### `src/lib/ui/shared`
+
+```text
+src/lib/ui/shared (missing)
+```
+
+### `src/lib/ui/shell`
+
+```text
+src/lib/ui/shell (missing)
+```
+
+### `src/routes/+layout.svelte`
+
+```text
+src/routes/+layout.svelte (missing)
+```
+
+### `src/routes/+layout.ts`
+
+```text
+src/routes/+layout.ts
+```
+
+### `src/routes/+page.ts`
+
+```text
+src/routes/+page.ts
+```
+
+### `src/routes/planner/+page.svelte`
+
+```text
+src/routes/planner/+page.svelte
+```
+</file>
 
 <file path=".github/workflows/deploy-cloudflare-pages.yml">
 # @role workflow
@@ -214,115 +560,6 @@ jobs:
           REPO: ${{ github.repository }}
           PULL_NUMBER: ${{ github.event.pull_request.number }}
           BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-</file>
-
-<file path=".github/workflows/update-generated-artifacts.yml">
-# @role workflow
-# @owns regeneration and commit-back of generated repository contexts and architecture artifacts on non-main branch updates
-# @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Generates repo-context.xml, ci-context.xml, target architecture, and focused architecture contexts, then commits refreshed artifacts back to the branch when they change.
-
-name: Update Generated Artifacts
-
-on:
-  push:
-    branches-ignore:
-      - main
-    paths-ignore:
-      - repo-context.xml
-      - ci-context.xml
-      - architecture/target-architecture.md
-      - architecture/contexts/**
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: update-generated-artifacts-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout current branch
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate target architecture
-        run: node scripts/architecture/generate-target-architecture.mjs
-
-      - name: Generate architecture context configs
-        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-
-      - name: Generate repo context
-        run: npx --yes repomix --config repomix.config.json
-
-      - name: Generate CI context
-        run: npx --yes repomix --config ci-context.repomix.config.json
-
-      - name: Generate architectural element contexts
-        run: |
-          for config in .tmp/architecture-context-configs/*.config.json; do
-            echo "Generating context from $config"
-            npx --yes repomix --config "$config"
-          done
-
-      - name: Compute safe artifact name
-        shell: bash
-        run: |
-          raw_ref="${GITHUB_REF_NAME}"
-          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
-
-          if [ -z "$safe_ref" ]; then
-            safe_ref="unnamed-ref"
-          fi
-
-          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
-
-      - name: Upload generated artifact bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-artifacts-${{ env.safe_ref }}
-          path: |
-            repo-context.xml
-            ci-context.xml
-            architecture/target-architecture.md
-            architecture/contexts
-          if-no-files-found: error
-
-      - name: Commit updated generated artifacts to branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add \
-            repo-context.xml \
-            ci-context.xml \
-            architecture/target-architecture.md \
-            architecture/contexts
-
-          if git diff --cached --quiet; then
-            echo "No generated artifact changes."
-            exit 0
-          fi
-
-          git commit -m "chore: refresh generated artifacts"
-          git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
 <file path="architecture/elements/activity-service.md">
@@ -871,26 +1108,6 @@ Define and maintain the runtime contract for waveform engine.
 - src/lib/engines/waveform/**
 - src/lib/platform/browser/media/**
 - src/lib/ui/player/**
-</file>
-
-<file path="architecture/context-settings.json">
-{
-  "elementsDir": "architecture/elements",
-  "targetArchitectureTemplate": "architecture/target-architecture.template.md",
-  "targetArchitectureOutput": "architecture/target-architecture.md",
-  "generatedContextsDir": "architecture/contexts",
-  "contextConfigTempDir": ".tmp/architecture-context-configs",
-  "repoContextOutput": "repo-context.xml",
-  "alwaysIncludeInElementContexts": [
-    "planning-context.md",
-    "repomix-instruction.md",
-    "architecture/ownership-matrix.md",
-    "architecture/lifecycle-map.md",
-    "architecture/recovery-map.md"
-  ],
-  "defaultFocusElement": "architecture-governance",
-  "currentFocusContextName": "current-focus.context.xml"
-}
 </file>
 
 <file path="architecture/element-seed-metadata.json">
@@ -1809,6 +2026,118 @@ export default defineConfig({
 });
 </file>
 
+<file path=".github/workflows/update-generated-artifacts.yml">
+# @role workflow
+# @owns regeneration and commit-back of generated repository contexts, code-path coverage manifests, and architecture artifacts on non-main branch updates
+# @not-owns production deployment, runtime behavior, or branch protection settings
+# @notes Generates repo-context.xml, ci-context.xml, target architecture, focused architecture contexts, and coverage manifests, then commits refreshed artifacts back to the branch when they change.
+
+name: Update Generated Artifacts
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - repo-context.xml
+      - ci-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
+      - architecture/context-manifests/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-generated-artifacts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs and coverage manifests
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Generate repo context
+        run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate CI context
+        run: npx --yes repomix --config ci-context.repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
+
+      - name: Compute safe artifact name
+        shell: bash
+        run: |
+          raw_ref="${GITHUB_REF_NAME}"
+          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
+
+          if [ -z "$safe_ref" ]; then
+            safe_ref="unnamed-ref"
+          fi
+
+          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
+
+      - name: Upload generated artifact bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-artifacts-${{ env.safe_ref }}
+          path: |
+            repo-context.xml
+            ci-context.xml
+            architecture/target-architecture.md
+            architecture/contexts
+            architecture/context-manifests
+          if-no-files-found: error
+
+      - name: Commit updated generated artifacts to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            repo-context.xml \
+            ci-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts \
+            architecture/context-manifests
+
+          if git diff --cached --quiet; then
+            echo "No generated artifact changes."
+            exit 0
+          fi
+
+          git commit -m "chore: refresh generated artifacts"
+          git push origin HEAD:${GITHUB_REF_NAME}
+</file>
+
 <file path=".github/PULL_REQUEST_TEMPLATE.md">
 ## Summary
 
@@ -1887,6 +2216,29 @@ Define and maintain the runtime contract for error recovery coordinator.
 - src/routes/+layout.ts
 </file>
 
+<file path="architecture/context-settings.json">
+{
+  "elementsDir": "architecture/elements",
+  "targetArchitectureTemplate": "architecture/target-architecture.template.md",
+  "targetArchitectureOutput": "architecture/target-architecture.md",
+  "generatedContextsDir": "architecture/contexts",
+  "contextConfigTempDir": ".tmp/architecture-context-configs",
+  "contextManifestDir": "architecture/context-manifests",
+  "repoContextManifestName": "repo-code-path-coverage.md",
+  "elementContextManifestSuffix": ".context-code-path-coverage.md",
+  "repoContextOutput": "repo-context.xml",
+  "alwaysIncludeInElementContexts": [
+    "planning-context.md",
+    "repomix-instruction.md",
+    "architecture/ownership-matrix.md",
+    "architecture/lifecycle-map.md",
+    "architecture/recovery-map.md"
+  ],
+  "defaultFocusElement": "architecture-governance",
+  "currentFocusContextName": "current-focus.context.xml"
+}
+</file>
+
 <file path="architecture/target-architecture.template.md">
 <!--
   @role architecture-template
@@ -1916,326 +2268,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 ## Architectural Elements
 
 {{ELEMENTS}}
-</file>
-
-<file path="scripts/architecture/generate-context-configs.mjs">
-import path from 'node:path';
-import {
-	buildRepomixConfig,
-	collectElementContext,
-	collectUniqueCodePaths,
-	ensureDir,
-	inferFocusElement,
-	loadElements,
-	writeText
-} from './lib.mjs';
-
-const branchFlagIndex = process.argv.indexOf('--branch');
-const branchName = branchFlagIndex >= 0 ? process.argv[branchFlagIndex + 1] : process.env.BRANCH_NAME;
-
-const { settings, elements } = loadElements();
-ensureDir(settings.contextConfigTempDir);
-ensureDir(settings.generatedContextsDir);
-
-for (const element of elements) {
-	const contextElements = collectElementContext(element.id, elements);
-	const include = [
-		...settings.alwaysIncludeInElementContexts,
-		...contextElements.map((item) => item.path),
-		...collectUniqueCodePaths(contextElements)
-	];
-
-	const config = buildRepomixConfig({
-		outputPath: path.join(settings.generatedContextsDir, `${element.id}.context.xml`).replace(/\\/g, '/'),
-		include,
-		headerText: `Focused architectural context for ${element.title}.`
-	});
-
-	writeText(
-		path.join(settings.contextConfigTempDir, `${element.id}.config.json`).replace(/\\/g, '/'),
-		JSON.stringify(config, null, 2) + '\n'
-	);
-}
-
-const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
-const focusElement = focusResult.element;
-
-const focusContextElements = collectElementContext(focusElement.id, elements);
-const focusInclude = [
-	...settings.alwaysIncludeInElementContexts,
-	...focusContextElements.map((item) => item.path),
-	...collectUniqueCodePaths(focusContextElements)
-];
-
-const headerText = focusResult.usedDefault
-	? `Current branch focus context for ${focusElement.title}. Generated using the default focus fallback because the branch name did not match an architectural element alias.`
-	: `Current branch focus context for ${focusElement.title}.`;
-
-const currentFocusConfig = buildRepomixConfig({
-	outputPath: path.join(settings.generatedContextsDir, settings.currentFocusContextName).replace(/\\/g, '/'),
-	include: focusInclude,
-	headerText
-});
-
-writeText(
-	path.join(settings.contextConfigTempDir, 'current-focus.config.json').replace(/\\/g, '/'),
-	JSON.stringify(currentFocusConfig, null, 2) + '\n'
-);
-
-console.log(`Generated context configs for ${elements.length} architectural elements.`);
-console.log(
-	focusResult.usedDefault
-		? `Current focus element: ${focusElement.id} (default fallback for branch "${branchName}")`
-		: `Current focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}")`
-);
-</file>
-
-<file path="scripts/architecture/lib.mjs">
-import fs from 'node:fs';
-import path from 'node:path';
-
-export function getRepoRoot() {
-	return process.cwd();
-}
-
-export function loadJson(relativePath) {
-	const absolutePath = path.join(getRepoRoot(), relativePath);
-	return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
-}
-
-export function ensureDir(relativePath) {
-	const absolutePath = path.join(getRepoRoot(), relativePath);
-	fs.mkdirSync(absolutePath, { recursive: true });
-}
-
-export function writeText(relativePath, content) {
-	const absolutePath = path.join(getRepoRoot(), relativePath);
-	ensureDir(path.dirname(relativePath));
-	fs.writeFileSync(absolutePath, content, 'utf8');
-}
-
-export function readText(relativePath) {
-	return fs.readFileSync(path.join(getRepoRoot(), relativePath), 'utf8');
-}
-
-export function stripCommentHeader(markdown) {
-	return markdown.replace(/^<!--[\s\S]*?-->\s*/m, '').trim();
-}
-
-export function parseFrontmatter(markdown) {
-	if (!markdown.startsWith('---\n')) {
-		return { data: {}, body: markdown.trim() };
-	}
-
-	const closingIndex = markdown.indexOf('\n---\n', 4);
-
-	if (closingIndex === -1) {
-		throw new Error('Invalid frontmatter block.');
-	}
-
-	const rawFrontmatter = markdown.slice(4, closingIndex).trim();
-	const body = markdown.slice(closingIndex + 5).trim();
-	const data = {};
-	let currentArrayKey = null;
-
-	for (const rawLine of rawFrontmatter.split('\n')) {
-		const line = rawLine.replace(/\r/g, '');
-
-		if (!line.trim()) {
-			continue;
-		}
-
-		const keyMatch = /^([a-z_]+):\s*(.*)$/.exec(line);
-
-		if (keyMatch) {
-			const [, key, value] = keyMatch;
-
-			if (!value) {
-				data[key] = [];
-				currentArrayKey = key;
-				continue;
-			}
-
-			currentArrayKey = null;
-			data[key] = /^\d+$/.test(value) ? Number(value) : value;
-			continue;
-		}
-
-		const arrayMatch = /^\s*-\s*(.+)$/.exec(line);
-
-		if (arrayMatch && currentArrayKey) {
-			data[currentArrayKey].push(arrayMatch[1]);
-			continue;
-		}
-
-		throw new Error(`Unsupported frontmatter line: ${line}`);
-	}
-
-	return { data, body };
-}
-
-export function loadElements() {
-	const settings = loadJson('architecture/context-settings.json');
-	const elementsDir = path.join(getRepoRoot(), settings.elementsDir);
-
-	const elements = fs
-		.readdirSync(elementsDir)
-		.filter((entry) => entry.endsWith('.md'))
-		.map((entry) => {
-			const relativePath = path.join(settings.elementsDir, entry).replace(/\\/g, '/');
-			const markdown = readText(relativePath);
-			const { data, body } = parseFrontmatter(markdown);
-
-			if (!data.id || !data.title) {
-				throw new Error(`Element file ${relativePath} is missing required metadata.`);
-			}
-
-			return {
-				...data,
-				path: relativePath,
-				body: body.trim()
-			};
-		})
-		.sort((left, right) => {
-			const orderDelta = Number(left.order ?? 0) - Number(right.order ?? 0);
-			return orderDelta || String(left.title).localeCompare(String(right.title));
-		});
-
-	return { settings, elements };
-}
-
-export function inferFocusElement(branchName, elements, defaultElementId) {
-	const normalizedBranchName = String(branchName || '').toLowerCase();
-	const defaultElement = elements.find((element) => element.id === defaultElementId) ?? null;
-
-	if (!defaultElement) {
-		throw new Error(`Default focus architectural element "${defaultElementId}" was not found.`);
-	}
-
-	if (!normalizedBranchName || normalizedBranchName === 'main') {
-		return {
-			element: defaultElement,
-			matchedAlias: null,
-			usedDefault: true
-		};
-	}
-
-	const matches = [];
-
-	for (const element of elements) {
-		for (const alias of element.branch_aliases ?? []) {
-			const normalizedAlias = String(alias).toLowerCase();
-
-			if (normalizedAlias && normalizedBranchName.includes(normalizedAlias)) {
-				matches.push({
-					element,
-					alias,
-					score: normalizedAlias.length
-				});
-			}
-		}
-	}
-
-	if (!matches.length) {
-		return {
-			element: defaultElement,
-			matchedAlias: null,
-			usedDefault: true
-		};
-	}
-
-	matches.sort((left, right) => {
-		return right.score - left.score || Number(left.element.order ?? 0) - Number(right.element.order ?? 0);
-	});
-
-	return {
-		element: matches[0].element,
-		matchedAlias: matches[0].alias,
-		usedDefault: false
-	};
-}
-
-export function collectElementContext(elementId, elements) {
-	const byId = new Map(elements.map((element) => [element.id, element]));
-	const focusElement = byId.get(elementId);
-
-	if (!focusElement) {
-		throw new Error(`Unknown element id: ${elementId}`);
-	}
-
-	const contextElements = [focusElement];
-
-	for (const collaboratorId of focusElement.collaborators ?? []) {
-		const collaborator = byId.get(collaboratorId);
-
-		if (!collaborator) {
-			throw new Error(`Unknown collaborator "${collaboratorId}" referenced by "${elementId}".`);
-		}
-
-		contextElements.push(collaborator);
-	}
-
-	const uniqueElements = [];
-	const seen = new Set();
-
-	for (const element of contextElements) {
-		if (seen.has(element.id)) {
-			continue;
-		}
-
-		seen.add(element.id);
-		uniqueElements.push(element);
-	}
-
-	return uniqueElements;
-}
-
-export function collectUniqueCodePaths(elements) {
-	const paths = new Set();
-
-	for (const element of elements) {
-		for (const codePath of element.code_paths ?? []) {
-			paths.add(codePath);
-		}
-	}
-
-	return [...paths];
-}
-
-export function buildRepomixConfig({ outputPath, include, headerText }) {
-	return {
-		$schema: 'https://repomix.com/schemas/latest/schema.json',
-		output: {
-			filePath: outputPath,
-			style: 'xml',
-			instructionFilePath: 'repomix-instruction.md',
-			fileSummary: true,
-			directoryStructure: true,
-			files: true,
-			removeComments: false,
-			removeEmptyLines: false,
-			includeEmptyDirectories: false,
-			headerText,
-			git: {
-				sortByChanges: true,
-				includeDiffs: false,
-				includeLogs: false
-			}
-		},
-		include,
-		ignore: {
-			useGitignore: true,
-			useDefaultPatterns: true,
-			customPatterns: ['build', '.svelte-kit', 'repo-context.xml', 'architecture/contexts', '.tmp']
-		},
-		security: {
-			enableSecurityCheck: true
-		},
-		tokenCount: {
-			encoding: 'o200k_base'
-		}
-	};
-}
 </file>
 
 <file path="scripts/ci/wait-for-branch-workflow.mjs">
@@ -2648,6 +2680,702 @@ Define and maintain the runtime contract for planner screen.
 - src/lib/ui/planner/**
 </file>
 
+<file path="scripts/architecture/generate-context-configs.mjs">
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+	buildContextCoverageManifest,
+	buildRepomixConfig,
+	buildRepositoryCoverageManifest,
+	collectElementContext,
+	collectUniqueCodePaths,
+	ensureDir,
+	getElementManifestPath,
+	getRepoManifestPath,
+	inferFocusElement,
+	loadElements,
+	writeText
+} from './lib.mjs';
+
+const branchFlagIndex = process.argv.indexOf('--branch');
+const branchName = branchFlagIndex >= 0 ? process.argv[branchFlagIndex + 1] : process.env.BRANCH_NAME;
+
+const { settings, elements } = loadElements();
+
+fs.rmSync(path.join(process.cwd(), settings.contextConfigTempDir), { recursive: true, force: true });
+fs.rmSync(path.join(process.cwd(), settings.contextManifestDir), { recursive: true, force: true });
+
+ensureDir(settings.contextConfigTempDir);
+ensureDir(settings.generatedContextsDir);
+ensureDir(settings.contextManifestDir);
+
+writeText(getRepoManifestPath(settings), buildRepositoryCoverageManifest(elements));
+
+for (const element of elements) {
+	const contextElements = collectElementContext(element.id, elements);
+	const manifestPath = getElementManifestPath(element.id, settings);
+
+	writeText(
+		manifestPath,
+		buildContextCoverageManifest({
+			focusElement: element,
+			contextElements
+		})
+	);
+
+	const include = [
+		manifestPath,
+		...settings.alwaysIncludeInElementContexts,
+		...contextElements.map((item) => item.path),
+		...collectUniqueCodePaths(contextElements)
+	];
+
+	const config = buildRepomixConfig({
+		outputPath: path.join(settings.generatedContextsDir, `${element.id}.context.xml`).replace(/\\/g, '/'),
+		include,
+		headerText: `Focused architectural context for ${element.title}.`
+	});
+
+	writeText(
+		path.join(settings.contextConfigTempDir, `${element.id}.config.json`).replace(/\\/g, '/'),
+		JSON.stringify(config, null, 2) + '\n'
+	);
+}
+
+const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
+const focusElement = focusResult.element;
+const focusManifestPath = getElementManifestPath(focusElement.id, settings);
+const focusContextElements = collectElementContext(focusElement.id, elements);
+const focusInclude = [
+	focusManifestPath,
+	...settings.alwaysIncludeInElementContexts,
+	...focusContextElements.map((item) => item.path),
+	...collectUniqueCodePaths(focusContextElements)
+];
+
+const headerText = focusResult.usedDefault
+	? `Current branch focus context for ${focusElement.title}. Generated using the default focus fallback because the branch name did not match an architectural element alias.`
+	: `Current branch focus context for ${focusElement.title}.`;
+
+const currentFocusConfig = buildRepomixConfig({
+	outputPath: path.join(settings.generatedContextsDir, settings.currentFocusContextName).replace(/\\/g, '/'),
+	include: focusInclude,
+	headerText
+});
+
+writeText(
+	path.join(settings.contextConfigTempDir, 'current-focus.config.json').replace(/\\/g, '/'),
+	JSON.stringify(currentFocusConfig, null, 2) + '\n'
+);
+
+console.log(`Generated context configs and coverage manifests for ${elements.length} architectural elements.`);
+console.log(`Generated repository coverage manifest at ${getRepoManifestPath(settings)}.`);
+console.log(
+	focusResult.usedDefault
+		? `Current focus element: ${focusElement.id} (default fallback for branch "${branchName}")`
+		: `Current focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}")`
+);
+</file>
+
+<file path="scripts/architecture/lib.mjs">
+import fs from 'node:fs';
+import path from 'node:path';
+
+export function getRepoRoot() {
+	return process.cwd();
+}
+
+export function loadJson(relativePath) {
+	const absolutePath = path.join(getRepoRoot(), relativePath);
+	return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
+}
+
+export function ensureDir(relativePath) {
+	const absolutePath = path.join(getRepoRoot(), relativePath);
+	fs.mkdirSync(absolutePath, { recursive: true });
+}
+
+export function writeText(relativePath, content) {
+	const absolutePath = path.join(getRepoRoot(), relativePath);
+	ensureDir(path.dirname(relativePath));
+	fs.writeFileSync(absolutePath, content, 'utf8');
+}
+
+export function readText(relativePath) {
+	return fs.readFileSync(path.join(getRepoRoot(), relativePath), 'utf8');
+}
+
+export function stripCommentHeader(markdown) {
+	return markdown.replace(/^<!--[\s\S]*?-->\s*/m, '').trim();
+}
+
+export function parseFrontmatter(markdown) {
+	if (!markdown.startsWith('---\n')) {
+		return { data: {}, body: markdown.trim() };
+	}
+
+	const closingIndex = markdown.indexOf('\n---\n', 4);
+
+	if (closingIndex === -1) {
+		throw new Error('Invalid frontmatter block.');
+	}
+
+	const rawFrontmatter = markdown.slice(4, closingIndex).trim();
+	const body = markdown.slice(closingIndex + 5).trim();
+	const data = {};
+	let currentArrayKey = null;
+
+	for (const rawLine of rawFrontmatter.split('\n')) {
+		const line = rawLine.replace(/\r/g, '');
+
+		if (!line.trim()) {
+			continue;
+		}
+
+		const keyMatch = /^([a-z_]+):\s*(.*)$/.exec(line);
+
+		if (keyMatch) {
+			const [, key, value] = keyMatch;
+
+			if (!value) {
+				data[key] = [];
+				currentArrayKey = key;
+				continue;
+			}
+
+			currentArrayKey = null;
+			data[key] = /^\d+$/.test(value) ? Number(value) : value;
+			continue;
+		}
+
+		const arrayMatch = /^\s*-\s*(.+)$/.exec(line);
+
+		if (arrayMatch && currentArrayKey) {
+			data[currentArrayKey].push(arrayMatch[1]);
+			continue;
+		}
+
+		throw new Error(`Unsupported frontmatter line: ${line}`);
+	}
+
+	return { data, body };
+}
+
+export function loadElements() {
+	const settings = loadJson('architecture/context-settings.json');
+	const elementsDir = path.join(getRepoRoot(), settings.elementsDir);
+
+	const elements = fs
+		.readdirSync(elementsDir)
+		.filter((entry) => entry.endsWith('.md'))
+		.map((entry) => {
+			const relativePath = path.join(settings.elementsDir, entry).replace(/\\/g, '/');
+			const markdown = readText(relativePath);
+			const { data, body } = parseFrontmatter(markdown);
+
+			if (!data.id || !data.title) {
+				throw new Error(`Element file ${relativePath} is missing required metadata.`);
+			}
+
+			return {
+				...data,
+				path: relativePath,
+				body: body.trim()
+			};
+		})
+		.sort(compareElements);
+
+	return { settings, elements };
+}
+
+export function inferFocusElement(branchName, elements, defaultElementId) {
+	const normalizedBranchName = String(branchName || '').toLowerCase();
+	const defaultElement = elements.find((element) => element.id === defaultElementId) ?? null;
+
+	if (!defaultElement) {
+		throw new Error(`Default focus architectural element "${defaultElementId}" was not found.`);
+	}
+
+	if (!normalizedBranchName || normalizedBranchName === 'main') {
+		return {
+			element: defaultElement,
+			matchedAlias: null,
+			usedDefault: true
+		};
+	}
+
+	const matches = [];
+
+	for (const element of elements) {
+		for (const alias of element.branch_aliases ?? []) {
+			const normalizedAlias = String(alias).toLowerCase();
+
+			if (normalizedAlias && normalizedBranchName.includes(normalizedAlias)) {
+				matches.push({
+					element,
+					alias,
+					score: normalizedAlias.length
+				});
+			}
+		}
+	}
+
+	if (!matches.length) {
+		return {
+			element: defaultElement,
+			matchedAlias: null,
+			usedDefault: true
+		};
+	}
+
+	matches.sort((left, right) => {
+		return right.score - left.score || compareElements(left.element, right.element);
+	});
+
+	return {
+		element: matches[0].element,
+		matchedAlias: matches[0].alias,
+		usedDefault: false
+	};
+}
+
+export function collectElementContext(elementId, elements) {
+	const byId = new Map(elements.map((element) => [element.id, element]));
+	const focusElement = byId.get(elementId);
+
+	if (!focusElement) {
+		throw new Error(`Unknown element id: ${elementId}`);
+	}
+
+	const contextElements = [focusElement];
+
+	for (const collaboratorId of focusElement.collaborators ?? []) {
+		const collaborator = byId.get(collaboratorId);
+
+		if (!collaborator) {
+			throw new Error(`Unknown collaborator "${collaboratorId}" referenced by "${elementId}".`);
+		}
+
+		contextElements.push(collaborator);
+	}
+
+	const uniqueElements = [];
+	const seen = new Set();
+
+	for (const element of contextElements) {
+		if (seen.has(element.id)) {
+			continue;
+		}
+
+		seen.add(element.id);
+		uniqueElements.push(element);
+	}
+
+	return uniqueElements;
+}
+
+export function collectUniqueCodePaths(elements) {
+	const paths = new Set();
+
+	for (const element of elements) {
+		for (const codePath of element.code_paths ?? []) {
+			paths.add(codePath);
+		}
+	}
+
+	return [...paths];
+}
+
+export function getElementManifestPath(elementId, settings) {
+	const suffix = settings.elementContextManifestSuffix ?? '.context-code-path-coverage.md';
+	return normalizeRepoPath(path.join(settings.contextManifestDir, `${elementId}${suffix}`));
+}
+
+export function getRepoManifestPath(settings) {
+	return normalizeRepoPath(
+		path.join(settings.contextManifestDir, settings.repoContextManifestName ?? 'repo-code-path-coverage.md')
+	);
+}
+
+export function buildContextCoverageManifest({ focusElement, contextElements }) {
+	const relevantElements = [...contextElements].sort(compareElements);
+	const rows = buildCoverageRows(relevantElements, focusElement.id);
+	const roots = collectRelevantTreeRoots(relevantElements);
+	const lines = [
+		`# ${focusElement.title} Context Coverage Manifest`,
+		'',
+		'This generated manifest helps distinguish between code that is present in the repository and code paths that are declared architecturally but are still empty or missing.',
+		'',
+		'Use this manifest before assuming that a missing file in the packed context means the repository has no implementation for that area.',
+		'',
+		'## How to use this manifest',
+		'',
+		'- Start with the focus element rows, then inspect collaborator rows that the requested change depends on.',
+		'- Treat `path missing` and `directory exists but empty` as signals that the architecture may be ahead of implementation or that the next step is first-time implementation.',
+		'- Treat `no matches for glob` as a sign to clarify whether the declared ownership path is stale, overly broad, or simply not populated yet.',
+		'- If the needed collaborator area is sparse or missing, clarify architectural intent before spreading implementation into adjacent undeclared areas.',
+		'',
+		'## Status meanings',
+		'',
+		'| Status | Meaning |',
+		'| --- | --- |',
+		'| `present` | One or more files matched the declared path. |',
+		'| `directory exists but empty` | The owned directory exists, but it does not contain files yet. |',
+		'| `path missing` | The declared file or directory root does not exist in the repository yet. |',
+		'| `no matches for glob` | The root exists, but nothing currently matches the declared glob. |',
+		'',
+		'## Elements in this context',
+		''
+	];
+
+	for (const element of relevantElements) {
+		const role = element.id === focusElement.id ? 'focus' : 'collaborator';
+		lines.push(`- \`${element.id}\` (${role})`);
+	}
+
+	lines.push(
+		'',
+		'## Code path coverage',
+		'',
+		'| Context role | Architectural element | Declared code path | Status | Matched files |',
+		'| --- | --- | --- | --- | --- |'
+	);
+
+	for (const row of rows) {
+		lines.push(
+			`| ${escapeTableCell(row.role)} | ${escapeTableCell(row.elementId)} | ${escapeTableCell(`\`${row.codePath}\``)} | ${escapeTableCell(row.status)} | ${row.matchedFiles} |`
+		);
+	}
+
+	lines.push('', '## Relevant filesystem tree', '');
+	lines.push(...buildFilesystemTreeSection(roots));
+
+	return lines.join('\n').trimEnd() + '\n';
+}
+
+export function buildRepositoryCoverageManifest(elements) {
+	const sortedElements = [...elements].sort(compareElements);
+	const rows = buildCoverageRows(sortedElements, null);
+	const roots = collectRelevantTreeRoots(sortedElements);
+	const lines = [
+		'# Repository Code Path Coverage Manifest',
+		'',
+		'This generated manifest summarizes how the architecture maps onto the current filesystem so implementation sessions can tell the difference between missing code, empty owned areas, and genuinely populated code paths.',
+		'',
+		'Use this manifest before concluding that an architectural area is absent or before borrowing nearby files that are outside the declared ownership paths.',
+		'',
+		'## How to use this manifest',
+		'',
+		'- When a requested slice depends on paths marked `present`, start from those files.',
+		'- When a requested slice depends on paths marked `path missing`, `directory exists but empty`, or `no matches for glob`, clarify whether the architecture is intentionally ahead of implementation.',
+		'- When several collaborator areas are sparse, prefer expanding or refreshing architectural context before making cross-cutting implementation changes.',
+		'',
+		'## Code path coverage',
+		'',
+		'| Architectural element | Declared code path | Status | Matched files |',
+		'| --- | --- | --- | --- |'
+	];
+
+	for (const row of rows) {
+		lines.push(
+			`| ${escapeTableCell(row.elementId)} | ${escapeTableCell(`\`${row.codePath}\``)} | ${escapeTableCell(row.status)} | ${row.matchedFiles} |`
+		);
+	}
+
+	lines.push('', '## Relevant filesystem tree', '');
+	lines.push(...buildFilesystemTreeSection(roots));
+
+	return lines.join('\n').trimEnd() + '\n';
+}
+
+export function buildRepomixConfig({ outputPath, include, headerText }) {
+	return {
+		$schema: 'https://repomix.com/schemas/latest/schema.json',
+		output: {
+			filePath: outputPath,
+			style: 'xml',
+			instructionFilePath: 'repomix-instruction.md',
+			fileSummary: true,
+			directoryStructure: true,
+			files: true,
+			removeComments: false,
+			removeEmptyLines: false,
+			includeEmptyDirectories: false,
+			headerText,
+			git: {
+				sortByChanges: true,
+				includeDiffs: false,
+				includeLogs: false
+			}
+		},
+		include,
+		ignore: {
+			useGitignore: true,
+			useDefaultPatterns: true,
+			customPatterns: ['build', '.svelte-kit', 'repo-context.xml', 'architecture/contexts', '.tmp']
+		},
+		security: {
+			enableSecurityCheck: true
+		},
+		tokenCount: {
+			encoding: 'o200k_base'
+		}
+	};
+}
+
+function buildCoverageRows(elements, focusElementId) {
+	const rows = [];
+
+	for (const element of elements) {
+		for (const codePath of element.code_paths ?? []) {
+			const coverage = evaluateCodePathCoverage(codePath);
+			rows.push({
+				role: focusElementId && element.id === focusElementId ? 'focus' : 'collaborator',
+				elementId: element.id,
+				codePath,
+				status: coverage.status,
+				matchedFiles: coverage.matchedFiles,
+				sortOrder: Number(element.order ?? 0)
+			});
+		}
+	}
+
+	rows.sort((left, right) => {
+		return (
+			left.sortOrder - right.sortOrder ||
+			left.elementId.localeCompare(right.elementId) ||
+			left.codePath.localeCompare(right.codePath)
+		);
+	});
+
+	return rows;
+}
+
+function evaluateCodePathCoverage(codePath) {
+	const normalizedPath = normalizeRepoPath(codePath);
+	const rootPath = getPatternRoot(normalizedPath);
+	const absoluteRootPath = path.join(getRepoRoot(), rootPath);
+	const hasWildcards = /[*?[\]]/.test(normalizedPath);
+
+	if (!hasWildcards) {
+		if (!fs.existsSync(absoluteRootPath)) {
+			return { status: 'path missing', matchedFiles: 0 };
+		}
+
+		const stat = fs.statSync(absoluteRootPath);
+
+		if (stat.isFile()) {
+			return { status: 'present', matchedFiles: 1 };
+		}
+
+		const files = listFilesRecursive(absoluteRootPath);
+		return files.length > 0
+			? { status: 'present', matchedFiles: files.length }
+			: { status: 'directory exists but empty', matchedFiles: 0 };
+	}
+
+	if (!fs.existsSync(absoluteRootPath)) {
+		return { status: 'path missing', matchedFiles: 0 };
+	}
+
+	const stat = fs.statSync(absoluteRootPath);
+	const matcher = globToRegExp(normalizedPath);
+
+	if (stat.isFile()) {
+		const repoPath = normalizeRepoPath(path.relative(getRepoRoot(), absoluteRootPath));
+		return matcher.test(repoPath)
+			? { status: 'present', matchedFiles: 1 }
+			: { status: 'no matches for glob', matchedFiles: 0 };
+	}
+
+	const files = listFilesRecursive(absoluteRootPath)
+		.map((absolutePath) => normalizeRepoPath(path.relative(getRepoRoot(), absolutePath)))
+		.filter((filePath) => matcher.test(filePath));
+
+	if (files.length > 0) {
+		return { status: 'present', matchedFiles: files.length };
+	}
+
+	return hasAnyEntries(absoluteRootPath)
+		? { status: 'no matches for glob', matchedFiles: 0 }
+		: { status: 'directory exists but empty', matchedFiles: 0 };
+}
+
+function collectRelevantTreeRoots(elements) {
+	const roots = [];
+	const seen = new Set();
+
+	for (const element of elements) {
+		for (const codePath of element.code_paths ?? []) {
+			const rootPath = getPatternRoot(codePath);
+
+			if (!seen.has(rootPath)) {
+				seen.add(rootPath);
+				roots.push(rootPath);
+			}
+		}
+	}
+
+	return roots.sort((left, right) => left.localeCompare(right));
+}
+
+function buildFilesystemTreeSection(roots) {
+	const lines = [];
+
+	if (roots.length === 0) {
+		return ['No declared code paths.'];
+	}
+
+	for (const rootPath of roots) {
+		const absoluteRootPath = path.join(getRepoRoot(), rootPath);
+		lines.push(`### \`${rootPath}\``);
+		lines.push('');
+
+		if (!fs.existsSync(absoluteRootPath)) {
+			lines.push('```text');
+			lines.push(`${rootPath} (missing)`);
+			lines.push('```');
+			lines.push('');
+			continue;
+		}
+
+		const stat = fs.statSync(absoluteRootPath);
+		lines.push('```text');
+		lines.push(rootPath);
+
+		if (stat.isFile()) {
+			lines.push('```');
+			lines.push('');
+			continue;
+		}
+
+		const treeLines = buildTreeLines(absoluteRootPath);
+
+		if (treeLines.length === 0) {
+			lines.push('└── (empty)');
+		} else {
+			lines.push(...treeLines);
+		}
+
+		lines.push('```');
+		lines.push('');
+	}
+
+	return lines;
+}
+
+function buildTreeLines(directoryPath, prefix = '') {
+	const entries = fs
+		.readdirSync(directoryPath, { withFileTypes: true })
+		.sort((left, right) => {
+			if (left.isDirectory() !== right.isDirectory()) {
+				return left.isDirectory() ? -1 : 1;
+			}
+
+			return left.name.localeCompare(right.name);
+		});
+
+	const lines = [];
+
+	for (let index = 0; index < entries.length; index += 1) {
+		const entry = entries[index];
+		const isLast = index === entries.length - 1;
+		const connector = isLast ? '└── ' : '├── ';
+		const childPrefix = prefix + (isLast ? '    ' : '│   ');
+		const suffix = entry.isDirectory() ? '/' : '';
+		lines.push(`${prefix}${connector}${entry.name}${suffix}`);
+
+		if (entry.isDirectory()) {
+			lines.push(...buildTreeLines(path.join(directoryPath, entry.name), childPrefix));
+		}
+	}
+
+	return lines;
+}
+
+function listFilesRecursive(directoryPath) {
+	const entries = fs.readdirSync(directoryPath, { withFileTypes: true });
+	const files = [];
+
+	for (const entry of entries) {
+		const absolutePath = path.join(directoryPath, entry.name);
+
+		if (entry.isDirectory()) {
+			files.push(...listFilesRecursive(absolutePath));
+			continue;
+		}
+
+		if (entry.isFile()) {
+			files.push(absolutePath);
+		}
+	}
+
+	return files;
+}
+
+function hasAnyEntries(directoryPath) {
+	return fs.readdirSync(directoryPath).length > 0;
+}
+
+function getPatternRoot(codePath) {
+	const normalizedPath = normalizeRepoPath(codePath);
+	const wildcardIndex = normalizedPath.search(/[*?[\]]/);
+
+	if (wildcardIndex === -1) {
+		return normalizedPath;
+	}
+
+	const prefix = normalizedPath.slice(0, wildcardIndex).replace(/\/+$/, '');
+	return prefix || '.';
+}
+
+function normalizeRepoPath(value) {
+	return String(value).replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+/g, '/');
+}
+
+function escapeTableCell(value) {
+	return String(value).replace(/\|/g, '\\|');
+}
+
+function compareElements(left, right) {
+	return Number(left.order ?? 0) - Number(right.order ?? 0) || left.id.localeCompare(right.id);
+}
+
+function globToRegExp(pattern) {
+	let regex = '^';
+	let index = 0;
+
+	while (index < pattern.length) {
+		const char = pattern[index];
+		const nextChar = pattern[index + 1];
+
+		if (char === '*' && nextChar === '*') {
+			regex += '.*';
+			index += 2;
+			continue;
+		}
+
+		if (char === '*') {
+			regex += '[^/]*';
+			index += 1;
+			continue;
+		}
+
+		if ('\\.[]{}()+-?^$|'.includes(char)) {
+			regex += `\\${char}`;
+			index += 1;
+			continue;
+		}
+
+		regex += char;
+		index += 1;
+	}
+
+	regex += '$';
+	return new RegExp(regex);
+}
+</file>
+
 <file path="ci-context.repomix.config.json">
 {
   "$schema": "https://repomix.com/schemas/latest/schema.json",
@@ -2889,48 +3617,6 @@ The current planning focus is to keep implementation aligned with the planner-fi
 Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
 </file>
 
-<file path="repomix.config.json">
-{
-  "$schema": "https://repomix.com/schemas/latest/schema.json",
-  "output": {
-    "filePath": "repo-context.xml",
-    "style": "xml",
-    "instructionFilePath": "repomix-instruction.md",
-    "fileSummary": true,
-    "directoryStructure": true,
-    "files": true,
-    "removeComments": false,
-    "removeEmptyLines": false,
-    "includeEmptyDirectories": false,
-    "git": {
-      "sortByChanges": true,
-      "includeDiffs": false,
-      "includeLogs": false
-    }
-  },
-  "include": ["**/*"],
-  "ignore": {
-    "useGitignore": true,
-    "useDefaultPatterns": true,
-    "customPatterns": [
-      "build",
-      ".svelte-kit",
-      "repo-context.xml",
-      "ci-context.xml",
-      "architecture/target-architecture.md",
-      "architecture/contexts",
-      ".tmp"
-    ]
-  },
-  "security": {
-    "enableSecurityCheck": true
-  },
-  "tokenCount": {
-    "encoding": "o200k_base"
-  }
-}
-</file>
-
 <file path="architecture/lifecycle-map.md">
 <!--
   @role architecture-artifact
@@ -2995,6 +3681,49 @@ Add only current, unresolved product questions here. Remove resolved questions p
 | storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
 | offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
 | update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
+</file>
+
+<file path="repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "repo-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": ["**/*"],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "ci-context.xml",
+      "architecture/target-architecture.md",
+      "architecture/contexts",
+      "architecture/context-manifests/*.context-code-path-coverage.md",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
 </file>
 
 <file path="architecture/elements/activity-composer-service.md">
@@ -3118,8 +3847,10 @@ function main() {
 		const changedFiles = getChangedFiles();
 		const ignoredPrefixes = [
 			'repo-context.xml',
+			'ci-context.xml',
 			'architecture/target-architecture.md',
 			'architecture/contexts/',
+			'architecture/context-manifests/',
 			'.tmp/'
 		];
 
@@ -3346,11 +4077,13 @@ The architecture set is split as follows:
 - `architecture/target-architecture.template.md` is the template for the generated architecture document
 - `architecture/target-architecture.md` is a generated artifact
 - `architecture/contexts/*.xml` are generated artifacts
+- `architecture/context-manifests/*.md` are generated code-path coverage manifests used to clarify whether declared architectural areas are present, empty, or missing in the repository
 
 Do not hand-edit:
 
 - `architecture/target-architecture.md`
 - `architecture/contexts/*.xml`
+- `architecture/context-manifests/*.md`
 
 Those are generated and maintained automatically by GitHub Actions.
 
@@ -3360,15 +4093,18 @@ Those are generated and maintained automatically by GitHub Actions.
 
 Every meaningful coding session should have a **focus architectural element**.
 
-The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+The preferred way to select the focus element is by interpreting user request. Guide the user to make a branch name matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
 
-If a branch name does not match any declared alias, the repository falls back to the default focus element:
+If the user does not declare a focus fall back to the default focus element:
 
 - `architecture-governance`
 
 That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
 
-The first step in any coding session is to update the focus element’s architecture file, including:
+The first steps in any coding session are
+1. Determine what behavior changes need to be implemented, and choose the focus element to work on (user may require advise on this - ensure that they provide you the target-architecture.md for this). Choose the focus element with the least missing dependencies required to implement the behavior changes first. 
+2. Create a branch matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+3. Update the focus element’s architecture file, including:
 
 - collaborators
 - ownership boundaries
@@ -3376,9 +4112,29 @@ The first step in any coding session is to update the focus element’s architec
 - lifecycle notes
 - any architecture details that are changing in the session
 
-Do not start implementation by changing code first and updating architecture later.
+4. Finally, start making code changes. 
 
-Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+**Do not start implementation by changing code first and updating architecture later.**
+
+Alias-based branch naming is preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Context Sufficiency and Architecture Clarification
+
+Generated repository and focused architectural contexts may include a code-path coverage manifest and a relevant filesystem tree.
+
+When working from one of those contexts:
+
+- inspect the manifest before assuming a declared architectural area has implementation
+- do not assume omitted files are absent from the repository
+- use the manifest statuses to distinguish between `present`, `directory exists but empty`, `path missing`, and `no matches for glob`
+- if the focus element or a key collaborator area needed for the task is sparse or missing, call that out explicitly before proposing substantive implementation
+- treat sparse or missing declared paths as a clarification point: determine whether the architecture is intentionally ahead of implementation, whether additional collaborator context is needed, or whether the work is first-time implementation
+- do not spread implementation into nearby undeclared areas just because the declared area is sparse
+- if manifest coverage conflicts with the architecture description, treat that as an architecture clarification issue to surface directly rather than silently reinterpreting boundaries
+
+When the manifest shows that a needed path is missing or empty, prefer tightening the plan and clarifying intent before writing cross-cutting code.
 
 ---
 
@@ -3528,9 +4284,9 @@ Prefer precise scopes such as:
 
 <file path=".github/workflows/ci.yml">
 # @role workflow
-# @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
+# @owns pull-request and branch validation for Cloudflare Pages build health, generated architecture artifacts, code-path coverage manifests, and repo-context generation
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
+# @notes Validates generated architecture artifacts, coverage manifests, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
 
 name: Branch Validation
 
@@ -3544,6 +4300,7 @@ on:
       - ci-context.xml
       - architecture/target-architecture.md
       - architecture/contexts/**
+      - architecture/context-manifests/**
   workflow_dispatch:
 
 permissions:
@@ -3606,7 +4363,7 @@ jobs:
       - name: Generate target architecture
         run: node scripts/architecture/generate-target-architecture.mjs
 
-      - name: Generate architecture context configs
+      - name: Generate architecture context configs and coverage manifests
         run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -3631,7 +4388,8 @@ jobs:
             repo-context.xml \
             ci-context.xml \
             architecture/target-architecture.md \
-            architecture/contexts; then
+            architecture/contexts \
+            architecture/context-manifests; then
             echo "Generated artifacts are current."
             exit 0
           fi
@@ -3643,7 +4401,8 @@ jobs:
             repo-context.xml \
             ci-context.xml \
             architecture/target-architecture.md \
-            architecture/contexts
+            architecture/contexts \
+            architecture/context-manifests
           echo ""
 
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -3661,7 +4420,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "Branch pushes use a self-healing artifact flow."
-          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits them back to the branch."
+          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits contexts and coverage manifests back to the branch."
 
       - name: Build static app for Cloudflare Pages
         run: npm run build
@@ -3809,11 +4568,13 @@ The architecture set is split as follows:
 - `architecture/target-architecture.template.md` is the template for the generated architecture document
 - `architecture/target-architecture.md` is a generated artifact
 - `architecture/contexts/*.xml` are generated artifacts
+- `architecture/context-manifests/*.md` are generated code-path coverage manifests used to clarify whether declared architectural areas are present, empty, or missing in the repository
 
 Do not hand-edit:
 
 - `architecture/target-architecture.md`
 - `architecture/contexts/*.xml`
+- `architecture/context-manifests/*.md`
 
 Those are generated and maintained automatically by GitHub Actions.
 
@@ -3823,15 +4584,18 @@ Those are generated and maintained automatically by GitHub Actions.
 
 Every meaningful coding session should have a **focus architectural element**.
 
-The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+The preferred way to select the focus element is by interpreting user request. Guide the user to make a branch name matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
 
-If a branch name does not match any declared alias, the repository falls back to the default focus element:
+If the user does not declare a focus fall back to the default focus element:
 
 - `architecture-governance`
 
 That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
 
-The first step in any coding session is to update the focus element’s architecture file, including:
+The first steps in any coding session are
+1. Determine what behavior changes need to be implemented, and choose the focus element to work on (user may require advise on this - ensure that they provide you the target-architecture.md for this). Choose the focus element with the least missing dependencies required to implement the behavior changes first. 
+2. Create a branch matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+3. Update the focus element’s architecture file, including:
 
 - collaborators
 - ownership boundaries
@@ -3839,9 +4603,29 @@ The first step in any coding session is to update the focus element’s architec
 - lifecycle notes
 - any architecture details that are changing in the session
 
-Do not start implementation by changing code first and updating architecture later.
+4. Finally, start making code changes. 
 
-Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+**Do not start implementation by changing code first and updating architecture later.**
+
+Alias-based branch naming is preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Context Sufficiency and Architecture Clarification
+
+Generated repository and focused architectural contexts may include a code-path coverage manifest and a relevant filesystem tree.
+
+When working from one of those contexts:
+
+- inspect the manifest before assuming a declared architectural area has implementation
+- do not assume omitted files are absent from the repository
+- use the manifest statuses to distinguish between `present`, `directory exists but empty`, `path missing`, and `no matches for glob`
+- if the focus element or a key collaborator area needed for the task is sparse or missing, call that out explicitly before proposing substantive implementation
+- treat sparse or missing declared paths as a clarification point: determine whether the architecture is intentionally ahead of implementation, whether additional collaborator context is needed, or whether the work is first-time implementation
+- do not spread implementation into nearby undeclared areas just because the declared area is sparse
+- if manifest coverage conflicts with the architecture description, treat that as an architecture clarification issue to surface directly rather than silently reinterpreting boundaries
+
+When the manifest shows that a needed path is missing or empty, prefer tightening the plan and clarifying intent before writing cross-cutting code.
 
 ---
 
