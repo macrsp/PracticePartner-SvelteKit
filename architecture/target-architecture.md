@@ -13,8 +13,6 @@
 
 ## Ownership Matrix
 
-# Ownership Matrix
-
 | State area | Authoritative owner | Writes through | Primary observers |
 | --- | --- | --- | --- |
 | active profile | Session context store | Profile service | App shell, planner screen, player session service |
@@ -41,8 +39,6 @@
 
 ## Recovery Map
 
-# Recovery Map
-
 | Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
 | --- | --- | --- | --- | --- |
 | no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
@@ -59,8 +55,6 @@
 ## Architectural Elements
 
 ## Architecture Governance
-
-# Architecture Governance
 
 ## Responsibility
 Define and maintain the runtime contract for architecture governance.
@@ -93,8 +87,6 @@ Define and maintain the runtime contract for architecture governance.
 
 ## App Shell
 
-# App Shell
-
 ## Responsibility
 Define and maintain the runtime contract for app shell.
 
@@ -124,8 +116,6 @@ Define and maintain the runtime contract for app shell.
 - src/lib/ui/shell/**
 
 ## Planner Screen
-
-# Planner Screen
 
 ## Responsibility
 Define and maintain the runtime contract for planner screen.
@@ -157,8 +147,6 @@ Define and maintain the runtime contract for planner screen.
 
 ## Profile Service
 
-# Profile Service
-
 ## Responsibility
 Define and maintain the runtime contract for profile service.
 
@@ -185,8 +173,6 @@ Define and maintain the runtime contract for profile service.
 - src/lib/app/profile/**
 
 ## Navigation Service
-
-# Navigation Service
 
 ## Responsibility
 Define and maintain the runtime contract for navigation service.
@@ -216,8 +202,6 @@ Define and maintain the runtime contract for navigation service.
 - src/routes/+page.ts
 
 ## Library Service
-
-# Library Service
 
 ## Responsibility
 Define and maintain the runtime contract for library service.
@@ -249,8 +233,6 @@ Define and maintain the runtime contract for library service.
 
 ## Section Service
 
-# Section Service
-
 ## Responsibility
 Define and maintain the runtime contract for section service.
 
@@ -280,8 +262,6 @@ Define and maintain the runtime contract for section service.
 
 ## Activity Service
 
-# Activity Service
-
 ## Responsibility
 Define and maintain the runtime contract for activity service.
 
@@ -310,8 +290,6 @@ Define and maintain the runtime contract for activity service.
 - src/lib/app/activities/**
 
 ## Activity Composer Service
-
-# Activity Composer Service
 
 ## Responsibility
 Define and maintain the runtime contract for activity composer service.
@@ -343,8 +321,6 @@ Define and maintain the runtime contract for activity composer service.
 
 ## Plan Service
 
-# Plan Service
-
 ## Responsibility
 Define and maintain the runtime contract for plan service.
 
@@ -371,8 +347,6 @@ Define and maintain the runtime contract for plan service.
 - src/lib/app/plans/**
 
 ## Player Session Service
-
-# Player Session Service
 
 ## Responsibility
 Define and maintain the runtime contract for player session service.
@@ -406,8 +380,6 @@ Define and maintain the runtime contract for player session service.
 
 ## Audio Engine
 
-# Audio Engine
-
 ## Responsibility
 Define and maintain the runtime contract for audio engine.
 
@@ -438,8 +410,6 @@ Define and maintain the runtime contract for audio engine.
 
 ## Waveform Engine
 
-# Waveform Engine
-
 ## Responsibility
 Define and maintain the runtime contract for waveform engine.
 
@@ -468,8 +438,6 @@ Define and maintain the runtime contract for waveform engine.
 - src/lib/ui/player/**
 
 ## Selection Engine
-
-# Selection Engine
 
 ## Responsibility
 Define and maintain the runtime contract for selection engine.
@@ -500,8 +468,6 @@ Define and maintain the runtime contract for selection engine.
 
 ## Continuity Service
 
-# Continuity Service
-
 ## Responsibility
 Define and maintain the runtime contract for continuity service.
 
@@ -531,8 +497,6 @@ Define and maintain the runtime contract for continuity service.
 - src/lib/platform/browser/fs/**
 
 ## Error Recovery Coordinator
-
-# Error Recovery Coordinator
 
 ## Responsibility
 Define and maintain the runtime contract for error recovery coordinator.
