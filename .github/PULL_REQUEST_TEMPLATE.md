@@ -10,7 +10,7 @@ _Auto-generated architecture context will be inserted here._
 
 ## Validation
 
-- [ ] `CI / validate` is green
+- [ ] Required CI checks are green
 - [ ] Generated artifacts are committed
 - [ ] Any changed architectural element files reflect the current session scope
 
