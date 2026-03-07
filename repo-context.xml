@@ -325,28 +325,6 @@ jobs:
           git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
-<file path=".github/PULL_REQUEST_TEMPLATE.md">
-## Summary
-
-Describe the user-visible or repo-visible change.
-
-## Architecture Context
-
-<!-- architecture:auto:start -->
-_Auto-generated architecture context will be inserted here._
-<!-- architecture:auto:end -->
-
-## Validation
-
-- [ ] `CI / validate` is green
-- [ ] Generated artifacts are committed
-- [ ] Any changed architectural element files reflect the current session scope
-
-## Notes for reviewers
-
-List edge cases, tradeoffs, or follow-up concerns.
-</file>
-
 <file path="architecture/elements/activity-service.md">
 ---
 id: activity-service
@@ -1831,6 +1809,28 @@ export default defineConfig({
 });
 </file>
 
+<file path=".github/PULL_REQUEST_TEMPLATE.md">
+## Summary
+
+Describe the user-visible or repo-visible change.
+
+## Architecture Context
+
+<!-- architecture:auto:start -->
+_Auto-generated architecture context will be inserted here._
+<!-- architecture:auto:end -->
+
+## Validation
+
+- [ ] Required CI checks are green
+- [ ] Generated artifacts are committed
+- [ ] Any changed architectural element files reflect the current session scope
+
+## Notes for reviewers
+
+List edge cases, tradeoffs, or follow-up concerns.
+</file>
+
 <file path="architecture/elements/error-recovery-coordinator.md">
 ---
 id: error-recovery-coordinator
@@ -2473,55 +2473,6 @@ vite.config.ts.timestamp-*
 _attic/
 </file>
 
-<file path="ci-context.repomix.config.json">
-{
-  "$schema": "https://repomix.com/schemas/latest/schema.json",
-  "output": {
-    "filePath": "ci-context.xml",
-    "style": "xml",
-    "instructionFilePath": "repomix-instruction.md",
-    "fileSummary": true,
-    "directoryStructure": true,
-    "files": true,
-    "removeComments": false,
-    "removeEmptyLines": false,
-    "includeEmptyDirectories": false,
-    "git": {
-      "sortByChanges": true,
-      "includeDiffs": false,
-      "includeLogs": false
-    }
-  },
-  "include": [
-    ".github/workflows/*.yml",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    "scripts/**/*.mjs",
-    "package.json",
-    "repomix.config.json",
-    "ci-context.repomix.config.json"
-  ],
-  "ignore": {
-    "useGitignore": true,
-    "useDefaultPatterns": true,
-    "customPatterns": [
-      "build",
-      ".svelte-kit",
-      "repo-context.xml",
-      "ci-context.xml",
-      "architecture/target-architecture.md",
-      "architecture/contexts",
-      ".tmp"
-    ]
-  },
-  "security": {
-    "enableSecurityCheck": true
-  },
-  "tokenCount": {
-    "encoding": "o200k_base"
-  }
-}
-</file>
-
 <file path="svelte.config.js">
 import adapter from '@sveltejs/adapter-static';
 
@@ -2695,6 +2646,56 @@ Define and maintain the runtime contract for planner screen.
 ## Code ownership hints
 - src/routes/planner/+page.svelte
 - src/lib/ui/planner/**
+</file>
+
+<file path="ci-context.repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "ci-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": [
+    ".github/workflows/*.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "scripts/**/*.mjs",
+    "architecture/context-settings.json",
+    "package.json",
+    "repomix.config.json",
+    "ci-context.repomix.config.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "ci-context.xml",
+      "architecture/target-architecture.md",
+      "architecture/contexts",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
 </file>
 
 <file path="package.json">
