@@ -1308,105 +1308,6 @@ export const prerender = true;
 </html>
 </file>
 
-<file path=".github/workflows/update-repo-context.yml">
-# @role workflow
-# @owns regeneration and commit-back of repo-context.xml, generated architecture docs, and generated element context artifacts on non-main branch updates
-# @not-owns Pages deployment, runtime behavior, or product-level architecture decisions
-# @notes Keeps AI context and generated architecture artifacts current without requiring local environment setup.
-
-name: Update Generated Artifacts
-
-on:
-  push:
-    branches-ignore:
-      - main
-    paths-ignore:
-      - repo-context.xml
-      - architecture/target-architecture.md
-      - architecture/contexts/**
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: update-generated-artifacts-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout current branch
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate architecture metadata
-        run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${GITHUB_REF_NAME}"
-
-      - name: Generate target architecture
-        run: node scripts/architecture/generate-target-architecture.mjs
-
-      - name: Generate architecture context configs
-        run: node scripts/architecture/generate-context-configs.mjs --branch "${GITHUB_REF_NAME}"
-
-      - name: Generate repo context
-        run: npx --yes repomix --config repomix.config.json
-
-      - name: Generate architectural element contexts
-        run: |
-          for config in .tmp/architecture-context-configs/*.config.json; do
-            echo "Generating context from $config"
-            npx --yes repomix --config "$config"
-          done
-
-      - name: Compute safe artifact name
-        shell: bash
-        run: |
-          raw_ref="${GITHUB_REF_NAME}"
-          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
-
-          if [ -z "$safe_ref" ]; then
-            safe_ref="unnamed-ref"
-          fi
-
-          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
-
-      - name: Upload generated context artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-context-${{ env.safe_ref }}
-          path: |
-            repo-context.xml
-            architecture/target-architecture.md
-            architecture/contexts
-
-      - name: Commit updated generated artifacts to branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add repo-context.xml architecture/target-architecture.md architecture/contexts
-
-          if git diff --cached --quiet; then
-            echo "No generated artifact changes."
-            exit 0
-          fi
-
-          git commit -m "chore: refresh generated architecture and context artifacts"
-          git push origin HEAD:${GITHUB_REF_NAME}
-</file>
-
 <file path="architecture/elements/activity-composer-service.md">
 ---
 id: activity-composer-service
@@ -2253,44 +2154,113 @@ export function load() {
 }
 </file>
 
-<file path="repomix.config.json">
-{
-  "$schema": "https://repomix.com/schemas/latest/schema.json",
-  "output": {
-    "filePath": "repo-context.xml",
-    "style": "xml",
-    "instructionFilePath": "repomix-instruction.md",
-    "fileSummary": true,
-    "directoryStructure": true,
-    "files": true,
-    "removeComments": false,
-    "removeEmptyLines": false,
-    "includeEmptyDirectories": false,
-    "git": {
-      "sortByChanges": true,
-      "includeDiffs": false,
-      "includeLogs": false
-    }
-  },
-  "include": ["**/*"],
-  "ignore": {
-    "useGitignore": true,
-    "useDefaultPatterns": true,
-    "customPatterns": [
-      "build",
-      ".svelte-kit",
-      "repo-context.xml",
-      "architecture/contexts",
-      ".tmp"
-    ]
-  },
-  "security": {
-    "enableSecurityCheck": true
-  },
-  "tokenCount": {
-    "encoding": "o200k_base"
-  }
-}
+<file path=".github/workflows/update-repo-context.yml">
+# @role workflow
+# @owns regeneration and commit-back of generated repository contexts and architecture artifacts on non-main branch updates
+# @not-owns production deployment, runtime behavior, or branch protection settings
+# @notes Generates repo-context.xml, ci-context.xml, target architecture, and focused architecture contexts, then commits refreshed artifacts back to the branch when they change.
+
+name: Update Generated Artifacts
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - repo-context.xml
+      - ci-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-generated-artifacts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Generate repo context
+        run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate CI context
+        run: npx --yes repomix --config ci-context.repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
+
+      - name: Compute safe artifact name
+        shell: bash
+        run: |
+          raw_ref="${GITHUB_REF_NAME}"
+          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
+
+          if [ -z "$safe_ref" ]; then
+            safe_ref="unnamed-ref"
+          fi
+
+          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
+
+      - name: Upload generated artifact bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-artifacts-${{ env.safe_ref }}
+          path: |
+            repo-context.xml
+            ci-context.xml
+            architecture/target-architecture.md
+            architecture/contexts
+          if-no-files-found: error
+
+      - name: Commit updated generated artifacts to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            repo-context.xml \
+            ci-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts
+
+          if git diff --cached --quiet; then
+            echo "No generated artifact changes."
+            exit 0
+          fi
+
+          git commit -m "chore: refresh generated artifacts"
+          git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
 <file path="architecture/target-architecture.md">
@@ -3241,6 +3211,48 @@ The current planning focus is to keep implementation aligned with the planner-fi
 Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
 </file>
 
+<file path="repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "repo-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": ["**/*"],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "ci-context.xml",
+      "architecture/target-architecture.md",
+      "architecture/contexts",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
+</file>
+
 <file path="scripts/architecture/validate-architecture-consistency.mjs">
 import { execSync } from 'node:child_process';
 import path from 'node:path';
@@ -3733,6 +3745,7 @@ on:
       - main
     paths-ignore:
       - repo-context.xml
+      - ci-context.xml
       - architecture/target-architecture.md
       - architecture/contexts/**
   workflow_dispatch:
@@ -3804,6 +3817,9 @@ jobs:
       - name: Generate repo context
         run: npx --yes repomix --config repomix.config.json
 
+      - name: Generate CI context
+        run: npx --yes repomix --config ci-context.repomix.config.json
+
       - name: Generate architectural element contexts
         run: |
           for config in .tmp/architecture-context-configs/*.config.json; do
@@ -3816,6 +3832,7 @@ jobs:
         run: |
           if git diff --quiet -- \
             repo-context.xml \
+            ci-context.xml \
             architecture/target-architecture.md \
             architecture/contexts; then
             echo "Generated artifacts are current."
@@ -3827,6 +3844,7 @@ jobs:
           echo "Changed generated files:"
           git diff --name-only -- \
             repo-context.xml \
+            ci-context.xml \
             architecture/target-architecture.md \
             architecture/contexts
           echo ""
