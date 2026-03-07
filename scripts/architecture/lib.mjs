@@ -113,9 +113,18 @@ export function loadElements() {
 
 export function inferFocusElement(branchName, elements, defaultElementId) {
 	const normalizedBranchName = String(branchName || '').toLowerCase();
+	const defaultElement = elements.find((element) => element.id === defaultElementId) ?? null;
+
+	if (!defaultElement) {
+		throw new Error(`Default focus architectural element "${defaultElementId}" was not found.`);
+	}
 
 	if (!normalizedBranchName || normalizedBranchName === 'main') {
-		return elements.find((element) => element.id === defaultElementId) ?? null;
+		return {
+			element: defaultElement,
+			matchedAlias: null,
+			usedDefault: true
+		};
 	}
 
 	const matches = [];
@@ -127,6 +136,7 @@ export function inferFocusElement(branchName, elements, defaultElementId) {
 			if (normalizedAlias && normalizedBranchName.includes(normalizedAlias)) {
 				matches.push({
 					element,
+					alias,
 					score: normalizedAlias.length
 				});
 			}
@@ -134,14 +144,22 @@ export function inferFocusElement(branchName, elements, defaultElementId) {
 	}
 
 	if (!matches.length) {
-		return null;
+		return {
+			element: defaultElement,
+			matchedAlias: null,
+			usedDefault: true
+		};
 	}
 
 	matches.sort((left, right) => {
 		return right.score - left.score || Number(left.element.order ?? 0) - Number(right.element.order ?? 0);
 	});
 
-	return matches[0].element;
+	return {
+		element: matches[0].element,
+		matchedAlias: matches[0].alias,
+		usedDefault: false
+	};
 }
 
 export function collectElementContext(elementId, elements) {
@@ -191,11 +209,7 @@ export function collectUniqueCodePaths(elements) {
 	return [...paths];
 }
 
-export function buildRepomixConfig({
-	outputPath,
-	include,
-	headerText
-}) {
+export function buildRepomixConfig({ outputPath, include, headerText }) {
 	return {
 		$schema: 'https://repomix.com/schemas/latest/schema.json',
 		output: {

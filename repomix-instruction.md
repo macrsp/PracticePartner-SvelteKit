@@ -145,9 +145,15 @@ Those are generated and maintained automatically by GitHub Actions.
 
 ## Focus Element Rules
 
-Every meaningful coding session must have a **focus architectural element**.
+Every meaningful coding session should have a **focus architectural element**.
 
-The focus element is determined from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+
+If a branch name does not match any declared alias, the repository falls back to the default focus element:
+
+- `architecture-governance`
+
+That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
 
 The first step in any coding session is to update the focus element’s architecture file, including:
 
@@ -159,7 +165,7 @@ The first step in any coding session is to update the focus element’s architec
 
 Do not start implementation by changing code first and updating architecture later.
 
-If a branch cannot be mapped to a focus architectural element, treat that as a repository-consistency problem and fix the branch naming or architecture metadata before continuing.
+Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
 
 ---
 

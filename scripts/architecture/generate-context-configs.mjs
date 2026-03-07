@@ -36,14 +36,8 @@ for (const element of elements) {
 	);
 }
 
-const focusElement = inferFocusElement(branchName, elements, settings.defaultFocusElement);
-
-if (!focusElement) {
-	throw new Error(
-		`Could not infer a focus architectural element from branch "${branchName}". ` +
-			`Add a matching branch alias to an element file or rename the branch.`
-	);
-}
+const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
+const focusElement = focusResult.element;
 
 const focusContextElements = collectElementContext(focusElement.id, elements);
 const focusInclude = [
@@ -52,10 +46,14 @@ const focusInclude = [
 	...collectUniqueCodePaths(focusContextElements)
 ];
 
+const headerText = focusResult.usedDefault
+	? `Current branch focus context for ${focusElement.title}. Generated using the default focus fallback because the branch name did not match an architectural element alias.`
+	: `Current branch focus context for ${focusElement.title}.`;
+
 const currentFocusConfig = buildRepomixConfig({
 	outputPath: path.join(settings.generatedContextsDir, settings.currentFocusContextName).replace(/\\/g, '/'),
 	include: focusInclude,
-	headerText: `Current branch focus context for ${focusElement.title}.`
+	headerText
 });
 
 writeText(
@@ -64,4 +62,8 @@ writeText(
 );
 
 console.log(`Generated context configs for ${elements.length} architectural elements.`);
-console.log(`Current focus element: ${focusElement.id}`);
+console.log(
+	focusResult.usedDefault
+		? `Current focus element: ${focusElement.id} (default fallback for branch "${branchName}")`
+		: `Current focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}")`
+);

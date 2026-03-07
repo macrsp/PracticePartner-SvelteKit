@@ -36,18 +36,17 @@ for (const element of elements) {
 	}
 }
 
-const focusElement = inferFocusElement(branchName, elements, settings.defaultFocusElement);
-
-if (!focusElement) {
-	throw new Error(
-		`Could not infer a focus architectural element from branch "${branchName}". ` +
-			`Each non-main branch must include a configured architectural element alias.`
-	);
-}
+const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
+const focusElement = focusResult.element;
 
 if (requireFocusUpdate) {
 	const changedFiles = getChangedFiles();
-	const ignoredPrefixes = ['repo-context.xml', 'architecture/target-architecture.md', 'architecture/contexts/', '.tmp/'];
+	const ignoredPrefixes = [
+		'repo-context.xml',
+		'architecture/target-architecture.md',
+		'architecture/contexts/',
+		'.tmp/'
+	];
 
 	const meaningfulChangedFiles = changedFiles.filter(
 		(filePath) => !ignoredPrefixes.some((prefix) => filePath === prefix || filePath.startsWith(prefix))
@@ -60,7 +59,18 @@ if (requireFocusUpdate) {
 	}
 }
 
-console.log(`Architecture metadata is consistent. Focus element: ${focusElement.id}`);
+if (focusResult.usedDefault) {
+	console.warn(
+		`[architecture validation] Branch "${branchName}" did not match any architectural element alias. ` +
+			`Falling back to default focus element "${focusElement.id}".`
+	);
+}
+
+console.log(
+	focusResult.usedDefault
+		? `Architecture metadata is consistent. Focus element: ${focusElement.id} (default fallback).`
+		: `Architecture metadata is consistent. Focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}").`
+);
 
 function getChangedFiles() {
 	const baseRef = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : 'origin/main';
