@@ -1,7 +1,7 @@
 # @role workflow
 # @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build.
+# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. On branch pushes, stale generated artifacts are reported but not failed because the dedicated update workflow commits them back. On pull requests, stale generated artifacts fail validation.
 
 name: CI
 
@@ -66,23 +66,43 @@ jobs:
             npx --yes repomix --config "$config"
           done
 
-        - name: Verify generated artifacts are committed
+      - name: Check generated artifact freshness
+        shell: bash
         run: |
-          if ! git diff --quiet -- \
+          if git diff --quiet -- \
             repo-context.xml \
             architecture/target-architecture.md \
             architecture/contexts; then
-            echo "Generated artifacts are stale."
-            echo "Wait for the 'Update Generated Artifacts' workflow to commit refreshed outputs to the branch, then rerun CI."
-            echo ""
-            echo "Changed generated files:"
-            git diff --name-only -- \
-              repo-context.xml \
-              architecture/target-architecture.md \
-              architecture/contexts
-            exit 1
+            echo "Generated artifacts are current."
+            exit 0
           fi
-          
+
+          echo "Generated artifacts are stale."
+          echo ""
+          echo "Changed generated files:"
+          git diff --name-only -- \
+            repo-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts
+          echo ""
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "This is a branch push."
+            echo "The 'Update Generated Artifacts' workflow should commit refreshed outputs automatically."
+            echo "Continuing without failing this job."
+            exit 0
+          fi
+
+          echo "This is a pull request."
+          echo "Generated artifacts must already be committed before merge."
+          exit 1
+
+      - name: Explain generated artifact behavior on branch pushes
+        if: github.event_name == 'push'
+        run: |
+          echo "Branch pushes use a self-healing artifact flow."
+          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits them back to the branch."
+
       - name: Build static app for Cloudflare Pages
         run: npm run build
         env:
