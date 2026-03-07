@@ -38,7 +38,6 @@ The content is organized as follows:
 - Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, architecture/contexts, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
-- Files are sorted by Git change count (files with more changes are at the bottom)
 </notes>
 
 </file_summary>
@@ -187,126 +186,6 @@ src/routes/planner/+page.svelte
 ```
 </file>
 
-<file path="architecture/elements/continuity-service.md">
----
-id: continuity-service
-title: Continuity Service
-order: 140
-kind: application-service
-branch_aliases:
-  - continuity-service
-  - continuity
-collaborators:
-  - profile-service
-  - library-service
-  - section-service
-  - player-session-service
-  - error-recovery-coordinator
-code_paths:
-  - src/lib/app/continuity/**
-  - src/lib/platform/browser/db/**
-  - src/lib/platform/browser/fs/**
----
-# Continuity Service
-
-## Responsibility
-Define and maintain the runtime contract for continuity service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- profile-service
-- library-service
-- section-service
-- player-session-service
-- error-recovery-coordinator
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/continuity/**
-- src/lib/platform/browser/db/**
-- src/lib/platform/browser/fs/**
-</file>
-
-<file path="architecture/elements/profile-service.md">
----
-id: profile-service
-title: Profile Service
-order: 30
-kind: application-service
-branch_aliases:
-  - profile-service
-  - profiles
-collaborators:
-  - continuity-service
-  - planner-screen
-  - app-shell
-code_paths:
-  - src/lib/domains/profiles/**
-  - src/lib/app/profile/**
----
-# Profile Service
-
-## Responsibility
-Define and maintain the runtime contract for profile service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- continuity-service
-- planner-screen
-- app-shell
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/domains/profiles/**
-- src/lib/app/profile/**
-</file>
-
-<file path="src/routes/planner/+page.svelte">
-<h1>Planner</h1>
-<p>Hello from the SvelteKit target repo.</p>
-</file>
-
-<file path="src/routes/+layout.ts">
-export const prerender = true;
-</file>
-
-<file path="src/app.html">
-<!doctype html>
-<html lang="en">
-	<head>
-		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
-</html>
-</file>
-
 <file path="architecture/elements/app-shell.md">
 ---
 id: app-shell
@@ -356,6 +235,57 @@ Define and maintain the runtime contract for app shell.
 - src/routes/+layout.svelte
 - src/app.html
 - src/lib/ui/shell/**
+</file>
+
+<file path="architecture/elements/continuity-service.md">
+---
+id: continuity-service
+title: Continuity Service
+order: 140
+kind: application-service
+branch_aliases:
+  - continuity-service
+  - continuity
+collaborators:
+  - profile-service
+  - library-service
+  - section-service
+  - player-session-service
+  - error-recovery-coordinator
+code_paths:
+  - src/lib/app/continuity/**
+  - src/lib/platform/browser/db/**
+  - src/lib/platform/browser/fs/**
+---
+# Continuity Service
+
+## Responsibility
+Define and maintain the runtime contract for continuity service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- profile-service
+- library-service
+- section-service
+- player-session-service
+- error-recovery-coordinator
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/continuity/**
+- src/lib/platform/browser/db/**
+- src/lib/platform/browser/fs/**
 </file>
 
 <file path="architecture/elements/planner-screen.md">
@@ -408,6 +338,141 @@ Define and maintain the runtime contract for planner screen.
 ## Code ownership hints
 - src/routes/planner/+page.svelte
 - src/lib/ui/planner/**
+</file>
+
+<file path="architecture/elements/profile-service.md">
+---
+id: profile-service
+title: Profile Service
+order: 30
+kind: application-service
+branch_aliases:
+  - profile-service
+  - profiles
+collaborators:
+  - continuity-service
+  - planner-screen
+  - app-shell
+code_paths:
+  - src/lib/domains/profiles/**
+  - src/lib/app/profile/**
+---
+# Profile Service
+
+## Responsibility
+Define and maintain the runtime contract for profile service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- continuity-service
+- planner-screen
+- app-shell
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/domains/profiles/**
+- src/lib/app/profile/**
+</file>
+
+<file path="architecture/lifecycle-map.md">
+<!--
+  @role architecture-artifact
+  @owns the high-level runtime lifecycle map
+  @not-owns detailed service contracts or UI copy
+  @notes Keep transitions concise and implementation-agnostic.
+-->
+
+# Lifecycle Map
+</file>
+
+<file path="architecture/ownership-matrix.md">
+<!--
+  @role architecture-artifact
+  @owns the compact ownership map for major state areas
+  @not-owns detailed service contracts or implementation mechanics
+  @notes Keep this file small enough to include in all coding sessions.
+-->
+
+# Ownership Matrix
+
+| State area | Authoritative owner | Writes through | Primary observers |
+| --- | --- | --- | --- |
+| active profile | Session context store | Profile service | App shell, planner screen, player session service |
+| profiles collection | Durable app store | Profile service | App shell, planner screen |
+| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
+| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
+| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
+| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
+| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
+| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
+| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
+| sections collection | Durable app store | Section service | Music player drawer, activity service |
+| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
+| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
+| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
+| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
+| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
+| overlay stack | Ephemeral UI registry | Navigation service | App shell |
+| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |
+</file>
+
+<file path="architecture/recovery-map.md">
+<!--
+  @role architecture-artifact
+  @owns the compact recovery-state map for major failure classes
+  @not-owns detailed error-copy or implementation mechanics
+  @notes Keep this file small and explicit.
+-->
+
+# Recovery Map
+
+| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
+| --- | --- | --- | --- | --- |
+| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
+| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
+| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
+| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
+| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
+| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
+| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
+| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
+| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
+| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
+</file>
+
+<file path="src/routes/planner/+page.svelte">
+<h1>Planner</h1>
+<p>Hello from the SvelteKit target repo.</p>
+</file>
+
+<file path="src/routes/+layout.ts">
+export const prerender = true;
+</file>
+
+<file path="src/app.html">
+<!doctype html>
+<html lang="en">
+	<head>
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
 </file>
 
 <file path="planning-context.md">
@@ -571,72 +636,6 @@ The current planning focus is to keep implementation aligned with the planner-fi
 ## Open questions
 
 Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
-</file>
-
-<file path="architecture/lifecycle-map.md">
-<!--
-  @role architecture-artifact
-  @owns the high-level runtime lifecycle map
-  @not-owns detailed service contracts or UI copy
-  @notes Keep transitions concise and implementation-agnostic.
--->
-
-# Lifecycle Map
-</file>
-
-<file path="architecture/ownership-matrix.md">
-<!--
-  @role architecture-artifact
-  @owns the compact ownership map for major state areas
-  @not-owns detailed service contracts or implementation mechanics
-  @notes Keep this file small enough to include in all coding sessions.
--->
-
-# Ownership Matrix
-
-| State area | Authoritative owner | Writes through | Primary observers |
-| --- | --- | --- | --- |
-| active profile | Session context store | Profile service | App shell, planner screen, player session service |
-| profiles collection | Durable app store | Profile service | App shell, planner screen |
-| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
-| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
-| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
-| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
-| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
-| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
-| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
-| sections collection | Durable app store | Section service | Music player drawer, activity service |
-| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
-| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
-| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
-| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
-| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
-| overlay stack | Ephemeral UI registry | Navigation service | App shell |
-| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |
-</file>
-
-<file path="architecture/recovery-map.md">
-<!--
-  @role architecture-artifact
-  @owns the compact recovery-state map for major failure classes
-  @not-owns detailed error-copy or implementation mechanics
-  @notes Keep this file small and explicit.
--->
-
-# Recovery Map
-
-| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
-| --- | --- | --- | --- | --- |
-| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
-| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
-| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
-| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
-| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
-| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
-| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
-| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
-| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
-| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
 </file>
 
 <file path="repomix-instruction.md">
