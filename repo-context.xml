@@ -162,58 +162,6 @@ jobs:
           command: pages deploy build --project-name=practicepartner-sveltekit
 </file>
 
-<file path="architecture/elements/activity-composer-service.md">
----
-id: activity-composer-service
-title: Activity Composer Service
-order: 80
-kind: application-service
-branch_aliases:
-  - activity-composer-service
-  - activity-composer
-  - composer
-collaborators:
-  - activity-service
-  - player-session-service
-  - library-service
-  - section-service
-  - planner-screen
-code_paths:
-  - src/lib/app/activity-composer/**
-  - src/lib/ui/planner/**
-  - src/lib/ui/player/**
----
-# Activity Composer Service
-
-## Responsibility
-Define and maintain the runtime contract for activity composer service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- player-session-service
-- library-service
-- section-service
-- planner-screen
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/activity-composer/**
-- src/lib/ui/planner/**
-- src/lib/ui/player/**
-</file>
-
 <file path="architecture/elements/activity-service.md">
 ---
 id: activity-service
@@ -1804,6 +1752,59 @@ jobs:
           git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
+<file path="architecture/elements/activity-composer-service.md">
+---
+id: activity-composer-service
+title: Activity Composer Service
+order: 80
+kind: application-service
+branch_aliases:
+  - activity-composer-service
+  - activity-composer
+  - composer
+collaborators:
+  - activity-service
+  - player-session-service
+  - library-service
+  - section-service
+  - planner-screen
+code_paths:
+  - src/lib/app/activity-composer/**
+  - src/lib/ui/planner/**
+  - src/lib/ui/player/**
+---
+# Activity Composer Service
+
+## Responsibility
+Define and maintain the runtime contract for activity composer service.
+Become the man
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- activity-service
+- player-session-service
+- library-service
+- section-service
+- planner-screen
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/activity-composer/**
+- src/lib/ui/planner/**
+- src/lib/ui/player/**
+</file>
+
 <file path="architecture/elements/error-recovery-coordinator.md">
 ---
 id: error-recovery-coordinator
@@ -2244,6 +2245,7 @@ Define and maintain the runtime contract for activity service.
 
 ## Responsibility
 Define and maintain the runtime contract for activity composer service.
+Become the man
 
 ## Owns
 - responsibilities to be refined during implementation
