@@ -49,7 +49,7 @@ The content is organized as follows:
     ci.yml
     deploy-cloudflare-pages.yml
     populate-pr-context.yml
-    update-repo-context.yml
+    update-generated-artifacts.yml
   PULL_REQUEST_TEMPLATE.md
 architecture/
   elements/
@@ -80,10 +80,8 @@ scripts/
   architecture/
     generate-context-configs.mjs
     generate-target-architecture.mjs
-    import-aggregate-architecture.mjs
     lib.mjs
     validate-architecture-consistency.mjs
-    wait-for-branch-workflow.mjs
   ci/
     sync-pull-request-body.mjs
     wait-for-branch-workflow.mjs
@@ -218,6 +216,115 @@ jobs:
           BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 </file>
 
+<file path=".github/workflows/update-generated-artifacts.yml">
+# @role workflow
+# @owns regeneration and commit-back of generated repository contexts and architecture artifacts on non-main branch updates
+# @not-owns production deployment, runtime behavior, or branch protection settings
+# @notes Generates repo-context.xml, ci-context.xml, target architecture, and focused architecture contexts, then commits refreshed artifacts back to the branch when they change.
+
+name: Update Generated Artifacts
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - repo-context.xml
+      - ci-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-generated-artifacts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Generate repo context
+        run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate CI context
+        run: npx --yes repomix --config ci-context.repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
+
+      - name: Compute safe artifact name
+        shell: bash
+        run: |
+          raw_ref="${GITHUB_REF_NAME}"
+          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
+
+          if [ -z "$safe_ref" ]; then
+            safe_ref="unnamed-ref"
+          fi
+
+          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
+
+      - name: Upload generated artifact bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-artifacts-${{ env.safe_ref }}
+          path: |
+            repo-context.xml
+            ci-context.xml
+            architecture/target-architecture.md
+            architecture/contexts
+          if-no-files-found: error
+
+      - name: Commit updated generated artifacts to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            repo-context.xml \
+            ci-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts
+
+          if git diff --cached --quiet; then
+            echo "No generated artifact changes."
+            exit 0
+          fi
+
+          git commit -m "chore: refresh generated artifacts"
+          git push origin HEAD:${GITHUB_REF_NAME}
+</file>
+
 <file path=".github/PULL_REQUEST_TEMPLATE.md">
 ## Summary
 
@@ -287,111 +394,6 @@ Define and maintain the runtime contract for activity service.
 ## Code ownership hints
 - src/lib/domains/activities/**
 - src/lib/app/activities/**
-</file>
-
-<file path="architecture/elements/app-shell.md">
----
-id: app-shell
-title: App Shell
-order: 10
-kind: ui-shell
-branch_aliases:
-  - app-shell
-  - shell
-collaborators:
-  - navigation-service
-  - player-session-service
-  - error-recovery-coordinator
-  - profile-service
-code_paths:
-  - src/routes/+layout.ts
-  - src/routes/+layout.svelte
-  - src/app.html
-  - src/lib/ui/shell/**
----
-# App Shell
-
-## Responsibility
-Define and maintain the runtime contract for app shell.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- navigation-service
-- player-session-service
-- error-recovery-coordinator
-- profile-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/routes/+layout.ts
-- src/routes/+layout.svelte
-- src/app.html
-- src/lib/ui/shell/**
-</file>
-
-<file path="architecture/elements/architecture-governance.md">
----
-id: architecture-governance
-title: Architecture Governance
-order: 5
-kind: governance
-branch_aliases:
-  - architecture-governance
-  - repo-architecture
-  - architecture-artifacts
-collaborators:
-  - app-shell
-  - navigation-service
-  - continuity-service
-code_paths:
-  - architecture/**
-  - scripts/architecture/**
-  - .github/workflows/ci.yml
-  - .github/workflows/update-repo-context.yml
-  - repomix.config.json
-  - repomix-instruction.md
----
-# Architecture Governance
-
-## Responsibility
-Define and maintain the runtime contract for architecture governance.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- navigation-service
-- continuity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- architecture/**
-- scripts/architecture/**
-- .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
-- repomix.config.json
-- repomix-instruction.md
 </file>
 
 <file path="architecture/elements/audio-engine.md">
@@ -643,58 +645,6 @@ Define and maintain the runtime contract for plan service.
 ## Code ownership hints
 - src/lib/domains/plans/**
 - src/lib/app/plans/**
-</file>
-
-<file path="architecture/elements/planner-screen.md">
----
-id: planner-screen
-title: Planner Screen
-order: 20
-kind: screen
-branch_aliases:
-  - planner-screen
-  - planner-ui
-  - planner
-collaborators:
-  - activity-service
-  - activity-composer-service
-  - plan-service
-  - profile-service
-  - navigation-service
-  - player-session-service
-code_paths:
-  - src/routes/planner/+page.svelte
-  - src/lib/ui/planner/**
----
-# Planner Screen
-
-## Responsibility
-Define and maintain the runtime contract for planner screen.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- activity-composer-service
-- plan-service
-- profile-service
-- navigation-service
-- player-session-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/routes/planner/+page.svelte
-- src/lib/ui/planner/**
 </file>
 
 <file path="architecture/elements/player-session-service.md">
@@ -1849,60 +1799,6 @@ export {};
 engine-strict=true
 </file>
 
-<file path="ci-context.repomix.config.json">
-{
-  "$schema": "https://repomix.com/schemas/latest/schema.json",
-  "output": {
-    "filePath": "ci-context.xml",
-    "style": "xml",
-    "instructionFilePath": "repomix-instruction.md",
-    "fileSummary": true,
-    "directoryStructure": true,
-    "files": true,
-    "removeComments": false,
-    "removeEmptyLines": false,
-    "includeEmptyDirectories": false,
-    "git": {
-      "sortByChanges": true,
-      "includeDiffs": false,
-      "includeLogs": false
-    }
-  },
-  "include": [
-    ".github/workflows/*.yml",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    "scripts/**/*.mjs",
-    "architecture/*.md",
-    "architecture/elements/*.md",
-    "architecture/context-settings.json",
-    "planning-context.md",
-    "repomix-instruction.md",
-    "package.json",
-    "repomix.config.json",
-    "ci-context.repomix.config.json"
-  ],
-  "ignore": {
-    "useGitignore": true,
-    "useDefaultPatterns": true,
-    "customPatterns": [
-      "build",
-      ".svelte-kit",
-      "repo-context.xml",
-      "ci-context.xml",
-      "architecture/target-architecture.md",
-      "architecture/contexts",
-      ".tmp"
-    ]
-  },
-  "security": {
-    "enableSecurityCheck": true
-  },
-  "tokenCount": {
-    "encoding": "o200k_base"
-  }
-}
-</file>
-
 <file path="tsconfig.json">
 {
 	"extends": "./.svelte-kit/tsconfig.json",
@@ -1933,59 +1829,6 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [sveltekit()]
 });
-</file>
-
-<file path="architecture/elements/activity-composer-service.md">
----
-id: activity-composer-service
-title: Activity Composer Service
-order: 80
-kind: application-service
-branch_aliases:
-  - activity-composer-service
-  - activity-composer
-  - composer
-collaborators:
-  - activity-service
-  - player-session-service
-  - library-service
-  - section-service
-  - planner-screen
-code_paths:
-  - src/lib/app/activity-composer/**
-  - src/lib/ui/planner/**
-  - src/lib/ui/player/**
----
-# Activity Composer Service
-
-## Responsibility
-Define and maintain the runtime contract for activity composer service.
-Become the man
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- player-session-service
-- library-service
-- section-service
-- planner-screen
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/activity-composer/**
-- src/lib/ui/planner/**
-- src/lib/ui/player/**
 </file>
 
 <file path="architecture/elements/error-recovery-coordinator.md">
@@ -2042,72 +1885,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 - src/lib/app/recovery/**
 - src/lib/ui/shared/**
 - src/routes/+layout.ts
-</file>
-
-<file path="architecture/lifecycle-map.md">
-<!--
-  @role architecture-artifact
-  @owns the high-level runtime lifecycle map
-  @not-owns detailed service contracts or UI copy
-  @notes Keep transitions concise and implementation-agnostic.
--->
-
-# Lifecycle Map
-</file>
-
-<file path="architecture/ownership-matrix.md">
-<!--
-  @role architecture-artifact
-  @owns the compact ownership map for major state areas
-  @not-owns detailed service contracts or implementation mechanics
-  @notes Keep this file small enough to include in all coding sessions.
--->
-
-# Ownership Matrix
-
-| State area | Authoritative owner | Writes through | Primary observers |
-| --- | --- | --- | --- |
-| active profile | Session context store | Profile service | App shell, planner screen, player session service |
-| profiles collection | Durable app store | Profile service | App shell, planner screen |
-| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
-| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
-| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
-| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
-| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
-| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
-| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
-| sections collection | Durable app store | Section service | Music player drawer, activity service |
-| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
-| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
-| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
-| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
-| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
-| overlay stack | Ephemeral UI registry | Navigation service | App shell |
-| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |
-</file>
-
-<file path="architecture/recovery-map.md">
-<!--
-  @role architecture-artifact
-  @owns the compact recovery-state map for major failure classes
-  @not-owns detailed error-copy or implementation mechanics
-  @notes Keep this file small and explicit.
--->
-
-# Recovery Map
-
-| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
-| --- | --- | --- | --- | --- |
-| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
-| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
-| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
-| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
-| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
-| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
-| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
-| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
-| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
-| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
 </file>
 
 <file path="architecture/target-architecture.template.md">
@@ -2211,317 +1988,6 @@ console.log(
 		? `Current focus element: ${focusElement.id} (default fallback for branch "${branchName}")`
 		: `Current focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}")`
 );
-</file>
-
-<file path="scripts/architecture/import-aggregate-architecture.mjs">
-/**
- * @role architecture-bootstrap-script
- * @owns first-time decomposition of the aggregate architecture markdown into source artifacts
- * @not-owns ongoing generation of target-architecture.md or context XML artifacts
- * @notes This script is intentionally one-way bootstrap tooling. It combines aggregate markdown with seed metadata.
- */
-
-import fs from 'node:fs';
-import path from 'node:path';
-
-const args = parseArgs(process.argv.slice(2));
-
-const sourcePath = args.source ?? 'architecture/target-architecture.md';
-const manifestPath = args.manifest ?? 'architecture/element-seed-metadata.json';
-const elementsDir = args.elementsDir ?? 'architecture/elements';
-const ownershipPath = args.ownership ?? 'architecture/ownership-matrix.md';
-const lifecyclePath = args.lifecycle ?? 'architecture/lifecycle-map.md';
-const recoveryPath = args.recovery ?? 'architecture/recovery-map.md';
-const templatePath = args.template ?? 'architecture/target-architecture.template.md';
-
-const source = readText(sourcePath);
-const manifest = JSON.parse(readText(manifestPath));
-
-const sections = parseH2Sections(source);
-const sectionMap = new Map(sections.map((section) => [section.title, section]));
-
-const ownershipSection = mustGetSection(sectionMap, 'Ownership Matrix');
-const lifecycleSection = mustGetSection(sectionMap, 'Lifecycle Map');
-const recoverySection = mustGetSection(sectionMap, 'Recovery Map');
-const architecturalElementsSection = mustGetSection(sectionMap, 'Architectural Elements');
-
-const elementSections = parseH2Sections(architecturalElementsSection.content);
-const elementSectionMap = new Map(elementSections.map((section) => [section.title, section]));
-
-writeWithGuard(
-	ownershipPath,
-	buildMarkdownArtifact({
-		role: 'architecture-artifact',
-		owns: 'the compact ownership map for major state areas',
-		notOwns: 'detailed service contracts or implementation mechanics',
-		notes: 'Keep this file small enough to include in all coding sessions.',
-		body: normalizeDocumentSection(ownershipSection.content, 'Ownership Matrix')
-	}),
-	args.force
-);
-
-writeWithGuard(
-	lifecyclePath,
-	buildMarkdownArtifact({
-		role: 'architecture-artifact',
-		owns: 'the high-level runtime lifecycle map',
-		notOwns: 'detailed service contracts or UI copy',
-		notes: 'Keep transitions concise and implementation-agnostic.',
-		body: normalizeDocumentSection(lifecycleSection.content, 'Lifecycle Map')
-	}),
-	args.force
-);
-
-writeWithGuard(
-	recoveryPath,
-	buildMarkdownArtifact({
-		role: 'architecture-artifact',
-		owns: 'the compact recovery-state map for major failure classes',
-		notOwns: 'detailed error-copy or implementation mechanics',
-		notes: 'Keep this file small and explicit.',
-		body: normalizeDocumentSection(recoverySection.content, 'Recovery Map')
-	}),
-	args.force
-);
-
-for (const element of manifest.elements) {
-	const sourceSection = elementSectionMap.get(element.title);
-	const outputPath = path.join(elementsDir, `${element.id}.md`).replace(/\\/g, '/');
-
-	const body = sourceSection
-		? normalizeElementBody(sourceSection.raw, element.title)
-		: buildFallbackElementBody(element);
-
-	writeWithGuard(outputPath, buildElementFile(element, body), args.force);
-
-	if (!sourceSection) {
-		console.warn(
-			`[architecture import] No aggregate section found for "${element.title}". ` +
-				`Generated a metadata-backed stub at ${outputPath}.`
-		);
-	}
-}
-
-if (args.writeTemplate || !fs.existsSync(path.resolve(templatePath))) {
-	writeWithGuard(templatePath, buildTemplate(), args.force || !fs.existsSync(path.resolve(templatePath)));
-}
-
-console.log(`Imported ownership matrix to ${ownershipPath}`);
-console.log(`Imported lifecycle map to ${lifecyclePath}`);
-console.log(`Imported recovery map to ${recoveryPath}`);
-console.log(`Imported ${manifest.elements.length} architectural element files into ${elementsDir}`);
-
-if (args.writeTemplate || !fs.existsSync(path.resolve(templatePath))) {
-	console.log(`Wrote target architecture template to ${templatePath}`);
-}
-
-function parseArgs(argv) {
-	const parsed = {
-		force: false,
-		writeTemplate: false
-	};
-
-	for (let index = 0; index < argv.length; index += 1) {
-		const token = argv[index];
-
-		if (token === '--force') {
-			parsed.force = true;
-			continue;
-		}
-
-		if (token === '--write-template') {
-			parsed.writeTemplate = true;
-			continue;
-		}
-
-		if (token.startsWith('--')) {
-			const key = token.slice(2);
-			const value = argv[index + 1];
-
-			if (!value || value.startsWith('--')) {
-				throw new Error(`Missing value for argument ${token}`);
-			}
-
-			parsed[key] = value;
-			index += 1;
-			continue;
-		}
-
-		throw new Error(`Unknown argument: ${token}`);
-	}
-
-	return parsed;
-}
-
-function readText(filePath) {
-	return fs.readFileSync(path.resolve(filePath), 'utf8');
-}
-
-function ensureDir(filePath) {
-	fs.mkdirSync(path.dirname(path.resolve(filePath)), { recursive: true });
-}
-
-function writeWithGuard(filePath, content, force) {
-	const absolutePath = path.resolve(filePath);
-
-	if (fs.existsSync(absolutePath) && !force) {
-		throw new Error(
-			`Refusing to overwrite existing file ${filePath}. ` +
-				`Re-run with --force if this is intentional.`
-		);
-	}
-
-	ensureDir(filePath);
-	fs.writeFileSync(absolutePath, content.trimEnd() + '\n', 'utf8');
-}
-
-function parseH2Sections(markdown) {
-	const matches = [...markdown.matchAll(/^##\s+(.+?)\s*$/gm)];
-
-	return matches.map((match, index) => {
-		const start = match.index;
-		const end = index + 1 < matches.length ? matches[index + 1].index : markdown.length;
-		const raw = markdown.slice(start, end).trim();
-		const firstLineBreak = raw.indexOf('\n');
-		const content = firstLineBreak === -1 ? '' : raw.slice(firstLineBreak + 1).trim();
-
-		return {
-			title: match[1].trim(),
-			raw,
-			content
-		};
-	});
-}
-
-function mustGetSection(sectionMap, title) {
-	const section = sectionMap.get(title);
-
-	if (!section) {
-		throw new Error(`Missing required section "${title}" in aggregate architecture markdown.`);
-	}
-
-	return section;
-}
-
-function normalizeDocumentSection(content, title) {
-	const trimmed = content.trim();
-
-	if (!trimmed) {
-		throw new Error(`Section "${title}" is empty.`);
-	}
-
-	if (trimmed.startsWith('# ')) {
-		return trimmed;
-	}
-
-	return `# ${title}\n\n${trimmed}`;
-}
-
-function normalizeElementBody(rawSection, title) {
-	return rawSection.replace(/^##\s+.*$/m, `# ${title}`).trim();
-}
-
-function buildFallbackElementBody(element) {
-	const collaborators = (element.collaborators ?? []).map((value) => `- ${value}`).join('\n') || '- none yet';
-	const codePaths = (element.code_paths ?? []).map((value) => `- ${value}`).join('\n') || '- none yet';
-
-	return `# ${element.title}
-
-## Responsibility
-Define and maintain the runtime contract for ${element.title.toLowerCase()}.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-${collaborators}
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-${codePaths}`;
-}
-
-function buildMarkdownArtifact({ role, owns, notOwns, notes, body }) {
-	return [
-		'<!--',
-		`  @role ${role}`,
-		`  @owns ${owns}`,
-		`  @not-owns ${notOwns}`,
-		`  @notes ${notes}`,
-		'-->',
-		'',
-		body
-	].join('\n');
-}
-
-function buildElementFile(element, body) {
-	const frontmatterLines = ['---'];
-
-	frontmatterLines.push(`id: ${element.id}`);
-	frontmatterLines.push(`title: ${element.title}`);
-	frontmatterLines.push(`order: ${element.order}`);
-	frontmatterLines.push(`kind: ${element.kind}`);
-
-	frontmatterLines.push('branch_aliases:');
-	for (const alias of element.branch_aliases ?? []) {
-		frontmatterLines.push(`  - ${alias}`);
-	}
-
-	frontmatterLines.push('collaborators:');
-	for (const collaborator of element.collaborators ?? []) {
-		frontmatterLines.push(`  - ${collaborator}`);
-	}
-
-	frontmatterLines.push('code_paths:');
-	for (const codePath of element.code_paths ?? []) {
-		frontmatterLines.push(`  - ${codePath}`);
-	}
-
-	frontmatterLines.push('---', '');
-
-	return frontmatterLines.join('\n') + body;
-}
-
-function buildTemplate() {
-	return `<!--
-  @role architecture-template
-  @owns the template used to generate the full target architecture document
-  @not-owns the source content for individual elements
-  @notes Do not place element-specific rules here; those belong in the element files.
--->
-
-# Target Architecture
-
-> This file is generated from the source artifacts under \`architecture/\`.  
-> Edit the element files, ownership matrix, lifecycle map, recovery map, or this template.  
-> Do not edit the generated output manually.
-
-## Ownership Matrix
-
-{{INCLUDE:architecture/ownership-matrix.md}}
-
-## Lifecycle Map
-
-{{INCLUDE:architecture/lifecycle-map.md}}
-
-## Recovery Map
-
-{{INCLUDE:architecture/recovery-map.md}}
-
-## Architectural Elements
-
-{{ELEMENTS}}
-`;
-}
 </file>
 
 <file path="scripts/architecture/lib.mjs">
@@ -3007,6 +2473,55 @@ vite.config.ts.timestamp-*
 _attic/
 </file>
 
+<file path="ci-context.repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "ci-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": [
+    ".github/workflows/*.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "scripts/**/*.mjs",
+    "package.json",
+    "repomix.config.json",
+    "ci-context.repomix.config.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "ci-context.xml",
+      "architecture/target-architecture.md",
+      "architecture/contexts",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
+</file>
+
 <file path="svelte.config.js">
 import adapter from '@sveltejs/adapter-static';
 
@@ -3025,329 +2540,161 @@ const config = {
 export default config;
 </file>
 
-<file path=".github/workflows/update-repo-context.yml">
-# @role workflow
-# @owns regeneration and commit-back of generated repository contexts and architecture artifacts on non-main branch updates
-# @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Generates repo-context.xml, ci-context.xml, target architecture, and focused architecture contexts, then commits refreshed artifacts back to the branch when they change.
+<file path="architecture/elements/app-shell.md">
+---
+id: app-shell
+title: App Shell
+order: 10
+kind: ui-shell
+branch_aliases:
+  - app-shell
+  - shell
+collaborators:
+  - navigation-service
+  - player-session-service
+  - error-recovery-coordinator
+  - profile-service
+code_paths:
+  - src/routes/+layout.ts
+  - src/routes/+layout.svelte
+  - src/app.html
+  - src/lib/ui/shell/**
+---
+# App Shell
 
-name: Update Generated Artifacts
+## Responsibility
+Define and maintain the runtime contract for app shell.
 
-on:
-  push:
-    branches-ignore:
-      - main
-    paths-ignore:
-      - repo-context.xml
-      - ci-context.xml
-      - architecture/target-architecture.md
-      - architecture/contexts/**
-  workflow_dispatch:
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-permissions:
-  contents: write
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
 
-concurrency:
-  group: update-generated-artifacts-${{ github.ref }}
-  cancel-in-progress: true
+## Collaborators
+- navigation-service
+- player-session-service
+- error-recovery-coordinator
+- profile-service
 
-jobs:
-  generate:
-    runs-on: ubuntu-latest
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-    steps:
-      - name: Checkout current branch
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate target architecture
-        run: node scripts/architecture/generate-target-architecture.mjs
-
-      - name: Generate architecture context configs
-        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-
-      - name: Generate repo context
-        run: npx --yes repomix --config repomix.config.json
-
-      - name: Generate CI context
-        run: npx --yes repomix --config ci-context.repomix.config.json
-
-      - name: Generate architectural element contexts
-        run: |
-          for config in .tmp/architecture-context-configs/*.config.json; do
-            echo "Generating context from $config"
-            npx --yes repomix --config "$config"
-          done
-
-      - name: Compute safe artifact name
-        shell: bash
-        run: |
-          raw_ref="${GITHUB_REF_NAME}"
-          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
-
-          if [ -z "$safe_ref" ]; then
-            safe_ref="unnamed-ref"
-          fi
-
-          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
-
-      - name: Upload generated artifact bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-artifacts-${{ env.safe_ref }}
-          path: |
-            repo-context.xml
-            ci-context.xml
-            architecture/target-architecture.md
-            architecture/contexts
-          if-no-files-found: error
-
-      - name: Commit updated generated artifacts to branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add \
-            repo-context.xml \
-            ci-context.xml \
-            architecture/target-architecture.md \
-            architecture/contexts
-
-          if git diff --cached --quiet; then
-            echo "No generated artifact changes."
-            exit 0
-          fi
-
-          git commit -m "chore: refresh generated artifacts"
-          git push origin HEAD:${GITHUB_REF_NAME}
+## Code ownership hints
+- src/routes/+layout.ts
+- src/routes/+layout.svelte
+- src/app.html
+- src/lib/ui/shell/**
 </file>
 
-<file path="scripts/architecture/wait-for-branch-workflow.mjs">
-/**
- * @role ci-helper-script
- * @owns waiting for a branch-scoped workflow to settle and detecting whether the branch advanced while waiting
- * @not-owns build validation, architecture generation, or artifact freshness checks themselves
- * @notes Expected operational failures return concise messages with exit code 1 rather than stack traces.
- */
+<file path="architecture/elements/architecture-governance.md">
+---
+id: architecture-governance
+title: Architecture Governance
+order: 5
+kind: governance
+branch_aliases:
+  - architecture-governance
+  - repo-architecture
+  - architecture-artifacts
+collaborators:
+  - app-shell
+  - navigation-service
+  - continuity-service
+code_paths:
+  - architecture/**
+  - scripts/architecture/**
+  - .github/workflows/ci.yml
+  - .github/workflows/update-repo-context.yml
+  - repomix.config.json
+  - repomix-instruction.md
+---
+# Architecture Governance
 
-class WorkflowWaitError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = 'WorkflowWaitError';
-	}
-}
+## Responsibility
+Define and maintain the runtime contract for architecture governance.
 
-const args = parseArgs(process.argv.slice(2));
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-main().catch((error) => {
-	if (error instanceof WorkflowWaitError) {
-		console.error(`Workflow wait failed: ${error.message}`);
-		process.exit(1);
-	}
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
 
-	console.error(error);
-	process.exit(1);
-});
+## Collaborators
+- app-shell
+- navigation-service
+- continuity-service
 
-async function main() {
-	const repo = args.repo;
-	const branch = args.branch;
-	const workflowPath = args['workflow-path'];
-	const currentHeadSha = args['current-head-sha'];
-	const timeoutSeconds = Number(args['timeout-seconds'] ?? 900);
-	const pollSeconds = Number(args['poll-seconds'] ?? 10);
-	const token = process.env.GITHUB_TOKEN;
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-	if (!repo) {
-		throw new WorkflowWaitError('Missing required --repo argument.');
-	}
+## Code ownership hints
+- architecture/**
+- scripts/architecture/**
+- .github/workflows/ci.yml
+- .github/workflows/update-repo-context.yml
+- repomix.config.json
+- repomix-instruction.md
+</file>
 
-	if (!branch) {
-		throw new WorkflowWaitError('Missing required --branch argument.');
-	}
+<file path="architecture/elements/planner-screen.md">
+---
+id: planner-screen
+title: Planner Screen
+order: 20
+kind: screen
+branch_aliases:
+  - planner-screen
+  - planner-ui
+  - planner
+collaborators:
+  - activity-service
+  - activity-composer-service
+  - plan-service
+  - profile-service
+  - navigation-service
+  - player-session-service
+code_paths:
+  - src/routes/planner/+page.svelte
+  - src/lib/ui/planner/**
+---
+# Planner Screen
 
-	if (!workflowPath) {
-		throw new WorkflowWaitError('Missing required --workflow-path argument.');
-	}
+## Responsibility
+Define and maintain the runtime contract for planner screen.
 
-	if (!currentHeadSha) {
-		throw new WorkflowWaitError('Missing required --current-head-sha argument.');
-	}
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-	if (!token) {
-		throw new WorkflowWaitError('GITHUB_TOKEN is required.');
-	}
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
 
-	const [owner, repoName] = repo.split('/');
+## Collaborators
+- activity-service
+- activity-composer-service
+- plan-service
+- profile-service
+- navigation-service
+- player-session-service
 
-	if (!owner || !repoName) {
-		throw new WorkflowWaitError(`Invalid repo value "${repo}". Expected "owner/repo".`);
-	}
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-	const workflow = await findWorkflowByPath({ owner, repoName, workflowPath, token });
-
-	if (!workflow) {
-		throw new WorkflowWaitError(`Could not find workflow at path "${workflowPath}".`);
-	}
-
-	const deadline = Date.now() + timeoutSeconds * 1000;
-	let printedWaitMessage = false;
-
-	while (true) {
-		const activeRuns = await listActiveWorkflowRuns({
-			owner,
-			repoName,
-			workflowId: workflow.id,
-			branch,
-			token
-		});
-
-		if (activeRuns.length === 0) {
-			break;
-		}
-
-		if (!printedWaitMessage) {
-			console.log(
-				`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
-			);
-			printedWaitMessage = true;
-		} else {
-			console.log(`Still waiting on ${activeRuns.length} "${workflow.name}" run(s)...`);
-		}
-
-		if (Date.now() >= deadline) {
-			throw new WorkflowWaitError(
-				`Timed out waiting for workflow "${workflow.name}" on branch "${branch}" to settle.`
-			);
-		}
-
-		await sleep(pollSeconds * 1000);
-	}
-
-	const latestHeadSha = await getBranchHeadSha({ owner, repoName, branch, token });
-	const superseded = latestHeadSha !== currentHeadSha;
-
-	writeOutput('superseded', superseded ? 'true' : 'false');
-	writeOutput('latest_head_sha', latestHeadSha);
-
-	if (superseded) {
-		console.log(
-			`Branch head advanced from ${currentHeadSha} to ${latestHeadSha} while waiting for generated artifacts.`
-		);
-	} else {
-		console.log(`Branch head stayed at ${currentHeadSha}.`);
-	}
-}
-
-function parseArgs(argv) {
-	const parsed = {};
-
-	for (let index = 0; index < argv.length; index += 1) {
-		const token = argv[index];
-
-		if (!token.startsWith('--')) {
-			throw new WorkflowWaitError(`Unknown argument "${token}".`);
-		}
-
-		const key = token.slice(2);
-		const value = argv[index + 1];
-
-		if (!value || value.startsWith('--')) {
-			throw new WorkflowWaitError(`Missing value for argument "${token}".`);
-		}
-
-		parsed[key] = value;
-		index += 1;
-	}
-
-	return parsed;
-}
-
-async function findWorkflowByPath({ owner, repoName, workflowPath, token }) {
-	const response = await githubApiRequest({
-		path: `/repos/${owner}/${repoName}/actions/workflows?per_page=100`,
-		token
-	});
-
-	return response.workflows?.find((workflow) => workflow.path === workflowPath) ?? null;
-}
-
-async function listActiveWorkflowRuns({ owner, repoName, workflowId, branch, token }) {
-	const response = await githubApiRequest({
-		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=50`,
-		token
-	});
-
-	return (response.workflow_runs ?? []).filter((run) => run.status !== 'completed');
-}
-
-async function getBranchHeadSha({ owner, repoName, branch, token }) {
-	const response = await githubApiRequest({
-		path: `/repos/${owner}/${repoName}/branches/${encodeURIComponent(branch)}`,
-		token
-	});
-
-	const sha = response.commit?.sha;
-
-	if (!sha) {
-		throw new WorkflowWaitError(`Could not resolve latest head SHA for branch "${branch}".`);
-	}
-
-	return sha;
-}
-
-async function githubApiRequest({ path, token }) {
-	const response = await fetch(`https://api.github.com${path}`, {
-		headers: {
-			Authorization: `Bearer ${token}`,
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-			'User-Agent': 'practicepartner-sveltekit-ci'
-		}
-	});
-
-	if (!response.ok) {
-		const text = await response.text();
-		throw new WorkflowWaitError(
-			`GitHub API request failed for ${path} with status ${response.status}: ${text}`
-		);
-	}
-
-	return response.json();
-}
-
-function writeOutput(name, value) {
-	const outputPath = process.env.GITHUB_OUTPUT;
-
-	if (!outputPath) {
-		return;
-	}
-
-	process.stdout.write(`::notice title=${name}::${value}\n`);
-	awaitAppend(outputPath, `${name}=${value}\n`);
-}
-
-function awaitAppend(filePath, content) {
-	import('node:fs').then((fs) => {
-		fs.appendFileSync(filePath, content, 'utf8');
-	});
-}
-
-function sleep(ms) {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
+## Code ownership hints
+- src/routes/planner/+page.svelte
+- src/lib/ui/planner/**
 </file>
 
 <file path="package.json">
@@ -3581,6 +2928,125 @@ Add only current, unresolved product questions here. Remove resolved questions p
     "encoding": "o200k_base"
   }
 }
+</file>
+
+<file path="architecture/elements/activity-composer-service.md">
+---
+id: activity-composer-service
+title: Activity Composer Service
+order: 80
+kind: application-service
+branch_aliases:
+  - activity-composer-service
+  - activity-composer
+  - composer
+collaborators:
+  - activity-service
+  - player-session-service
+  - library-service
+  - section-service
+  - planner-screen
+code_paths:
+  - src/lib/app/activity-composer/**
+  - src/lib/ui/planner/**
+  - src/lib/ui/player/**
+---
+# Activity Composer Service
+
+## Responsibility
+Define and maintain the runtime contract for activity composer service.
+Become the man
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- activity-service
+- player-session-service
+- library-service
+- section-service
+- planner-screen
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/activity-composer/**
+- src/lib/ui/planner/**
+- src/lib/ui/player/**
+</file>
+
+<file path="architecture/lifecycle-map.md">
+<!--
+  @role architecture-artifact
+  @owns the high-level runtime lifecycle map
+  @not-owns detailed service contracts or UI copy
+  @notes Keep transitions concise and implementation-agnostic.
+-->
+
+# Lifecycle Map
+</file>
+
+<file path="architecture/ownership-matrix.md">
+<!--
+  @role architecture-artifact
+  @owns the compact ownership map for major state areas
+  @not-owns detailed service contracts or implementation mechanics
+  @notes Keep this file small enough to include in all coding sessions.
+-->
+
+# Ownership Matrix
+
+| State area | Authoritative owner | Writes through | Primary observers |
+| --- | --- | --- | --- |
+| active profile | Session context store | Profile service | App shell, planner screen, player session service |
+| profiles collection | Durable app store | Profile service | App shell, planner screen |
+| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
+| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
+| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
+| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
+| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
+| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
+| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
+| sections collection | Durable app store | Section service | Music player drawer, activity service |
+| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
+| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
+| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
+| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
+| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
+| overlay stack | Ephemeral UI registry | Navigation service | App shell |
+| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |
+</file>
+
+<file path="architecture/recovery-map.md">
+<!--
+  @role architecture-artifact
+  @owns the compact recovery-state map for major failure classes
+  @not-owns detailed error-copy or implementation mechanics
+  @notes Keep this file small and explicit.
+-->
+
+# Recovery Map
+
+| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
+| --- | --- | --- | --- | --- |
+| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
+| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
+| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
+| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
+| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
+| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
+| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
+| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
+| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
+| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
 </file>
 
 <file path="scripts/architecture/validate-architecture-consistency.mjs">
@@ -4066,7 +3532,7 @@ Prefer precise scopes such as:
 # @not-owns production deployment, runtime behavior, or branch protection settings
 # @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
 
-name: CI
+name: Branch Validation
 
 on:
   pull_request:
@@ -4090,6 +3556,7 @@ concurrency:
 
 jobs:
   validate:
+    name: ci-validate
     runs-on: ubuntu-latest
 
     steps:
