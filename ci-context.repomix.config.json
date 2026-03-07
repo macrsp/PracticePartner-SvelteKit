@@ -11,7 +11,7 @@
     "removeEmptyLines": false,
     "includeEmptyDirectories": false,
     "git": {
-      "sortByChanges": true,
+      "sortByChanges": false,
       "includeDiffs": false,
       "includeLogs": false
     }

@@ -15,7 +15,7 @@ code_paths:
   - architecture/**
   - scripts/architecture/**
   - .github/workflows/ci.yml
-  - .github/workflows/update-repo-context.yml
+  - .github/workflows/update-generated-artifacts.yml
   - repomix.config.json
   - repomix-instruction.md
 ---
@@ -46,6 +46,6 @@ Define and maintain the runtime contract for architecture governance.
 - architecture/**
 - scripts/architecture/**
 - .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
+- .github/workflows/update-generated-artifacts.yml
 - repomix.config.json
 - repomix-instruction.md

@@ -1,7 +1,7 @@
 # @role workflow
-# @owns regeneration and commit-back of generated repository contexts and architecture artifacts on non-main branch updates
+# @owns regeneration and commit-back of generated repository contexts, code-path coverage manifests, and architecture artifacts on non-main branch updates
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Generates repo-context.xml, ci-context.xml, target architecture, and focused architecture contexts, then commits refreshed artifacts back to the branch when they change.
+# @notes Generates repo-context.xml, ci-context.xml, target architecture, focused architecture contexts, and coverage manifests, then commits refreshed artifacts back to the branch when they change.
 
 name: Update Generated Artifacts
 
@@ -14,6 +14,7 @@ on:
       - ci-context.xml
       - architecture/target-architecture.md
       - architecture/contexts/**
+      - architecture/context-manifests/**
   workflow_dispatch:
 
 permissions:
@@ -45,7 +46,7 @@ jobs:
       - name: Generate target architecture
         run: node scripts/architecture/generate-target-architecture.mjs
 
-      - name: Generate architecture context configs
+      - name: Generate architecture context configs and coverage manifests
         run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
         env:
           BRANCH_NAME: ${{ github.ref_name }}
@@ -84,6 +85,7 @@ jobs:
             ci-context.xml
             architecture/target-architecture.md
             architecture/contexts
+            architecture/context-manifests
           if-no-files-found: error
 
       - name: Commit updated generated artifacts to branch
@@ -95,7 +97,8 @@ jobs:
             repo-context.xml \
             ci-context.xml \
             architecture/target-architecture.md \
-            architecture/contexts
+            architecture/contexts \
+            architecture/context-manifests
 
           if git diff --cached --quiet; then
             echo "No generated artifact changes."

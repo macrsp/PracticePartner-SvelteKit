@@ -11,7 +11,7 @@
     "removeEmptyLines": false,
     "includeEmptyDirectories": false,
     "git": {
-      "sortByChanges": true,
+      "sortByChanges": false,
       "includeDiffs": false,
       "includeLogs": false
     }
@@ -27,6 +27,7 @@
       "ci-context.xml",
       "architecture/target-architecture.md",
       "architecture/contexts",
+      "architecture/context-manifests/*.context-code-path-coverage.md",
       ".tmp"
     ]
   },

@@ -66,8 +66,10 @@ function main() {
 		const changedFiles = getChangedFiles();
 		const ignoredPrefixes = [
 			'repo-context.xml',
+			'ci-context.xml',
 			'architecture/target-architecture.md',
 			'architecture/contexts/',
+			'architecture/context-manifests/',
 			'.tmp/'
 		];
 

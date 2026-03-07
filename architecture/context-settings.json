@@ -4,6 +4,9 @@
   "targetArchitectureOutput": "architecture/target-architecture.md",
   "generatedContextsDir": "architecture/contexts",
   "contextConfigTempDir": ".tmp/architecture-context-configs",
+  "contextManifestDir": "architecture/context-manifests",
+  "repoContextManifestName": "repo-code-path-coverage.md",
+  "elementContextManifestSuffix": ".context-code-path-coverage.md",
   "repoContextOutput": "repo-context.xml",
   "alwaysIncludeInElementContexts": [
     "planning-context.md",
