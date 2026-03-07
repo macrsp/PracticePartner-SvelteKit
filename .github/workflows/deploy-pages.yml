@@ -1,9 +1,9 @@
 # @role workflow
-# @owns build-and-deploy of the static SvelteKit site to GitHub Pages
+# @owns build-and-deploy of the static SvelteKit site to Cloudflare Pages
 # @not-owns runtime behavior, repo-context generation, or feature logic
-# @notes Uses adapter-static output from build/ and sets BASE_PATH for project pages.
+# @notes Uses adapter-static output from build/ and deploys it to a Direct Upload Pages project.
 
-name: Deploy GitHub Pages
+name: Deploy Cloudflare Pages
 
 on:
   push:
@@ -13,23 +13,19 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+  deployments: write
 
 concurrency:
-  group: github-pages
+  group: cloudflare-pages-production
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -43,21 +39,12 @@ jobs:
       - name: Build site
         run: npm run build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}
+          BASE_PATH: ""
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          path: build
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy build --project-name=practicepartner-sveltekit
