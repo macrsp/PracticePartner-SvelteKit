@@ -325,28 +325,6 @@ jobs:
           git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
-<file path=".github/PULL_REQUEST_TEMPLATE.md">
-## Summary
-
-Describe the user-visible or repo-visible change.
-
-## Architecture Context
-
-<!-- architecture:auto:start -->
-_Auto-generated architecture context will be inserted here._
-<!-- architecture:auto:end -->
-
-## Validation
-
-- [ ] `CI / validate` is green
-- [ ] Generated artifacts are committed
-- [ ] Any changed architectural element files reflect the current session scope
-
-## Notes for reviewers
-
-List edge cases, tradeoffs, or follow-up concerns.
-</file>
-
 <file path="architecture/elements/activity-service.md">
 ---
 id: activity-service
@@ -1831,6 +1809,28 @@ export default defineConfig({
 });
 </file>
 
+<file path=".github/PULL_REQUEST_TEMPLATE.md">
+## Summary
+
+Describe the user-visible or repo-visible change.
+
+## Architecture Context
+
+<!-- architecture:auto:start -->
+_Auto-generated architecture context will be inserted here._
+<!-- architecture:auto:end -->
+
+## Validation
+
+- [ ] Required CI checks are green
+- [ ] Generated artifacts are committed
+- [ ] Any changed architectural element files reflect the current session scope
+
+## Notes for reviewers
+
+List edge cases, tradeoffs, or follow-up concerns.
+</file>
+
 <file path="architecture/elements/error-recovery-coordinator.md">
 ---
 id: error-recovery-coordinator
@@ -2473,55 +2473,6 @@ vite.config.ts.timestamp-*
 _attic/
 </file>
 
-<file path="ci-context.repomix.config.json">
-{
-  "$schema": "https://repomix.com/schemas/latest/schema.json",
-  "output": {
-    "filePath": "ci-context.xml",
-    "style": "xml",
-    "instructionFilePath": "repomix-instruction.md",
-    "fileSummary": true,
-    "directoryStructure": true,
-    "files": true,
-    "removeComments": false,
-    "removeEmptyLines": false,
-    "includeEmptyDirectories": false,
-    "git": {
-      "sortByChanges": true,
-      "includeDiffs": false,
-      "includeLogs": false
-    }
-  },
-  "include": [
-    ".github/workflows/*.yml",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    "scripts/**/*.mjs",
-    "package.json",
-    "repomix.config.json",
-    "ci-context.repomix.config.json"
-  ],
-  "ignore": {
-    "useGitignore": true,
-    "useDefaultPatterns": true,
-    "customPatterns": [
-      "build",
-      ".svelte-kit",
-      "repo-context.xml",
-      "ci-context.xml",
-      "architecture/target-architecture.md",
-      "architecture/contexts",
-      ".tmp"
-    ]
-  },
-  "security": {
-    "enableSecurityCheck": true
-  },
-  "tokenCount": {
-    "encoding": "o200k_base"
-  }
-}
-</file>
-
 <file path="svelte.config.js">
 import adapter from '@sveltejs/adapter-static';
 
@@ -2695,6 +2646,56 @@ Define and maintain the runtime contract for planner screen.
 ## Code ownership hints
 - src/routes/planner/+page.svelte
 - src/lib/ui/planner/**
+</file>
+
+<file path="ci-context.repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "ci-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": [
+    ".github/workflows/*.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "scripts/**/*.mjs",
+    "architecture/context-settings.json",
+    "package.json",
+    "repomix.config.json",
+    "ci-context.repomix.config.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "ci-context.xml",
+      "architecture/target-architecture.md",
+      "architecture/contexts",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
 </file>
 
 <file path="package.json">
@@ -2930,59 +2931,6 @@ Add only current, unresolved product questions here. Remove resolved questions p
 }
 </file>
 
-<file path="architecture/elements/activity-composer-service.md">
----
-id: activity-composer-service
-title: Activity Composer Service
-order: 80
-kind: application-service
-branch_aliases:
-  - activity-composer-service
-  - activity-composer
-  - composer
-collaborators:
-  - activity-service
-  - player-session-service
-  - library-service
-  - section-service
-  - planner-screen
-code_paths:
-  - src/lib/app/activity-composer/**
-  - src/lib/ui/planner/**
-  - src/lib/ui/player/**
----
-# Activity Composer Service
-
-## Responsibility
-Define and maintain the runtime contract for activity composer service.
-Become the man
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- player-session-service
-- library-service
-- section-service
-- planner-screen
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/activity-composer/**
-- src/lib/ui/planner/**
-- src/lib/ui/player/**
-</file>
-
 <file path="architecture/lifecycle-map.md">
 <!--
   @role architecture-artifact
@@ -3047,6 +2995,58 @@ Become the man
 | storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
 | offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
 | update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
+</file>
+
+<file path="architecture/elements/activity-composer-service.md">
+---
+id: activity-composer-service
+title: Activity Composer Service
+order: 80
+kind: application-service
+branch_aliases:
+  - activity-composer-service
+  - activity-composer
+  - composer
+collaborators:
+  - activity-service
+  - player-session-service
+  - library-service
+  - section-service
+  - planner-screen
+code_paths:
+  - src/lib/app/activity-composer/**
+  - src/lib/ui/planner/**
+  - src/lib/ui/player/**
+---
+# Activity Composer Service
+
+## Responsibility
+Define and maintain the runtime contract for activity composer service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- activity-service
+- player-session-service
+- library-service
+- section-service
+- planner-screen
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/activity-composer/**
+- src/lib/ui/planner/**
+- src/lib/ui/player/**
 </file>
 
 <file path="scripts/architecture/validate-architecture-consistency.mjs">

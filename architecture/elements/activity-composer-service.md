@@ -22,7 +22,6 @@ code_paths:
 
 ## Responsibility
 Define and maintain the runtime contract for activity composer service.
-Become the man
 
 ## Owns
 - responsibilities to be refined during implementation

@@ -34,7 +34,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: .github/workflows/*.yml, .github/PULL_REQUEST_TEMPLATE.md, scripts/**/*.mjs, package.json, repomix.config.json, ci-context.repomix.config.json
+- Only files matching these patterns are included: .github/workflows/*.yml, .github/PULL_REQUEST_TEMPLATE.md, scripts/**/*.mjs, architecture/context-settings.json, package.json, repomix.config.json, ci-context.repomix.config.json
 - Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, ci-context.xml, architecture/target-architecture.md, architecture/contexts, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -51,6 +51,8 @@ The content is organized as follows:
     populate-pr-context.yml
     update-generated-artifacts.yml
   PULL_REQUEST_TEMPLATE.md
+architecture/
+  context-settings.json
 scripts/
   architecture/
     generate-context-configs.mjs
@@ -283,26 +285,24 @@ jobs:
           git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
-<file path=".github/PULL_REQUEST_TEMPLATE.md">
-## Summary
-
-Describe the user-visible or repo-visible change.
-
-## Architecture Context
-
-<!-- architecture:auto:start -->
-_Auto-generated architecture context will be inserted here._
-<!-- architecture:auto:end -->
-
-## Validation
-
-- [ ] `CI / validate` is green
-- [ ] Generated artifacts are committed
-- [ ] Any changed architectural element files reflect the current session scope
-
-## Notes for reviewers
-
-List edge cases, tradeoffs, or follow-up concerns.
+<file path="architecture/context-settings.json">
+{
+  "elementsDir": "architecture/elements",
+  "targetArchitectureTemplate": "architecture/target-architecture.template.md",
+  "targetArchitectureOutput": "architecture/target-architecture.md",
+  "generatedContextsDir": "architecture/contexts",
+  "contextConfigTempDir": ".tmp/architecture-context-configs",
+  "repoContextOutput": "repo-context.xml",
+  "alwaysIncludeInElementContexts": [
+    "planning-context.md",
+    "repomix-instruction.md",
+    "architecture/ownership-matrix.md",
+    "architecture/lifecycle-map.md",
+    "architecture/recovery-map.md"
+  ],
+  "defaultFocusElement": "architecture-governance",
+  "currentFocusContextName": "current-focus.context.xml"
+}
 </file>
 
 <file path="scripts/architecture/generate-target-architecture.mjs">
@@ -701,6 +701,28 @@ async function githubApiRequest({ method, path, token, body }) {
 
 	return response.json();
 }
+</file>
+
+<file path=".github/PULL_REQUEST_TEMPLATE.md">
+## Summary
+
+Describe the user-visible or repo-visible change.
+
+## Architecture Context
+
+<!-- architecture:auto:start -->
+_Auto-generated architecture context will be inserted here._
+<!-- architecture:auto:end -->
+
+## Validation
+
+- [ ] Required CI checks are green
+- [ ] Generated artifacts are committed
+- [ ] Any changed architectural element files reflect the current session scope
+
+## Notes for reviewers
+
+List edge cases, tradeoffs, or follow-up concerns.
 </file>
 
 <file path="scripts/architecture/generate-context-configs.mjs">
@@ -1242,6 +1264,7 @@ function sleep(ms) {
     ".github/workflows/*.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     "scripts/**/*.mjs",
+    "architecture/context-settings.json",
     "package.json",
     "repomix.config.json",
     "ci-context.repomix.config.json"
