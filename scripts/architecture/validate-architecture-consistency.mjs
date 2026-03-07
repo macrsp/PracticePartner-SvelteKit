@@ -13,7 +13,9 @@ const branchFlagIndex = process.argv.indexOf('--branch');
 const branchName = branchFlagIndex >= 0 ? process.argv[branchFlagIndex + 1] : process.env.BRANCH_NAME;
 const requireFocusUpdate = process.argv.includes('--require-focus-update');
 
-main().catch((error) => {
+try {
+	main();
+} catch (error) {
 	if (error instanceof ValidationError) {
 		console.error(`Architecture validation failed: ${error.message}`);
 		process.exit(1);
@@ -21,7 +23,7 @@ main().catch((error) => {
 
 	console.error(error);
 	process.exit(1);
-});
+}
 
 function main() {
 	const { settings, elements } = loadElements();
@@ -83,7 +85,7 @@ function main() {
 			if (focusResult.usedDefault) {
 				console.warn(
 					`[architecture validation] Branch "${branchName}" is using the default focus element "${focusElement.id}". ` +
-						`A focus-element file update is not required for default-fallback branches.`
+						'A focus-element file update is not required for default-fallback branches.'
 				);
 			}
 		}
