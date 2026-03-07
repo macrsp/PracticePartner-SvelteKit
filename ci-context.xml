@@ -27,15 +27,15 @@ The content is organized as follows:
   between different files in the repository.
 - Be aware that this file may contain sensitive information. Handle it with
   the same level of security as you would the original repository.
-- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.
+
 - Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
 </usage_guidelines>
 
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/architecture-governance.md, architecture/elements/app-shell.md, architecture/elements/navigation-service.md, architecture/elements/continuity-service.md, architecture/**, scripts/architecture/**, .github/workflows/ci.yml, .github/workflows/update-repo-context.yml, repomix.config.json, repomix-instruction.md, src/routes/+layout.ts, src/routes/+layout.svelte, src/app.html, src/lib/ui/shell/**, src/lib/app/navigation/**, src/routes/+page.ts, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/platform/browser/fs/**
-- Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, architecture/contexts, .tmp
+- Only files matching these patterns are included: .github/workflows/*.yml, .github/PULL_REQUEST_TEMPLATE.md, scripts/**/*.mjs, architecture/*.md, architecture/elements/*.md, architecture/context-settings.json, planning-context.md, repomix-instruction.md, package.json, repomix.config.json, ci-context.repomix.config.json
+- Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, ci-context.xml, architecture/target-architecture.md, architecture/contexts, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -43,15 +43,14 @@ The content is organized as follows:
 
 </file_summary>
 
-<user_provided_header>
-Current branch focus context for Architecture Governance. Generated using the default focus fallback because the branch name did not match an architectural element alias.
-</user_provided_header>
-
 <directory_structure>
 .github/
   workflows/
     ci.yml
+    deploy-cloudflare-pages.yml
+    populate-pr-context.yml
     update-repo-context.yml
+  PULL_REQUEST_TEMPLATE.md
 architecture/
   elements/
     activity-composer-service.md
@@ -71,12 +70,10 @@ architecture/
     selection-engine.md
     waveform-engine.md
   context-settings.json
-  element-seed-metadata.json
   lifecycle-map.md
   ownership-matrix.md
   README.md
   recovery-map.md
-  target-architecture.md
   target-architecture.template.md
 scripts/
   architecture/
@@ -86,11 +83,11 @@ scripts/
     lib.mjs
     validate-architecture-consistency.mjs
     wait-for-branch-workflow.mjs
-src/
-  routes/
-    +layout.ts
-    +page.ts
-  app.html
+  ci/
+    sync-pull-request-body.mjs
+    wait-for-branch-workflow.mjs
+ci-context.repomix.config.json
+package.json
 planning-context.md
 repomix-instruction.md
 repomix.config.json
@@ -98,6 +95,134 @@ repomix.config.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path=".github/workflows/deploy-cloudflare-pages.yml">
+# @role workflow
+# @owns build-and-deploy of the static SvelteKit site to Cloudflare Pages
+# @not-owns runtime behavior, repo-context generation, or feature logic
+# @notes Builds adapter-static output from build/ and deploys it to the production Cloudflare Pages project at root path.
+
+name: Deploy Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: cloudflare-pages-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site for Cloudflare Pages
+        run: npm run build
+        env:
+          BASE_PATH: ""
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy build --project-name=practicepartner-sveltekit
+</file>
+
+<file path=".github/workflows/populate-pr-context.yml">
+# @role workflow
+# @owns automatic pull-request body enrichment from architectural focus, changed architectural elements, and changed code ownership hints
+# @not-owns branch protection, CI validation, or production deployment
+# @notes Runs on pull_request_target so it can write to the PR body safely using base-branch workflow logic.
+
+name: Populate PR Context
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: populate-pr-context-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout base branch workflow logic
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Populate pull-request body
+        run: >
+          node scripts/ci/sync-pull-request-body.mjs
+          --repo "${REPO}"
+          --pull-number "${PULL_NUMBER}"
+          --branch "${BRANCH_NAME}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PULL_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+</file>
+
+<file path=".github/PULL_REQUEST_TEMPLATE.md">
+## Summary
+
+Describe the user-visible or repo-visible change.
+
+## Architecture Context
+
+<!-- architecture:auto:start -->
+_Auto-generated architecture context will be inserted here._
+<!-- architecture:auto:end -->
+
+## Validation
+
+- [ ] `CI / validate` is green
+- [ ] Generated artifacts are committed
+- [ ] Any changed architectural element files reflect the current session scope
+
+## Notes for reviewers
+
+List edge cases, tradeoffs, or follow-up concerns.
+</file>
 
 <file path="architecture/elements/activity-service.md">
 ---
@@ -824,368 +949,6 @@ Define and maintain the runtime contract for waveform engine.
 }
 </file>
 
-<file path="architecture/element-seed-metadata.json">
-{
-  "elements": [
-    {
-      "id": "architecture-governance",
-      "title": "Architecture Governance",
-      "order": 5,
-      "kind": "governance",
-      "branch_aliases": [
-        "architecture-governance",
-        "repo-architecture",
-        "architecture-artifacts"
-      ],
-      "collaborators": [
-        "app-shell",
-        "navigation-service",
-        "continuity-service"
-      ],
-      "code_paths": [
-        "architecture/**",
-        "scripts/architecture/**",
-        ".github/workflows/ci.yml",
-        ".github/workflows/update-repo-context.yml",
-        "repomix.config.json",
-        "repomix-instruction.md"
-      ]
-    },
-    {
-      "id": "app-shell",
-      "title": "App Shell",
-      "order": 10,
-      "kind": "ui-shell",
-      "branch_aliases": [
-        "app-shell",
-        "shell"
-      ],
-      "collaborators": [
-        "navigation-service",
-        "player-session-service",
-        "error-recovery-coordinator",
-        "profile-service"
-      ],
-      "code_paths": [
-        "src/routes/+layout.ts",
-        "src/routes/+layout.svelte",
-        "src/app.html",
-        "src/lib/ui/shell/**"
-      ]
-    },
-    {
-      "id": "planner-screen",
-      "title": "Planner Screen",
-      "order": 20,
-      "kind": "screen",
-      "branch_aliases": [
-        "planner-screen",
-        "planner-ui",
-        "planner"
-      ],
-      "collaborators": [
-        "activity-service",
-        "activity-composer-service",
-        "plan-service",
-        "profile-service",
-        "navigation-service",
-        "player-session-service"
-      ],
-      "code_paths": [
-        "src/routes/planner/+page.svelte",
-        "src/lib/ui/planner/**"
-      ]
-    },
-    {
-      "id": "profile-service",
-      "title": "Profile Service",
-      "order": 30,
-      "kind": "application-service",
-      "branch_aliases": [
-        "profile-service",
-        "profiles"
-      ],
-      "collaborators": [
-        "continuity-service",
-        "planner-screen",
-        "app-shell"
-      ],
-      "code_paths": [
-        "src/lib/domains/profiles/**",
-        "src/lib/app/profile/**"
-      ]
-    },
-    {
-      "id": "navigation-service",
-      "title": "Navigation Service",
-      "order": 40,
-      "kind": "application-service",
-      "branch_aliases": [
-        "navigation-service",
-        "navigation",
-        "nav"
-      ],
-      "collaborators": [
-        "app-shell",
-        "planner-screen",
-        "player-session-service",
-        "error-recovery-coordinator"
-      ],
-      "code_paths": [
-        "src/lib/app/navigation/**",
-        "src/routes/+layout.ts",
-        "src/routes/+page.ts"
-      ]
-    },
-    {
-      "id": "library-service",
-      "title": "Library Service",
-      "order": 50,
-      "kind": "application-service",
-      "branch_aliases": [
-        "library-service",
-        "library",
-        "folder-connection"
-      ],
-      "collaborators": [
-        "continuity-service",
-        "player-session-service",
-        "error-recovery-coordinator",
-        "section-service",
-        "activity-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/library/**",
-        "src/lib/platform/browser/fs/**",
-        "src/lib/platform/browser/permissions/**"
-      ]
-    },
-    {
-      "id": "section-service",
-      "title": "Section Service",
-      "order": 60,
-      "kind": "application-service",
-      "branch_aliases": [
-        "section-service",
-        "sections"
-      ],
-      "collaborators": [
-        "selection-engine",
-        "player-session-service",
-        "library-service",
-        "continuity-service",
-        "activity-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/sections/**",
-        "src/lib/app/sections/**"
-      ]
-    },
-    {
-      "id": "activity-service",
-      "title": "Activity Service",
-      "order": 70,
-      "kind": "application-service",
-      "branch_aliases": [
-        "activity-service",
-        "activities"
-      ],
-      "collaborators": [
-        "activity-composer-service",
-        "plan-service",
-        "library-service",
-        "section-service",
-        "player-session-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/activities/**",
-        "src/lib/app/activities/**"
-      ]
-    },
-    {
-      "id": "activity-composer-service",
-      "title": "Activity Composer Service",
-      "order": 80,
-      "kind": "application-service",
-      "branch_aliases": [
-        "activity-composer-service",
-        "activity-composer",
-        "composer"
-      ],
-      "collaborators": [
-        "activity-service",
-        "player-session-service",
-        "library-service",
-        "section-service",
-        "planner-screen"
-      ],
-      "code_paths": [
-        "src/lib/app/activity-composer/**",
-        "src/lib/ui/planner/**",
-        "src/lib/ui/player/**"
-      ]
-    },
-    {
-      "id": "plan-service",
-      "title": "Plan Service",
-      "order": 90,
-      "kind": "application-service",
-      "branch_aliases": [
-        "plan-service",
-        "practice-plan",
-        "plan-items"
-      ],
-      "collaborators": [
-        "planner-screen",
-        "activity-service",
-        "player-session-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/plans/**",
-        "src/lib/app/plans/**"
-      ]
-    },
-    {
-      "id": "player-session-service",
-      "title": "Player Session Service",
-      "order": 100,
-      "kind": "application-service",
-      "branch_aliases": [
-        "player-session-service",
-        "player-session",
-        "player"
-      ],
-      "collaborators": [
-        "audio-engine",
-        "waveform-engine",
-        "selection-engine",
-        "library-service",
-        "section-service",
-        "continuity-service",
-        "navigation-service"
-      ],
-      "code_paths": [
-        "src/lib/app/player-session/**",
-        "src/lib/ui/player/**",
-        "src/routes/+layout.ts"
-      ]
-    },
-    {
-      "id": "audio-engine",
-      "title": "Audio Engine",
-      "order": 110,
-      "kind": "interaction-engine",
-      "branch_aliases": [
-        "audio-engine",
-        "playback-engine",
-        "transport"
-      ],
-      "collaborators": [
-        "player-session-service",
-        "waveform-engine",
-        "selection-engine",
-        "error-recovery-coordinator",
-        "continuity-service"
-      ],
-      "code_paths": [
-        "src/lib/engines/audio/**",
-        "src/lib/platform/browser/audio/**",
-        "src/lib/platform/browser/media/**"
-      ]
-    },
-    {
-      "id": "waveform-engine",
-      "title": "Waveform Engine",
-      "order": 120,
-      "kind": "interaction-engine",
-      "branch_aliases": [
-        "waveform-engine",
-        "waveform"
-      ],
-      "collaborators": [
-        "player-session-service",
-        "audio-engine",
-        "selection-engine",
-        "error-recovery-coordinator"
-      ],
-      "code_paths": [
-        "src/lib/engines/waveform/**",
-        "src/lib/platform/browser/media/**",
-        "src/lib/ui/player/**"
-      ]
-    },
-    {
-      "id": "selection-engine",
-      "title": "Selection Engine",
-      "order": 130,
-      "kind": "interaction-engine",
-      "branch_aliases": [
-        "selection-engine",
-        "selection"
-      ],
-      "collaborators": [
-        "player-session-service",
-        "waveform-engine",
-        "audio-engine",
-        "section-service"
-      ],
-      "code_paths": [
-        "src/lib/engines/selection/**",
-        "src/lib/ui/player/**",
-        "src/lib/app/selection/**"
-      ]
-    },
-    {
-      "id": "continuity-service",
-      "title": "Continuity Service",
-      "order": 140,
-      "kind": "application-service",
-      "branch_aliases": [
-        "continuity-service",
-        "continuity"
-      ],
-      "collaborators": [
-        "profile-service",
-        "library-service",
-        "section-service",
-        "player-session-service",
-        "error-recovery-coordinator"
-      ],
-      "code_paths": [
-        "src/lib/app/continuity/**",
-        "src/lib/platform/browser/db/**",
-        "src/lib/platform/browser/fs/**"
-      ]
-    },
-    {
-      "id": "error-recovery-coordinator",
-      "title": "Error Recovery Coordinator",
-      "order": 150,
-      "kind": "application-service",
-      "branch_aliases": [
-        "error-recovery-coordinator",
-        "recovery",
-        "error-recovery"
-      ],
-      "collaborators": [
-        "app-shell",
-        "library-service",
-        "player-session-service",
-        "audio-engine",
-        "waveform-engine",
-        "continuity-service",
-        "navigation-service"
-      ],
-      "code_paths": [
-        "src/lib/app/recovery/**",
-        "src/lib/ui/shared/**",
-        "src/routes/+layout.ts"
-      ]
-    }
-  ]
-}
-</file>
-
 <file path="architecture/README.md">
 <!--
   @role architecture-guide
@@ -1289,23 +1052,429 @@ writeText(settings.targetArchitectureOutput, output);
 console.log(`Generated ${settings.targetArchitectureOutput}`);
 </file>
 
-<file path="src/routes/+layout.ts">
-export const prerender = true;
+<file path="scripts/ci/sync-pull-request-body.mjs">
+/**
+ * @role ci-helper-script
+ * @owns generation and synchronization of the pull-request architecture summary section
+ * @not-owns CI validation, branch protection, or architecture source-of-truth content
+ * @notes Uses base-branch workflow logic and architecture metadata to update only the auto-generated PR body section.
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { inferFocusElement, loadElements } from '../architecture/lib.mjs';
+
+class PullRequestBodySyncError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'PullRequestBodySyncError';
+	}
+}
+
+const AUTO_START = '<!-- architecture:auto:start -->';
+const AUTO_END = '<!-- architecture:auto:end -->';
+
+const args = parseArgs(process.argv.slice(2));
+
+main().catch((error) => {
+	if (error instanceof PullRequestBodySyncError) {
+		console.error(`PR body sync failed: ${error.message}`);
+		process.exit(1);
+	}
+
+	console.error(error);
+	process.exit(1);
+});
+
+async function main() {
+	const repo = args.repo;
+	const pullNumber = Number(args['pull-number']);
+	const branchName = args.branch;
+	const token = process.env.GITHUB_TOKEN;
+
+	if (!repo) {
+		throw new PullRequestBodySyncError('Missing required --repo argument.');
+	}
+
+	if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+		throw new PullRequestBodySyncError('Missing or invalid --pull-number argument.');
+	}
+
+	if (!branchName) {
+		throw new PullRequestBodySyncError('Missing required --branch argument.');
+	}
+
+	if (!token) {
+		throw new PullRequestBodySyncError('GITHUB_TOKEN is required.');
+	}
+
+	const [owner, repoName] = repo.split('/');
+
+	if (!owner || !repoName) {
+		throw new PullRequestBodySyncError(`Invalid repo value "${repo}". Expected "owner/repo".`);
+	}
+
+	const { settings, elements } = loadElements();
+	const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
+	const changedFiles = await listPullRequestFiles({ owner, repoName, pullNumber, token });
+
+	const summary = buildArchitectureSummary({
+		branchName,
+		changedFiles,
+		elements,
+		focusResult
+	});
+
+	const pullRequest = await getPullRequest({ owner, repoName, pullNumber, token });
+	const templateBody = readPullRequestTemplate();
+	const startingBody = pullRequest.body?.trim() ? pullRequest.body : templateBody;
+	const nextBody = upsertAutoSection(startingBody, summary);
+
+	if (nextBody === (pullRequest.body ?? '')) {
+		console.log(`PR #${pullNumber} body is already up to date.`);
+		return;
+	}
+
+	await updatePullRequestBody({
+		owner,
+		repoName,
+		pullNumber,
+		token,
+		body: nextBody
+	});
+
+	console.log(`Updated PR #${pullNumber} body.`);
+}
+
+function parseArgs(argv) {
+	const parsed = {};
+
+	for (let index = 0; index < argv.length; index += 1) {
+		const token = argv[index];
+
+		if (!token.startsWith('--')) {
+			throw new PullRequestBodySyncError(`Unknown argument "${token}".`);
+		}
+
+		const key = token.slice(2);
+		const value = argv[index + 1];
+
+		if (!value || value.startsWith('--')) {
+			throw new PullRequestBodySyncError(`Missing value for argument "${token}".`);
+		}
+
+		parsed[key] = value;
+		index += 1;
+	}
+
+	return parsed;
+}
+
+function readPullRequestTemplate() {
+	const templatePath = path.join(process.cwd(), '.github', 'PULL_REQUEST_TEMPLATE.md');
+
+	if (!fs.existsSync(templatePath)) {
+		return `${AUTO_START}\n_Auto-generated architecture context will be inserted here._\n${AUTO_END}\n`;
+	}
+
+	return fs.readFileSync(templatePath, 'utf8');
+}
+
+function buildArchitectureSummary({ branchName, changedFiles, elements, focusResult }) {
+	const changedArchitectureElementIds = new Set();
+	const impactedElementIds = new Set();
+	const fileMappings = [];
+
+	const elementsById = new Map(elements.map((element) => [element.id, element]));
+
+	for (const changedFile of changedFiles) {
+		const matchedElementIds = new Set();
+
+		for (const element of elements) {
+			if (changedFile === element.path) {
+				changedArchitectureElementIds.add(element.id);
+				matchedElementIds.add(element.id);
+				impactedElementIds.add(element.id);
+				continue;
+			}
+
+			for (const codePath of element.code_paths ?? []) {
+				if (matchesPattern(changedFile, codePath)) {
+					matchedElementIds.add(element.id);
+					impactedElementIds.add(element.id);
+				}
+			}
+		}
+
+		if (matchedElementIds.size > 0) {
+			fileMappings.push({
+				file: changedFile,
+				elementIds: [...matchedElementIds].sort()
+			});
+		}
+	}
+
+	if (impactedElementIds.size === 0) {
+		impactedElementIds.add(focusResult.element.id);
+	}
+
+	const impactedElements = [...impactedElementIds]
+		.map((id) => elementsById.get(id))
+		.filter(Boolean)
+		.sort(compareElements);
+
+	const changedArchitectureElements = [...changedArchitectureElementIds]
+		.map((id) => elementsById.get(id))
+		.filter(Boolean)
+		.sort(compareElements);
+
+	const collaboratorIds = new Set();
+	for (const element of impactedElements) {
+		for (const collaboratorId of element.collaborators ?? []) {
+			collaboratorIds.add(collaboratorId);
+		}
+	}
+
+	const collaborators = [...collaboratorIds]
+		.map((id) => elementsById.get(id))
+		.filter(Boolean)
+		.sort(compareElements);
+
+	const lines = [
+		'### Auto-generated architecture summary',
+		'',
+		`- Branch: \`${branchName}\``,
+		focusResult.usedDefault
+			? `- Focus element: \`${focusResult.element.id}\` (default fallback)`
+			: `- Focus element: \`${focusResult.element.id}\` (matched alias \`${focusResult.matchedAlias}\`)`
+	];
+
+	lines.push('', '### Changed architecture element files');
+
+	if (changedArchitectureElements.length === 0) {
+		lines.push('- None');
+	} else {
+		for (const element of changedArchitectureElements) {
+			lines.push(`- \`${element.id}\``);
+		}
+	}
+
+	lines.push('', '### Additional impacted elements');
+
+	for (const element of impactedElements) {
+		lines.push(`- \`${element.id}\``);
+	}
+
+	lines.push('', '### Collaborators to review');
+
+	if (collaborators.length === 0) {
+		lines.push('- None');
+	} else {
+		for (const element of collaborators) {
+			lines.push(`- \`${element.id}\``);
+		}
+	}
+
+	lines.push('', '### Changed file mapping');
+
+	if (fileMappings.length === 0) {
+		lines.push('- No changed files matched declared architecture ownership hints.');
+	} else {
+		for (const mapping of fileMappings.sort((left, right) => left.file.localeCompare(right.file))) {
+			lines.push(`- \`${mapping.file}\` → ${mapping.elementIds.map((id) => `\`${id}\``).join(', ')}`);
+		}
+	}
+
+	return lines.join('\n');
+}
+
+function compareElements(left, right) {
+	return Number(left.order ?? 0) - Number(right.order ?? 0) || left.id.localeCompare(right.id);
+}
+
+function matchesPattern(filePath, pattern) {
+	const regex = globToRegExp(pattern);
+	return regex.test(filePath);
+}
+
+function globToRegExp(pattern) {
+	let regex = '^';
+	let index = 0;
+
+	while (index < pattern.length) {
+		const char = pattern[index];
+		const nextChar = pattern[index + 1];
+
+		if (char === '*' && nextChar === '*') {
+			regex += '.*';
+			index += 2;
+			continue;
+		}
+
+		if (char === '*') {
+			regex += '[^/]*';
+			index += 1;
+			continue;
+		}
+
+		if ('\\.[]{}()+-?^$|'.includes(char)) {
+			regex += `\\${char}`;
+			index += 1;
+			continue;
+		}
+
+		regex += char;
+		index += 1;
+	}
+
+	regex += '$';
+	return new RegExp(regex);
+}
+
+function upsertAutoSection(body, autoSection) {
+	const normalizedBody = body?.trim() ? body : `${AUTO_START}\n${AUTO_END}`;
+	const block = `${AUTO_START}\n${autoSection}\n${AUTO_END}`;
+
+	if (normalizedBody.includes(AUTO_START) && normalizedBody.includes(AUTO_END)) {
+		const pattern = new RegExp(`${escapeRegExp(AUTO_START)}[\\s\\S]*?${escapeRegExp(AUTO_END)}`, 'm');
+		return normalizedBody.replace(pattern, block);
+	}
+
+	return `${normalizedBody.trim()}\n\n${block}\n`;
+}
+
+function escapeRegExp(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function getPullRequest({ owner, repoName, pullNumber, token }) {
+	return githubApiRequest({
+		method: 'GET',
+		path: `/repos/${owner}/${repoName}/pulls/${pullNumber}`,
+		token
+	});
+}
+
+async function listPullRequestFiles({ owner, repoName, pullNumber, token }) {
+	const files = [];
+	let page = 1;
+
+	while (true) {
+		const response = await githubApiRequest({
+			method: 'GET',
+			path: `/repos/${owner}/${repoName}/pulls/${pullNumber}/files?per_page=100&page=${page}`,
+			token
+		});
+
+		if (!Array.isArray(response) || response.length === 0) {
+			break;
+		}
+
+		for (const file of response) {
+			if (file.filename) {
+				files.push(file.filename);
+			}
+		}
+
+		if (response.length < 100) {
+			break;
+		}
+
+		page += 1;
+	}
+
+	return files;
+}
+
+async function updatePullRequestBody({ owner, repoName, pullNumber, token, body }) {
+	await githubApiRequest({
+		method: 'PATCH',
+		path: `/repos/${owner}/${repoName}/pulls/${pullNumber}`,
+		token,
+		body: { body }
+	});
+}
+
+async function githubApiRequest({ method, path, token, body }) {
+	const response = await fetch(`https://api.github.com${path}`, {
+		method,
+		headers: {
+			Authorization: `Bearer ${token}`,
+			Accept: 'application/vnd.github+json',
+			'X-GitHub-Api-Version': '2022-11-28',
+			'User-Agent': 'practicepartner-sveltekit-pr-context',
+			...(body ? { 'Content-Type': 'application/json' } : {})
+		},
+		...(body ? { body: JSON.stringify(body) } : {})
+	});
+
+	if (!response.ok) {
+		const text = await response.text();
+		throw new PullRequestBodySyncError(
+			`GitHub API request failed for ${path} with status ${response.status}: ${text}`
+		);
+	}
+
+	if (response.status === 204) {
+		return null;
+	}
+
+	return response.json();
+}
 </file>
 
-<file path="src/app.html">
-<!doctype html>
-<html lang="en">
-	<head>
-		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
-</html>
+<file path="ci-context.repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "ci-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": [
+    ".github/workflows/*.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "scripts/**/*.mjs",
+    "architecture/*.md",
+    "architecture/elements/*.md",
+    "architecture/context-settings.json",
+    "planning-context.md",
+    "repomix-instruction.md",
+    "package.json",
+    "repomix.config.json",
+    "ci-context.repomix.config.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "ci-context.xml",
+      "architecture/target-architecture.md",
+      "architecture/contexts",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
 </file>
 
 <file path="architecture/elements/activity-composer-service.md">
@@ -2145,12 +2314,199 @@ export function buildRepomixConfig({ outputPath, include, headerText }) {
 }
 </file>
 
-<file path="src/routes/+page.ts">
-import { redirect } from '@sveltejs/kit';
-import { resolve } from '$app/paths';
+<file path="scripts/ci/wait-for-branch-workflow.mjs">
+/**
+ * @role ci-helper-script
+ * @owns waiting for a branch-scoped workflow to settle and reporting the latest branch head SHA
+ * @not-owns build validation, architecture generation, or artifact freshness checks themselves
+ * @notes Expected operational failures return concise messages with exit code 1 rather than stack traces.
+ */
 
-export function load() {
-  throw redirect(307, resolve('/planner'));
+import fs from 'node:fs';
+
+class WorkflowWaitError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'WorkflowWaitError';
+	}
+}
+
+const args = parseArgs(process.argv.slice(2));
+
+main().catch((error) => {
+	if (error instanceof WorkflowWaitError) {
+		console.error(`Workflow wait failed: ${error.message}`);
+		process.exit(1);
+	}
+
+	console.error(error);
+	process.exit(1);
+});
+
+async function main() {
+	const repo = args.repo;
+	const branch = args.branch;
+	const workflowPath = args['workflow-path'];
+	const timeoutSeconds = Number(args['timeout-seconds'] ?? 900);
+	const pollSeconds = Number(args['poll-seconds'] ?? 10);
+	const token = process.env.GITHUB_TOKEN;
+
+	if (!repo) {
+		throw new WorkflowWaitError('Missing required --repo argument.');
+	}
+
+	if (!branch) {
+		throw new WorkflowWaitError('Missing required --branch argument.');
+	}
+
+	if (!workflowPath) {
+		throw new WorkflowWaitError('Missing required --workflow-path argument.');
+	}
+
+	if (!token) {
+		throw new WorkflowWaitError('GITHUB_TOKEN is required.');
+	}
+
+	const [owner, repoName] = repo.split('/');
+
+	if (!owner || !repoName) {
+		throw new WorkflowWaitError(`Invalid repo value "${repo}". Expected "owner/repo".`);
+	}
+
+	const workflow = await findWorkflowByPath({ owner, repoName, workflowPath, token });
+
+	if (!workflow) {
+		throw new WorkflowWaitError(`Could not find workflow at path "${workflowPath}".`);
+	}
+
+	const deadline = Date.now() + timeoutSeconds * 1000;
+	let printedWaitMessage = false;
+
+	while (true) {
+		const activeRuns = await listActiveWorkflowRuns({
+			owner,
+			repoName,
+			workflowId: workflow.id,
+			branch,
+			token
+		});
+
+		if (activeRuns.length === 0) {
+			break;
+		}
+
+		if (!printedWaitMessage) {
+			console.log(
+				`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
+			);
+			printedWaitMessage = true;
+		} else {
+			console.log(`Still waiting on ${activeRuns.length} "${workflow.name}" run(s)...`);
+		}
+
+		if (Date.now() >= deadline) {
+			throw new WorkflowWaitError(
+				`Timed out waiting for workflow "${workflow.name}" on branch "${branch}" to settle.`
+			);
+		}
+
+		await sleep(pollSeconds * 1000);
+	}
+
+	const latestHeadSha = await getBranchHeadSha({ owner, repoName, branch, token });
+	writeOutput('latest_head_sha', latestHeadSha);
+	console.log(`Latest branch head SHA for "${branch}" is ${latestHeadSha}.`);
+}
+
+function parseArgs(argv) {
+	const parsed = {};
+
+	for (let index = 0; index < argv.length; index += 1) {
+		const token = argv[index];
+
+		if (!token.startsWith('--')) {
+			throw new WorkflowWaitError(`Unknown argument "${token}".`);
+		}
+
+		const key = token.slice(2);
+		const value = argv[index + 1];
+
+		if (!value || value.startsWith('--')) {
+			throw new WorkflowWaitError(`Missing value for argument "${token}".`);
+		}
+
+		parsed[key] = value;
+		index += 1;
+	}
+
+	return parsed;
+}
+
+async function findWorkflowByPath({ owner, repoName, workflowPath, token }) {
+	const response = await githubApiRequest({
+		path: `/repos/${owner}/${repoName}/actions/workflows?per_page=100`,
+		token
+	});
+
+	return response.workflows?.find((workflow) => workflow.path === workflowPath) ?? null;
+}
+
+async function listActiveWorkflowRuns({ owner, repoName, workflowId, branch, token }) {
+	const response = await githubApiRequest({
+		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=50`,
+		token
+	});
+
+	return (response.workflow_runs ?? []).filter((run) => run.status !== 'completed');
+}
+
+async function getBranchHeadSha({ owner, repoName, branch, token }) {
+	const response = await githubApiRequest({
+		path: `/repos/${owner}/${repoName}/branches/${encodeURIComponent(branch)}`,
+		token
+	});
+
+	const sha = response.commit?.sha;
+
+	if (!sha) {
+		throw new WorkflowWaitError(`Could not resolve latest head SHA for branch "${branch}".`);
+	}
+
+	return sha;
+}
+
+async function githubApiRequest({ path, token }) {
+	const response = await fetch(`https://api.github.com${path}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+			Accept: 'application/vnd.github+json',
+			'X-GitHub-Api-Version': '2022-11-28',
+			'User-Agent': 'practicepartner-sveltekit-ci'
+		}
+	});
+
+	if (!response.ok) {
+		const text = await response.text();
+		throw new WorkflowWaitError(
+			`GitHub API request failed for ${path} with status ${response.status}: ${text}`
+		);
+	}
+
+	return response.json();
+}
+
+function writeOutput(name, value) {
+	const outputPath = process.env.GITHUB_OUTPUT;
+
+	if (!outputPath) {
+		return;
+	}
+
+	fs.appendFileSync(outputPath, `${name}=${value}\n`, 'utf8');
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 </file>
 
@@ -2261,575 +2617,6 @@ jobs:
 
           git commit -m "chore: refresh generated artifacts"
           git push origin HEAD:${GITHUB_REF_NAME}
-</file>
-
-<file path="architecture/target-architecture.md">
-<!--
-  @role architecture-template
-  @owns the template used to generate the full target architecture document
-  @not-owns the source content for individual elements
-  @notes Do not place element-specific rules here; those belong in the element files.
--->
-
-# Target Architecture
-
-> This file is generated from the source artifacts under `architecture/`.  
-> Edit the element files, ownership matrix, lifecycle map, recovery map, or this template.  
-> Do not edit the generated output manually.
-
-## Ownership Matrix
-
-# Ownership Matrix
-
-| State area | Authoritative owner | Writes through | Primary observers |
-| --- | --- | --- | --- |
-| active profile | Session context store | Profile service | App shell, planner screen, player session service |
-| profiles collection | Durable app store | Profile service | App shell, planner screen |
-| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
-| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
-| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
-| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
-| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
-| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
-| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
-| sections collection | Durable app store | Section service | Music player drawer, activity service |
-| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
-| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
-| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
-| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
-| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
-| overlay stack | Ephemeral UI registry | Navigation service | App shell |
-| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |
-
-## Lifecycle Map
-
-# Lifecycle Map
-
-## Recovery Map
-
-# Recovery Map
-
-| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
-| --- | --- | --- | --- | --- |
-| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
-| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
-| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
-| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
-| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
-| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
-| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
-| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
-| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
-| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
-
-## Architectural Elements
-
-## Architecture Governance
-
-# Architecture Governance
-
-## Responsibility
-Define and maintain the runtime contract for architecture governance.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- navigation-service
-- continuity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- architecture/**
-- scripts/architecture/**
-- .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
-- repomix.config.json
-- repomix-instruction.md
-
-## App Shell
-
-# App Shell
-
-## Responsibility
-Define and maintain the runtime contract for app shell.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- navigation-service
-- player-session-service
-- error-recovery-coordinator
-- profile-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/routes/+layout.ts
-- src/routes/+layout.svelte
-- src/app.html
-- src/lib/ui/shell/**
-
-## Planner Screen
-
-# Planner Screen
-
-## Responsibility
-Define and maintain the runtime contract for planner screen.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- activity-composer-service
-- plan-service
-- profile-service
-- navigation-service
-- player-session-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/routes/planner/+page.svelte
-- src/lib/ui/planner/**
-
-## Profile Service
-
-# Profile Service
-
-## Responsibility
-Define and maintain the runtime contract for profile service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- continuity-service
-- planner-screen
-- app-shell
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/domains/profiles/**
-- src/lib/app/profile/**
-
-## Navigation Service
-
-# Navigation Service
-
-## Responsibility
-Define and maintain the runtime contract for navigation service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- planner-screen
-- player-session-service
-- error-recovery-coordinator
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/navigation/**
-- src/routes/+layout.ts
-- src/routes/+page.ts
-
-## Library Service
-
-# Library Service
-
-## Responsibility
-Define and maintain the runtime contract for library service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- continuity-service
-- player-session-service
-- error-recovery-coordinator
-- section-service
-- activity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/domains/library/**
-- src/lib/platform/browser/fs/**
-- src/lib/platform/browser/permissions/**
-
-## Section Service
-
-# Section Service
-
-## Responsibility
-Define and maintain the runtime contract for section service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- selection-engine
-- player-session-service
-- library-service
-- continuity-service
-- activity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/domains/sections/**
-- src/lib/app/sections/**
-
-## Activity Service
-
-# Activity Service
-
-## Responsibility
-Define and maintain the runtime contract for activity service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-composer-service
-- plan-service
-- library-service
-- section-service
-- player-session-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/domains/activities/**
-- src/lib/app/activities/**
-
-## Activity Composer Service
-
-# Activity Composer Service
-
-## Responsibility
-Define and maintain the runtime contract for activity composer service.
-Become the man
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- player-session-service
-- library-service
-- section-service
-- planner-screen
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/activity-composer/**
-- src/lib/ui/planner/**
-- src/lib/ui/player/**
-
-## Plan Service
-
-# Plan Service
-
-## Responsibility
-Define and maintain the runtime contract for plan service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- planner-screen
-- activity-service
-- player-session-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/domains/plans/**
-- src/lib/app/plans/**
-
-## Player Session Service
-
-# Player Session Service
-
-## Responsibility
-Define and maintain the runtime contract for player session service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- audio-engine
-- waveform-engine
-- selection-engine
-- library-service
-- section-service
-- continuity-service
-- navigation-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/player-session/**
-- src/lib/ui/player/**
-- src/routes/+layout.ts
-
-## Audio Engine
-
-# Audio Engine
-
-## Responsibility
-Define and maintain the runtime contract for audio engine.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- player-session-service
-- waveform-engine
-- selection-engine
-- error-recovery-coordinator
-- continuity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/engines/audio/**
-- src/lib/platform/browser/audio/**
-- src/lib/platform/browser/media/**
-
-## Waveform Engine
-
-# Waveform Engine
-
-## Responsibility
-Define and maintain the runtime contract for waveform engine.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- player-session-service
-- audio-engine
-- selection-engine
-- error-recovery-coordinator
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/engines/waveform/**
-- src/lib/platform/browser/media/**
-- src/lib/ui/player/**
-
-## Selection Engine
-
-# Selection Engine
-
-## Responsibility
-Define and maintain the runtime contract for selection engine.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- player-session-service
-- waveform-engine
-- audio-engine
-- section-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/engines/selection/**
-- src/lib/ui/player/**
-- src/lib/app/selection/**
-
-## Continuity Service
-
-# Continuity Service
-
-## Responsibility
-Define and maintain the runtime contract for continuity service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- profile-service
-- library-service
-- section-service
-- player-session-service
-- error-recovery-coordinator
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/continuity/**
-- src/lib/platform/browser/db/**
-- src/lib/platform/browser/fs/**
-
-## Error Recovery Coordinator
-
-# Error Recovery Coordinator
-
-## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- library-service
-- player-session-service
-- audio-engine
-- waveform-engine
-- continuity-service
-- navigation-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
-- src/routes/+layout.ts
 </file>
 
 <file path="scripts/architecture/wait-for-branch-workflow.mjs">
@@ -3045,6 +2832,34 @@ function awaitAppend(filePath, content) {
 
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+</file>
+
+<file path="package.json">
+{
+	"name": "practicepartner-sveltekit",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"architecture:import-aggregate": "node scripts/architecture/import-aggregate-architecture.mjs"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-static": "^3.0.10",
+		"@sveltejs/kit": "^2.50.2",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"repomix": "^1.12.0",
+		"svelte": "^5.51.0",
+		"svelte-check": "^4.4.2",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.1"
+	}
 }
 </file>
 
