@@ -71,58 +71,6 @@ repomix-instruction.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="architecture/elements/activity-composer-service.md">
----
-id: activity-composer-service
-title: Activity Composer Service
-order: 80
-kind: application-service
-branch_aliases:
-  - activity-composer-service
-  - activity-composer
-  - composer
-collaborators:
-  - activity-service
-  - player-session-service
-  - library-service
-  - section-service
-  - planner-screen
-code_paths:
-  - src/lib/app/activity-composer/**
-  - src/lib/ui/planner/**
-  - src/lib/ui/player/**
----
-# Activity Composer Service
-
-## Responsibility
-Define and maintain the runtime contract for activity composer service.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- activity-service
-- player-session-service
-- library-service
-- section-service
-- planner-screen
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/activity-composer/**
-- src/lib/ui/planner/**
-- src/lib/ui/player/**
-</file>
-
 <file path="architecture/elements/activity-service.md">
 ---
 id: activity-service
@@ -388,6 +336,59 @@ Define and maintain the runtime contract for section service.
 
 <file path="src/routes/+layout.ts">
 export const prerender = true;
+</file>
+
+<file path="architecture/elements/activity-composer-service.md">
+---
+id: activity-composer-service
+title: Activity Composer Service
+order: 80
+kind: application-service
+branch_aliases:
+  - activity-composer-service
+  - activity-composer
+  - composer
+collaborators:
+  - activity-service
+  - player-session-service
+  - library-service
+  - section-service
+  - planner-screen
+code_paths:
+  - src/lib/app/activity-composer/**
+  - src/lib/ui/planner/**
+  - src/lib/ui/player/**
+---
+# Activity Composer Service
+
+## Responsibility
+Define and maintain the runtime contract for activity composer service.
+Become the man
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- activity-service
+- player-session-service
+- library-service
+- section-service
+- planner-screen
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/activity-composer/**
+- src/lib/ui/planner/**
+- src/lib/ui/player/**
 </file>
 
 <file path="architecture/lifecycle-map.md">

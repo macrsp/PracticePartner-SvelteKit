@@ -315,6 +315,7 @@ Define and maintain the runtime contract for activity service.
 
 ## Responsibility
 Define and maintain the runtime contract for activity composer service.
+Become the man
 
 ## Owns
 - responsibilities to be refined during implementation

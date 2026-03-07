@@ -13,7 +13,9 @@ const branchFlagIndex = process.argv.indexOf('--branch');
 const branchName = branchFlagIndex >= 0 ? process.argv[branchFlagIndex + 1] : process.env.BRANCH_NAME;
 const requireFocusUpdate = process.argv.includes('--require-focus-update');
 
-main().catch((error) => {
+try {
+	main();
+} catch (error) {
 	if (error instanceof ValidationError) {
 		console.error(`Architecture validation failed: ${error.message}`);
 		process.exit(1);
@@ -21,9 +23,9 @@ main().catch((error) => {
 
 	console.error(error);
 	process.exit(1);
-});
+}
 
-async function main() {
+function main() {
 	const { settings, elements } = loadElements();
 
 	const ids = new Set();
@@ -83,7 +85,7 @@ async function main() {
 			if (focusResult.usedDefault) {
 				console.warn(
 					`[architecture validation] Branch "${branchName}" is using the default focus element "${focusElement.id}". ` +
-						`A focus-element file update is not required for default-fallback branches.`
+						'A focus-element file update is not required for default-fallback branches.'
 				);
 			}
 		}
@@ -109,11 +111,23 @@ function getChangedFiles() {
 	try {
 		execSync(`git rev-parse --verify ${baseRef}`, { stdio: 'ignore' });
 	} catch {
+		console.warn(
+			`[architecture validation] Base ref "${baseRef}" is not available in this checkout. Skipping changed-file enforcement.`
+		);
 		return [];
 	}
 
-	const mergeBase = execSync(`git merge-base HEAD ${baseRef}`, { encoding: 'utf8' }).trim();
-	const diffOutput = execSync(`git diff --name-only ${mergeBase}...HEAD`, { encoding: 'utf8' }).trim();
+	const diffRange = resolveDiffRange(baseRef);
+
+	let diffOutput = '';
+
+	try {
+		diffOutput = execSync(`git diff --name-only ${diffRange}`, { encoding: 'utf8' }).trim();
+	} catch {
+		throw new ValidationError(
+			`Could not determine changed files against "${baseRef}". Ensure CI has sufficient git history for validation.`
+		);
+	}
 
 	if (!diffOutput) {
 		return [];
@@ -124,4 +138,21 @@ function getChangedFiles() {
 		.map((line) => line.trim())
 		.filter(Boolean)
 		.map((filePath) => path.normalize(filePath).replace(/\\/g, '/'));
+}
+
+function resolveDiffRange(baseRef) {
+	try {
+		const mergeBase = execSync(`git merge-base HEAD ${baseRef}`, { encoding: 'utf8' }).trim();
+
+		if (mergeBase) {
+			return `${mergeBase}..HEAD`;
+		}
+	} catch {
+		console.warn(
+			`[architecture validation] Could not compute merge-base with "${baseRef}". Falling back to direct diff "${baseRef}..HEAD".`
+		);
+		return `${baseRef}..HEAD`;
+	}
+
+	throw new ValidationError(`Could not resolve a usable diff base from "${baseRef}".`);
 }

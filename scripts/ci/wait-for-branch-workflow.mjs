@@ -1,6 +1,6 @@
 /**
  * @role ci-helper-script
- * @owns waiting for a branch-scoped workflow to settle and detecting whether the branch advanced while waiting
+ * @owns waiting for a branch-scoped workflow to settle and reporting the latest branch head SHA
  * @not-owns build validation, architecture generation, or artifact freshness checks themselves
  * @notes Expected operational failures return concise messages with exit code 1 rather than stack traces.
  */
@@ -30,7 +30,6 @@ async function main() {
 	const repo = args.repo;
 	const branch = args.branch;
 	const workflowPath = args['workflow-path'];
-	const currentHeadSha = args['current-head-sha'];
 	const timeoutSeconds = Number(args['timeout-seconds'] ?? 900);
 	const pollSeconds = Number(args['poll-seconds'] ?? 10);
 	const token = process.env.GITHUB_TOKEN;
@@ -47,10 +46,6 @@ async function main() {
 		throw new WorkflowWaitError('Missing required --workflow-path argument.');
 	}
 
-	if (!currentHeadSha) {
-		throw new WorkflowWaitError('Missing required --current-head-sha argument.');
-	}
-
 	if (!token) {
 		throw new WorkflowWaitError('GITHUB_TOKEN is required.');
 	}
@@ -61,19 +56,14 @@ async function main() {
 		throw new WorkflowWaitError(`Invalid repo value "${repo}". Expected "owner/repo".`);
 	}
 
-	const workflow = await findWorkflowByPath({
-		owner,
-		repoName,
-		workflowPath,
-		token
-	});
+	const workflow = await findWorkflowByPath({ owner, repoName, workflowPath, token });
 
 	if (!workflow) {
 		throw new WorkflowWaitError(`Could not find workflow at path "${workflowPath}".`);
 	}
 
 	const deadline = Date.now() + timeoutSeconds * 1000;
-	let hasWaited = false;
+	let printedWaitMessage = false;
 
 	while (true) {
 		const activeRuns = await listActiveWorkflowRuns({
@@ -88,10 +78,14 @@ async function main() {
 			break;
 		}
 
-		hasWaited = true;
-		console.log(
-			`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
-		);
+		if (!printedWaitMessage) {
+			console.log(
+				`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
+			);
+			printedWaitMessage = true;
+		} else {
+			console.log(`Still waiting on ${activeRuns.length} "${workflow.name}" run(s)...`);
+		}
 
 		if (Date.now() >= deadline) {
 			throw new WorkflowWaitError(
@@ -102,28 +96,9 @@ async function main() {
 		await sleep(pollSeconds * 1000);
 	}
 
-	const latestHeadSha = await getBranchHeadSha({
-		owner,
-		repoName,
-		branch,
-		token
-	});
-
-	const superseded = latestHeadSha !== currentHeadSha;
-
-	writeOutput('superseded', superseded ? 'true' : 'false');
+	const latestHeadSha = await getBranchHeadSha({ owner, repoName, branch, token });
 	writeOutput('latest_head_sha', latestHeadSha);
-	writeOutput('waited', hasWaited ? 'true' : 'false');
-
-	if (superseded) {
-		console.log(
-			`Branch head advanced from ${currentHeadSha} to ${latestHeadSha} while waiting for generated artifacts.`
-		);
-	} else if (hasWaited) {
-		console.log(`Workflow runs settled and branch head remained at ${currentHeadSha}.`);
-	} else {
-		console.log(`No active "${workflow.name}" runs were found for branch "${branch}".`);
-	}
+	console.log(`Latest branch head SHA for "${branch}" is ${latestHeadSha}.`);
 }
 
 function parseArgs(argv) {
@@ -161,7 +136,7 @@ async function findWorkflowByPath({ owner, repoName, workflowPath, token }) {
 
 async function listActiveWorkflowRuns({ owner, repoName, workflowId, branch, token }) {
 	const response = await githubApiRequest({
-		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=100`,
+		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=50`,
 		token
 	});
 
@@ -200,7 +175,7 @@ async function githubApiRequest({ path, token }) {
 		);
 	}
 
-	return await response.json();
+	return response.json();
 }
 
 function writeOutput(name, value) {

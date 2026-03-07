@@ -1,0 +1,50 @@
+# @role workflow
+# @owns automatic pull-request body enrichment from architectural focus, changed architectural elements, and changed code ownership hints
+# @not-owns branch protection, CI validation, or production deployment
+# @notes Runs on pull_request_target so it can write to the PR body safely using base-branch workflow logic.
+
+name: Populate PR Context
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: populate-pr-context-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout base branch workflow logic
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Populate pull-request body
+        run: >
+          node scripts/ci/sync-pull-request-body.mjs
+          --repo "${REPO}"
+          --pull-number "${PULL_NUMBER}"
+          --branch "${BRANCH_NAME}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PULL_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
