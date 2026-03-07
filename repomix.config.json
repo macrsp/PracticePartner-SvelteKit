@@ -23,7 +23,9 @@
     "customPatterns": [
       "build",
       ".svelte-kit",
-      "repo-context.xml"
+      "repo-context.xml",
+      "architecture/contexts",
+      ".tmp"
     ]
   },
   "security": {

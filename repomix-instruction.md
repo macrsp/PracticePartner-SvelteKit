@@ -1,6 +1,6 @@
 <!--
   @role repository-instructions
-  @owns repository-wide implementation rules, instruction priority, migration guardrails, output contract, and maintenance conventions
+  @owns repository-wide implementation rules, instruction priority, output contract, architecture-artifact discipline, and maintenance conventions
   @not-owns product requirements or per-file responsibilities
   @notes This file is the primary execution surface for AI implementation behavior in this repository.
 -->
@@ -9,15 +9,15 @@
 
 ## Purpose
 
-This is the SvelteKit migration target for Suzuki Practice Partner.
-
-This file is the **primary execution surface** for implementation behavior in AI-assisted coding sessions.
+This file defines repository-wide implementation behavior for AI-assisted coding sessions.
 
 Use it to decide:
+
 - how to interpret constraints
 - how to resolve ambiguities
-- how to prioritize simplicity vs preservation
+- how to prioritize simplicity versus abstraction
 - what output shape to return
+- how to preserve architectural boundaries
 
 Do not use it to redefine product behavior. Product behavior belongs in `planning-context.md`.
 
@@ -29,18 +29,19 @@ When instructions or signals conflict, use this order:
 
 1. **This file (`repomix-instruction.md`)**
 2. **`planning-context.md`** for product direction and accepted behavior
-3. **`migration-context.md`** for current migration goals and intentional non-goals
+3. **architecture artifacts** under `architecture/`
 4. **file headers** for per-file ownership and boundaries
 5. **the current codebase** for implementation details
 
 ### Tie-breaker rule
 
-If an example structure, earlier scaffold, or legacy pattern conflicts with:
+If an example structure, earlier scaffold, or informal pattern conflicts with:
+
 - SvelteKit correctness
 - current product direction
 - or the simplicity rules in this file
 
-then prefer correctness and simplicity, and explain the deviation briefly.
+prefer correctness and simplicity, and explain the deviation briefly.
 
 ---
 
@@ -49,49 +50,134 @@ then prefer correctness and simplicity, and explain the deviation briefly.
 - Favor **small, composable modules**.
 - Keep **browser APIs isolated** behind platform adapters.
 - Keep **route files thin**.
-- Prefer **SvelteKit-native patterns** over legacy structure preservation.
-- Preserve **GitHub Pages compatibility**.
+- Prefer **SvelteKit-native patterns**.
+- Preserve **Cloudflare Pages compatibility**.
 - Preserve a clean path to **future Tone.js integration**.
 - Do not introduce unnecessary dependencies.
+- Prefer explicit contracts for services, engines, and adapters over incidental component logic.
 
 ### Literalness rule
 
 Treat examples and suggested structures as **non-binding** unless they are explicitly labeled **required**.
 
 Do not infer mandatory structure from:
+
 - example directory layouts
 - phrases like “along these lines”
-- temporary scaffold routes or placeholder files
+- placeholder files
+- temporary scaffolding
 
 ---
 
-## Migration Rules
+## Hosting Rules
 
-This repository is a migration target, not a line-for-line port.
+Assume the production host is **Cloudflare Pages**.
 
-### Preserve behavior, not legacy shape
+Implementation must remain compatible with:
 
-Do not preserve legacy concepts merely because they exist in the source repo.
+- a static SvelteKit build
+- root-path deployment
+- no Node server runtime
+- no server-only SvelteKit features
+- browser-first PWA behavior
 
-Preserve only:
-- user-visible behavior that still matches the new product direction
-- persistence requirements that still matter
-- architectural boundaries that improve clarity in the new app
+Do not introduce:
 
-Do **not** preserve:
-- route structure
-- controller graph shape
-- DOM wiring style
+- server runtime requirements
+- server endpoints as required application infrastructure
+- hosting assumptions that depend on path-prefixed deployment
+- implementation choices that require anything other than static output deployed to Cloudflare Pages
 
-### Prefer current product direction over legacy architecture
+---
 
-If the legacy app bundles too many concerns into one surface, split them in the target repo according to the current product direction.
+## Development Environment Rules
 
-### Avoid speculative scaffolding
+Assume a **CI/CD-first** execution model for this repository.
 
-Do not create large empty directory trees or placeholder modules unless they are immediately useful for the current slice.
+Implementation and validation should assume:
 
-Prefer a smaller correct structure over a larger aspirational one.
+- there is **no local development environment**
+- validation happens primarily through **GitHub Actions**
+- repository edits plus CI validation are the default workflow
+- local-machine-specific setup should not be assumed
+
+Do not default to telling the user to run commands locally.
+
+Use **GitHub Codespaces** only when it is clearly necessary and the task cannot reasonably be completed through repository changes plus the existing CI/CD pipeline.
+
+Prefer:
+
+- repository edits
+- workflow-based validation
+- static build verification in CI
+- deployment validation through the existing GitHub Actions pipeline
+
+Avoid introducing:
+
+- instructions that assume a persistent local machine setup
+- tooling that is only justified by local development convenience
+- implementation steps that require local execution when CI/CD validation is sufficient
+
+---
+
+## Architecture Artifact Rules
+
+The architecture source of truth lives under `architecture/`.
+
+The architecture set is split as follows:
+
+- `architecture/ownership-matrix.md` is the smallest high-signal architectural reference and should be safe to include in all coding sessions
+- `architecture/lifecycle-map.md` captures runtime lifecycle transitions
+- `architecture/recovery-map.md` captures failure and recovery behavior
+- `architecture/elements/*.md` are the source files for individual architectural elements
+- `architecture/target-architecture.template.md` is the template for the generated architecture document
+- `architecture/target-architecture.md` is a generated artifact
+- `architecture/contexts/*.xml` are generated artifacts
+
+Do not hand-edit:
+
+- `architecture/target-architecture.md`
+- `architecture/contexts/*.xml`
+
+Those are generated and maintained automatically by GitHub Actions.
+
+---
+
+## Focus Element Rules
+
+Every meaningful coding session should have a **focus architectural element**.
+
+The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+
+If a branch name does not match any declared alias, the repository falls back to the default focus element:
+
+- `architecture-governance`
+
+That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
+
+The first step in any coding session is to update the focus element’s architecture file, including:
+
+- collaborators
+- ownership boundaries
+- invariants
+- lifecycle notes
+- any architecture details that are changing in the session
+
+Do not start implementation by changing code first and updating architecture later.
+
+Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Product-shape Rules
+
+Implement the current product direction as follows:
+
+- prefer **planner-first** surfaces
+- prefer reusable **drawer/panel** execution surfaces for media interaction
+- keep organization and execution as distinct concerns
+- keep profiles, sections, activities, and plans as distinct concepts
+- do not collapse unrelated product concepts into a single convenience abstraction
 
 ---
 
@@ -102,11 +188,11 @@ Prefer a smaller correct structure over a larger aspirational one.
 - Do **not** move or duplicate routes just to satisfy an example structure.
 - If a shared shell is needed, prefer a minimal `+layout.svelte` approach unless a more complex structure is justified.
 - If a suggested structure conflicts with filesystem routing behavior, prefer routing correctness.
-- Do **not** add the workspace concept back! It is is the reference repo, but it is explicitly deleted!!!
 
 ### Routing-specific tie-breaker
 
 If there is a choice between:
+
 - preserving an example route layout
 - and keeping routing simple and correct
 
@@ -114,11 +200,22 @@ choose the simpler correct routing structure.
 
 ---
 
+## Architecture Boundary Rules
+
+- Keep domain rules separate from UI composition.
+- Keep application orchestration separate from browser capability access.
+- Treat interaction-heavy systems such as playback, waveform handling, and selection as dedicated services or engines with explicit contracts.
+- Do not let route components or presentational components own persistence, audio control, or file-system logic.
+- Keep continuity and recovery behavior explicit rather than implicit.
+
+---
+
 ## State and Browser Boundary Rules
 
 - No global mutable singleton app-state module unless explicitly requested.
 - Prefer state factories, context, or narrowly scoped stores over repo-wide mutable globals.
-- IndexedDB, file-system access, audio APIs, and other browser-only integrations must live behind platform/browser modules.
+- Keep durable state, session state, ephemeral UI state, and derived state conceptually distinct.
+- IndexedDB, file-system access, audio APIs, service worker behavior, and other browser-only integrations must live behind platform/browser modules.
 - Route components and presentational components must not own low-level browser persistence or audio logic.
 
 ---
@@ -126,6 +223,7 @@ choose the simpler correct routing structure.
 ## File Change Rules
 
 You may:
+
 - create files
 - delete files
 - move files
@@ -138,6 +236,7 @@ when needed for a cleaner or more correct implementation.
 Do not keep a bad scaffold, conflicting route, or obsolete placeholder file just to avoid deleting it.
 
 If you delete, move, or rename a file:
+
 - say so explicitly in a short list before the file contents
 - still return full contents of all remaining changed files
 
@@ -155,10 +254,12 @@ For implementation requests:
 ### When not to preserve suggestions
 
 If a user prompt includes a suggested structure, treat it as:
+
 - a preference
 - not a requirement
 
 unless the user explicitly says:
+
 - “must use this structure”
 - “required”
 - “do not deviate”
@@ -168,6 +269,7 @@ unless the user explicitly says:
 ## Planning / Product Boundary
 
 `planning-context.md` is the source of truth for:
+
 - accepted behavior
 - product direction
 - user-visible goals
@@ -178,14 +280,28 @@ If the codebase or a prompt example points in a different direction than `planni
 
 ---
 
-## Current Migration Heuristics
+## Session Focus Rules
 
-When migrating a slice:
+When implementing a slice, keep the change set focused on a small number of architectural elements.
 
-- prefer behavior-preserving rewrites over literal ports
-- prefer planner-first/library-first surfaces. DO NOT revive the overly broad legacy “workspace” surfaces - the product direction has changed and that concept is reference only.
-- prefer reusable UI surfaces such as drawers/panels over dedicated routes when the product direction calls for them
-- keep the current slice minimal and prove the architecture before adding downstream complexity
+Prefer work that is scoped by:
+
+- explicit state owners
+- explicit service or engine boundaries
+- explicit recovery and continuity behavior
+
+Avoid vague scopes such as:
+
+- “planner work”
+- “player work”
+- “general cleanup”
+
+Prefer precise scopes such as:
+
+- profile selection continuity
+- activity composition flow
+- track library reconnection
+- playback bounds handling
 
 ---
 

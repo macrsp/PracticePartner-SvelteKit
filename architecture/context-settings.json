@@ -1,0 +1,17 @@
+{
+  "elementsDir": "architecture/elements",
+  "targetArchitectureTemplate": "architecture/target-architecture.template.md",
+  "targetArchitectureOutput": "architecture/target-architecture.md",
+  "generatedContextsDir": "architecture/contexts",
+  "contextConfigTempDir": ".tmp/architecture-context-configs",
+  "repoContextOutput": "repo-context.xml",
+  "alwaysIncludeInElementContexts": [
+    "planning-context.md",
+    "repomix-instruction.md",
+    "architecture/ownership-matrix.md",
+    "architecture/lifecycle-map.md",
+    "architecture/recovery-map.md"
+  ],
+  "defaultFocusElement": "architecture-governance",
+  "currentFocusContextName": "current-focus.context.xml"
+}

@@ -1,7 +1,7 @@
 # @role workflow
 # @owns build-and-deploy of the static SvelteKit site to Cloudflare Pages
 # @not-owns runtime behavior, repo-context generation, or feature logic
-# @notes Uses adapter-static output from build/ and deploys it to a Direct Upload Pages project.
+# @notes Builds adapter-static output from build/ and deploys it to the production Cloudflare Pages project at root path.
 
 name: Deploy Cloudflare Pages
 
@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build site
+      - name: Build static site for Cloudflare Pages
         run: npm run build
         env:
           BASE_PATH: ""
