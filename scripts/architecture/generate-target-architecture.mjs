@@ -1,7 +1,7 @@
 import {
 	loadElements,
 	readText,
-	stripCommentHeader,
+	stripLeadingHeading,
 	writeText
 } from './lib.mjs';
 
@@ -11,11 +11,14 @@ const template = readText(settings.targetArchitectureTemplate);
 
 const includePattern = /\{\{INCLUDE:([^}]+)\}\}/g;
 const resolvedTemplate = template.replace(includePattern, (_, includePath) => {
-	return stripCommentHeader(readText(includePath.trim()));
+	return stripLeadingHeading(readText(includePath.trim()));
 });
 
 const renderedElements = elements
-	.map((element) => `## ${element.title}\n\n${element.body}`)
+	.map((element) => {
+		const body = stripLeadingHeading(element.body);
+		return body ? `## ${element.title}\n\n${body}` : `## ${element.title}`;
+	})
 	.join('\n\n');
 
 const output = resolvedTemplate.replace('{{ELEMENTS}}', renderedElements).trimEnd() + '\n';
