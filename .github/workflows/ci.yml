@@ -1,7 +1,7 @@
 # @role workflow
-# @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
+# @owns pull-request and branch validation for Cloudflare Pages build health, generated architecture artifacts, code-path coverage manifests, and repo-context generation
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
+# @notes Validates generated architecture artifacts, coverage manifests, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
 
 name: Branch Validation
 
@@ -15,6 +15,7 @@ on:
       - ci-context.xml
       - architecture/target-architecture.md
       - architecture/contexts/**
+      - architecture/context-manifests/**
   workflow_dispatch:
 
 permissions:
@@ -77,7 +78,7 @@ jobs:
       - name: Generate target architecture
         run: node scripts/architecture/generate-target-architecture.mjs
 
-      - name: Generate architecture context configs
+      - name: Generate architecture context configs and coverage manifests
         run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -102,7 +103,8 @@ jobs:
             repo-context.xml \
             ci-context.xml \
             architecture/target-architecture.md \
-            architecture/contexts; then
+            architecture/contexts \
+            architecture/context-manifests; then
             echo "Generated artifacts are current."
             exit 0
           fi
@@ -114,7 +116,8 @@ jobs:
             repo-context.xml \
             ci-context.xml \
             architecture/target-architecture.md \
-            architecture/contexts
+            architecture/contexts \
+            architecture/context-manifests
           echo ""
 
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -132,7 +135,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "Branch pushes use a self-healing artifact flow."
-          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits them back to the branch."
+          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits contexts and coverage manifests back to the branch."
 
       - name: Build static app for Cloudflare Pages
         run: npm run build

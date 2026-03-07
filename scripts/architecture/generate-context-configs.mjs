@@ -1,9 +1,14 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import {
+	buildContextCoverageManifest,
 	buildRepomixConfig,
+	buildRepositoryCoverageManifest,
 	collectElementContext,
 	collectUniqueCodePaths,
 	ensureDir,
+	getElementManifestPath,
+	getRepoManifestPath,
 	inferFocusElement,
 	loadElements,
 	writeText
@@ -13,12 +18,30 @@ const branchFlagIndex = process.argv.indexOf('--branch');
 const branchName = branchFlagIndex >= 0 ? process.argv[branchFlagIndex + 1] : process.env.BRANCH_NAME;
 
 const { settings, elements } = loadElements();
+
+fs.rmSync(path.join(process.cwd(), settings.contextConfigTempDir), { recursive: true, force: true });
+fs.rmSync(path.join(process.cwd(), settings.contextManifestDir), { recursive: true, force: true });
+
 ensureDir(settings.contextConfigTempDir);
 ensureDir(settings.generatedContextsDir);
+ensureDir(settings.contextManifestDir);
+
+writeText(getRepoManifestPath(settings), buildRepositoryCoverageManifest(elements));
 
 for (const element of elements) {
 	const contextElements = collectElementContext(element.id, elements);
+	const manifestPath = getElementManifestPath(element.id, settings);
+
+	writeText(
+		manifestPath,
+		buildContextCoverageManifest({
+			focusElement: element,
+			contextElements
+		})
+	);
+
 	const include = [
+		manifestPath,
 		...settings.alwaysIncludeInElementContexts,
 		...contextElements.map((item) => item.path),
 		...collectUniqueCodePaths(contextElements)
@@ -38,9 +61,10 @@ for (const element of elements) {
 
 const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
 const focusElement = focusResult.element;
-
+const focusManifestPath = getElementManifestPath(focusElement.id, settings);
 const focusContextElements = collectElementContext(focusElement.id, elements);
 const focusInclude = [
+	focusManifestPath,
 	...settings.alwaysIncludeInElementContexts,
 	...focusContextElements.map((item) => item.path),
 	...collectUniqueCodePaths(focusContextElements)
@@ -61,7 +85,8 @@ writeText(
 	JSON.stringify(currentFocusConfig, null, 2) + '\n'
 );
 
-console.log(`Generated context configs for ${elements.length} architectural elements.`);
+console.log(`Generated context configs and coverage manifests for ${elements.length} architectural elements.`);
+console.log(`Generated repository coverage manifest at ${getRepoManifestPath(settings)}.`);
 console.log(
 	focusResult.usedDefault
 		? `Current focus element: ${focusElement.id} (default fallback for branch "${branchName}")`

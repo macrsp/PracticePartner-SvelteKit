@@ -133,11 +133,13 @@ The architecture set is split as follows:
 - `architecture/target-architecture.template.md` is the template for the generated architecture document
 - `architecture/target-architecture.md` is a generated artifact
 - `architecture/contexts/*.xml` are generated artifacts
+- `architecture/context-manifests/*.md` are generated code-path coverage manifests used to clarify whether declared architectural areas are present, empty, or missing in the repository
 
 Do not hand-edit:
 
 - `architecture/target-architecture.md`
 - `architecture/contexts/*.xml`
+- `architecture/context-manifests/*.md`
 
 Those are generated and maintained automatically by GitHub Actions.
 
@@ -147,15 +149,18 @@ Those are generated and maintained automatically by GitHub Actions.
 
 Every meaningful coding session should have a **focus architectural element**.
 
-The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+The preferred way to select the focus element is by interpreting user request. Guide the user to make a branch name matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
 
-If a branch name does not match any declared alias, the repository falls back to the default focus element:
+If the user does not declare a focus fall back to the default focus element:
 
 - `architecture-governance`
 
 That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
 
-The first step in any coding session is to update the focus element’s architecture file, including:
+The first steps in any coding session are
+1. Determine what behavior changes need to be implemented, and choose the focus element to work on (user may require advise on this - ensure that they provide you the target-architecture.md for this). Choose the focus element with the least missing dependencies required to implement the behavior changes first. 
+2. Create a branch matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+3. Update the focus element’s architecture file, including:
 
 - collaborators
 - ownership boundaries
@@ -163,9 +168,29 @@ The first step in any coding session is to update the focus element’s architec
 - lifecycle notes
 - any architecture details that are changing in the session
 
-Do not start implementation by changing code first and updating architecture later.
+4. Finally, start making code changes. 
 
-Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+**Do not start implementation by changing code first and updating architecture later.**
+
+Alias-based branch naming is preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Context Sufficiency and Architecture Clarification
+
+Generated repository and focused architectural contexts may include a code-path coverage manifest and a relevant filesystem tree.
+
+When working from one of those contexts:
+
+- inspect the manifest before assuming a declared architectural area has implementation
+- do not assume omitted files are absent from the repository
+- use the manifest statuses to distinguish between `present`, `directory exists but empty`, `path missing`, and `no matches for glob`
+- if the focus element or a key collaborator area needed for the task is sparse or missing, call that out explicitly before proposing substantive implementation
+- treat sparse or missing declared paths as a clarification point: determine whether the architecture is intentionally ahead of implementation, whether additional collaborator context is needed, or whether the work is first-time implementation
+- do not spread implementation into nearby undeclared areas just because the declared area is sparse
+- if manifest coverage conflicts with the architecture description, treat that as an architecture clarification issue to surface directly rather than silently reinterpreting boundaries
+
+When the manifest shows that a needed path is missing or empty, prefer tightening the plan and clarifying intent before writing cross-cutting code.
 
 ---
 

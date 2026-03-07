@@ -27,6 +27,7 @@
       "ci-context.xml",
       "architecture/target-architecture.md",
       "architecture/contexts",
+      "architecture/context-manifests/*.context-code-path-coverage.md",
       ".tmp"
     ]
   },
