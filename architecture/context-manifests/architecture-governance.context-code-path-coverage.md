@@ -33,7 +33,7 @@ Use this manifest before assuming that a missing file in the packed context mean
 | --- | --- | --- | --- | --- |
 | focus | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
 | focus | architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
-| focus | architecture-governance | `architecture/**` | present | 42 |
+| focus | architecture-governance | `architecture/**` | present | 41 |
 | focus | architecture-governance | `repomix-instruction.md` | present | 1 |
 | focus | architecture-governance | `repomix.config.json` | present | 1 |
 | focus | architecture-governance | `scripts/architecture/**` | present | 4 |
@@ -104,7 +104,6 @@ architecture
 │   ├── selection-engine.md
 │   └── waveform-engine.md
 ├── context-settings.json
-├── element-seed-metadata.json
 ├── lifecycle-map.md
 ├── ownership-matrix.md
 ├── README.md

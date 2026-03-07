@@ -89,7 +89,6 @@ architecture/
     selection-engine.md
     waveform-engine.md
   context-settings.json
-  element-seed-metadata.json
   lifecycle-map.md
   ownership-matrix.md
   README.md
@@ -486,199 +485,6 @@ src/lib/ui/player (missing)
 
 ```text
 src/lib/ui/shared (missing)
-```
-
-### `src/lib/ui/shell`
-
-```text
-src/lib/ui/shell (missing)
-```
-
-### `src/routes/+layout.svelte`
-
-```text
-src/routes/+layout.svelte (missing)
-```
-
-### `src/routes/+layout.ts`
-
-```text
-src/routes/+layout.ts
-```
-
-### `src/routes/+page.ts`
-
-```text
-src/routes/+page.ts
-```
-</file>
-
-<file path="architecture/context-manifests/architecture-governance.context-code-path-coverage.md">
-# Architecture Governance Context Coverage Manifest
-
-This generated manifest helps distinguish between code that is present in the repository and code paths that are declared architecturally but are still empty or missing.
-
-Use this manifest before assuming that a missing file in the packed context means the repository has no implementation for that area.
-
-## How to use this manifest
-
-- Start with the focus element rows, then inspect collaborator rows that the requested change depends on.
-- Treat `path missing` and `directory exists but empty` as signals that the architecture may be ahead of implementation or that the next step is first-time implementation.
-- Treat `no matches for glob` as a sign to clarify whether the declared ownership path is stale, overly broad, or simply not populated yet.
-- If the needed collaborator area is sparse or missing, clarify architectural intent before spreading implementation into adjacent undeclared areas.
-
-## Status meanings
-
-| Status | Meaning |
-| --- | --- |
-| `present` | One or more files matched the declared path. |
-| `directory exists but empty` | The owned directory exists, but it does not contain files yet. |
-| `path missing` | The declared file or directory root does not exist in the repository yet. |
-| `no matches for glob` | The root exists, but nothing currently matches the declared glob. |
-
-## Elements in this context
-
-- `architecture-governance` (focus)
-- `app-shell` (collaborator)
-- `navigation-service` (collaborator)
-- `continuity-service` (collaborator)
-
-## Code path coverage
-
-| Context role | Architectural element | Declared code path | Status | Matched files |
-| --- | --- | --- | --- | --- |
-| focus | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
-| focus | architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
-| focus | architecture-governance | `architecture/**` | present | 42 |
-| focus | architecture-governance | `repomix-instruction.md` | present | 1 |
-| focus | architecture-governance | `repomix.config.json` | present | 1 |
-| focus | architecture-governance | `scripts/architecture/**` | present | 4 |
-| collaborator | app-shell | `src/app.html` | present | 1 |
-| collaborator | app-shell | `src/lib/ui/shell/**` | path missing | 0 |
-| collaborator | app-shell | `src/routes/+layout.svelte` | path missing | 0 |
-| collaborator | app-shell | `src/routes/+layout.ts` | present | 1 |
-| collaborator | navigation-service | `src/lib/app/navigation/**` | path missing | 0 |
-| collaborator | navigation-service | `src/routes/+layout.ts` | present | 1 |
-| collaborator | navigation-service | `src/routes/+page.ts` | present | 1 |
-| collaborator | continuity-service | `src/lib/app/continuity/**` | path missing | 0 |
-| collaborator | continuity-service | `src/lib/platform/browser/db/**` | path missing | 0 |
-| collaborator | continuity-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
-
-## Relevant filesystem tree
-
-### `.github/workflows/ci.yml`
-
-```text
-.github/workflows/ci.yml
-```
-
-### `.github/workflows/update-generated-artifacts.yml`
-
-```text
-.github/workflows/update-generated-artifacts.yml
-```
-
-### `architecture`
-
-```text
-architecture
-├── context-manifests/
-│   └── repo-code-path-coverage.md
-├── contexts/
-│   ├── activity-composer-service.context.xml
-│   ├── activity-service.context.xml
-│   ├── app-shell.context.xml
-│   ├── architecture-governance.context.xml
-│   ├── audio-engine.context.xml
-│   ├── continuity-service.context.xml
-│   ├── current-focus.context.xml
-│   ├── error-recovery-coordinator.context.xml
-│   ├── library-service.context.xml
-│   ├── navigation-service.context.xml
-│   ├── plan-service.context.xml
-│   ├── planner-screen.context.xml
-│   ├── player-session-service.context.xml
-│   ├── profile-service.context.xml
-│   ├── section-service.context.xml
-│   ├── selection-engine.context.xml
-│   └── waveform-engine.context.xml
-├── elements/
-│   ├── activity-composer-service.md
-│   ├── activity-service.md
-│   ├── app-shell.md
-│   ├── architecture-governance.md
-│   ├── audio-engine.md
-│   ├── continuity-service.md
-│   ├── error-recovery-coordinator.md
-│   ├── library-service.md
-│   ├── navigation-service.md
-│   ├── plan-service.md
-│   ├── planner-screen.md
-│   ├── player-session-service.md
-│   ├── profile-service.md
-│   ├── section-service.md
-│   ├── selection-engine.md
-│   └── waveform-engine.md
-├── context-settings.json
-├── element-seed-metadata.json
-├── lifecycle-map.md
-├── ownership-matrix.md
-├── README.md
-├── recovery-map.md
-├── target-architecture.md
-└── target-architecture.template.md
-```
-
-### `repomix-instruction.md`
-
-```text
-repomix-instruction.md
-```
-
-### `repomix.config.json`
-
-```text
-repomix.config.json
-```
-
-### `scripts/architecture`
-
-```text
-scripts/architecture
-├── generate-context-configs.mjs
-├── generate-target-architecture.mjs
-├── lib.mjs
-└── validate-architecture-consistency.mjs
-```
-
-### `src/app.html`
-
-```text
-src/app.html
-```
-
-### `src/lib/app/continuity`
-
-```text
-src/lib/app/continuity (missing)
-```
-
-### `src/lib/app/navigation`
-
-```text
-src/lib/app/navigation (missing)
-```
-
-### `src/lib/platform/browser/db`
-
-```text
-src/lib/platform/browser/db (missing)
-```
-
-### `src/lib/platform/browser/fs`
-
-```text
-src/lib/platform/browser/fs (missing)
 ```
 
 ### `src/lib/ui/shell`
@@ -1966,350 +1772,6 @@ src/routes/planner/+page.svelte
 ```
 </file>
 
-<file path="architecture/context-manifests/repo-code-path-coverage.md">
-# Repository Code Path Coverage Manifest
-
-This generated manifest summarizes how the architecture maps onto the current filesystem so implementation sessions can tell the difference between missing code, empty owned areas, and genuinely populated code paths.
-
-Use this manifest before concluding that an architectural area is absent or before borrowing nearby files that are outside the declared ownership paths.
-
-## How to use this manifest
-
-- When a requested slice depends on paths marked `present`, start from those files.
-- When a requested slice depends on paths marked `path missing`, `directory exists but empty`, or `no matches for glob`, clarify whether the architecture is intentionally ahead of implementation.
-- When several collaborator areas are sparse, prefer expanding or refreshing architectural context before making cross-cutting implementation changes.
-
-## Code path coverage
-
-| Architectural element | Declared code path | Status | Matched files |
-| --- | --- | --- | --- |
-| architecture-governance | `.github/workflows/ci.yml` | present | 1 |
-| architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
-| architecture-governance | `architecture/**` | present | 41 |
-| architecture-governance | `repomix-instruction.md` | present | 1 |
-| architecture-governance | `repomix.config.json` | present | 1 |
-| architecture-governance | `scripts/architecture/**` | present | 4 |
-| app-shell | `src/app.html` | present | 1 |
-| app-shell | `src/lib/ui/shell/**` | path missing | 0 |
-| app-shell | `src/routes/+layout.svelte` | path missing | 0 |
-| app-shell | `src/routes/+layout.ts` | present | 1 |
-| planner-screen | `src/lib/ui/planner/**` | path missing | 0 |
-| planner-screen | `src/routes/planner/+page.svelte` | present | 1 |
-| profile-service | `src/lib/app/profile/**` | path missing | 0 |
-| profile-service | `src/lib/domains/profiles/**` | path missing | 0 |
-| navigation-service | `src/lib/app/navigation/**` | path missing | 0 |
-| navigation-service | `src/routes/+layout.ts` | present | 1 |
-| navigation-service | `src/routes/+page.ts` | present | 1 |
-| library-service | `src/lib/domains/library/**` | path missing | 0 |
-| library-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
-| library-service | `src/lib/platform/browser/permissions/**` | path missing | 0 |
-| section-service | `src/lib/app/sections/**` | path missing | 0 |
-| section-service | `src/lib/domains/sections/**` | path missing | 0 |
-| activity-service | `src/lib/app/activities/**` | path missing | 0 |
-| activity-service | `src/lib/domains/activities/**` | path missing | 0 |
-| activity-composer-service | `src/lib/app/activity-composer/**` | path missing | 0 |
-| activity-composer-service | `src/lib/ui/planner/**` | path missing | 0 |
-| activity-composer-service | `src/lib/ui/player/**` | path missing | 0 |
-| plan-service | `src/lib/app/plans/**` | path missing | 0 |
-| plan-service | `src/lib/domains/plans/**` | path missing | 0 |
-| player-session-service | `src/lib/app/player-session/**` | path missing | 0 |
-| player-session-service | `src/lib/ui/player/**` | path missing | 0 |
-| player-session-service | `src/routes/+layout.ts` | present | 1 |
-| audio-engine | `src/lib/engines/audio/**` | path missing | 0 |
-| audio-engine | `src/lib/platform/browser/audio/**` | path missing | 0 |
-| audio-engine | `src/lib/platform/browser/media/**` | path missing | 0 |
-| waveform-engine | `src/lib/engines/waveform/**` | path missing | 0 |
-| waveform-engine | `src/lib/platform/browser/media/**` | path missing | 0 |
-| waveform-engine | `src/lib/ui/player/**` | path missing | 0 |
-| selection-engine | `src/lib/app/selection/**` | path missing | 0 |
-| selection-engine | `src/lib/engines/selection/**` | path missing | 0 |
-| selection-engine | `src/lib/ui/player/**` | path missing | 0 |
-| continuity-service | `src/lib/app/continuity/**` | path missing | 0 |
-| continuity-service | `src/lib/platform/browser/db/**` | path missing | 0 |
-| continuity-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
-| error-recovery-coordinator | `src/lib/app/recovery/**` | path missing | 0 |
-| error-recovery-coordinator | `src/lib/ui/shared/**` | path missing | 0 |
-| error-recovery-coordinator | `src/routes/+layout.ts` | present | 1 |
-
-## Relevant filesystem tree
-
-### `.github/workflows/ci.yml`
-
-```text
-.github/workflows/ci.yml
-```
-
-### `.github/workflows/update-generated-artifacts.yml`
-
-```text
-.github/workflows/update-generated-artifacts.yml
-```
-
-### `architecture`
-
-```text
-architecture
-├── context-manifests/
-├── contexts/
-│   ├── activity-composer-service.context.xml
-│   ├── activity-service.context.xml
-│   ├── app-shell.context.xml
-│   ├── architecture-governance.context.xml
-│   ├── audio-engine.context.xml
-│   ├── continuity-service.context.xml
-│   ├── current-focus.context.xml
-│   ├── error-recovery-coordinator.context.xml
-│   ├── library-service.context.xml
-│   ├── navigation-service.context.xml
-│   ├── plan-service.context.xml
-│   ├── planner-screen.context.xml
-│   ├── player-session-service.context.xml
-│   ├── profile-service.context.xml
-│   ├── section-service.context.xml
-│   ├── selection-engine.context.xml
-│   └── waveform-engine.context.xml
-├── elements/
-│   ├── activity-composer-service.md
-│   ├── activity-service.md
-│   ├── app-shell.md
-│   ├── architecture-governance.md
-│   ├── audio-engine.md
-│   ├── continuity-service.md
-│   ├── error-recovery-coordinator.md
-│   ├── library-service.md
-│   ├── navigation-service.md
-│   ├── plan-service.md
-│   ├── planner-screen.md
-│   ├── player-session-service.md
-│   ├── profile-service.md
-│   ├── section-service.md
-│   ├── selection-engine.md
-│   └── waveform-engine.md
-├── context-settings.json
-├── element-seed-metadata.json
-├── lifecycle-map.md
-├── ownership-matrix.md
-├── README.md
-├── recovery-map.md
-├── target-architecture.md
-└── target-architecture.template.md
-```
-
-### `repomix-instruction.md`
-
-```text
-repomix-instruction.md
-```
-
-### `repomix.config.json`
-
-```text
-repomix.config.json
-```
-
-### `scripts/architecture`
-
-```text
-scripts/architecture
-├── generate-context-configs.mjs
-├── generate-target-architecture.mjs
-├── lib.mjs
-└── validate-architecture-consistency.mjs
-```
-
-### `src/app.html`
-
-```text
-src/app.html
-```
-
-### `src/lib/app/activities`
-
-```text
-src/lib/app/activities (missing)
-```
-
-### `src/lib/app/activity-composer`
-
-```text
-src/lib/app/activity-composer (missing)
-```
-
-### `src/lib/app/continuity`
-
-```text
-src/lib/app/continuity (missing)
-```
-
-### `src/lib/app/navigation`
-
-```text
-src/lib/app/navigation (missing)
-```
-
-### `src/lib/app/plans`
-
-```text
-src/lib/app/plans (missing)
-```
-
-### `src/lib/app/player-session`
-
-```text
-src/lib/app/player-session (missing)
-```
-
-### `src/lib/app/profile`
-
-```text
-src/lib/app/profile (missing)
-```
-
-### `src/lib/app/recovery`
-
-```text
-src/lib/app/recovery (missing)
-```
-
-### `src/lib/app/sections`
-
-```text
-src/lib/app/sections (missing)
-```
-
-### `src/lib/app/selection`
-
-```text
-src/lib/app/selection (missing)
-```
-
-### `src/lib/domains/activities`
-
-```text
-src/lib/domains/activities (missing)
-```
-
-### `src/lib/domains/library`
-
-```text
-src/lib/domains/library (missing)
-```
-
-### `src/lib/domains/plans`
-
-```text
-src/lib/domains/plans (missing)
-```
-
-### `src/lib/domains/profiles`
-
-```text
-src/lib/domains/profiles (missing)
-```
-
-### `src/lib/domains/sections`
-
-```text
-src/lib/domains/sections (missing)
-```
-
-### `src/lib/engines/audio`
-
-```text
-src/lib/engines/audio (missing)
-```
-
-### `src/lib/engines/selection`
-
-```text
-src/lib/engines/selection (missing)
-```
-
-### `src/lib/engines/waveform`
-
-```text
-src/lib/engines/waveform (missing)
-```
-
-### `src/lib/platform/browser/audio`
-
-```text
-src/lib/platform/browser/audio (missing)
-```
-
-### `src/lib/platform/browser/db`
-
-```text
-src/lib/platform/browser/db (missing)
-```
-
-### `src/lib/platform/browser/fs`
-
-```text
-src/lib/platform/browser/fs (missing)
-```
-
-### `src/lib/platform/browser/media`
-
-```text
-src/lib/platform/browser/media (missing)
-```
-
-### `src/lib/platform/browser/permissions`
-
-```text
-src/lib/platform/browser/permissions (missing)
-```
-
-### `src/lib/ui/planner`
-
-```text
-src/lib/ui/planner (missing)
-```
-
-### `src/lib/ui/player`
-
-```text
-src/lib/ui/player (missing)
-```
-
-### `src/lib/ui/shared`
-
-```text
-src/lib/ui/shared (missing)
-```
-
-### `src/lib/ui/shell`
-
-```text
-src/lib/ui/shell (missing)
-```
-
-### `src/routes/+layout.svelte`
-
-```text
-src/routes/+layout.svelte (missing)
-```
-
-### `src/routes/+layout.ts`
-
-```text
-src/routes/+layout.ts
-```
-
-### `src/routes/+page.ts`
-
-```text
-src/routes/+page.ts
-```
-
-### `src/routes/planner/+page.svelte`
-
-```text
-src/routes/planner/+page.svelte
-```
-</file>
-
 <file path="architecture/context-manifests/section-service.context-code-path-coverage.md">
 # Section Service Context Coverage Manifest
 
@@ -3395,6 +2857,541 @@ jobs:
           git push origin HEAD:${GITHUB_REF_NAME}
 </file>
 
+<file path="architecture/context-manifests/architecture-governance.context-code-path-coverage.md">
+# Architecture Governance Context Coverage Manifest
+
+This generated manifest helps distinguish between code that is present in the repository and code paths that are declared architecturally but are still empty or missing.
+
+Use this manifest before assuming that a missing file in the packed context means the repository has no implementation for that area.
+
+## How to use this manifest
+
+- Start with the focus element rows, then inspect collaborator rows that the requested change depends on.
+- Treat `path missing` and `directory exists but empty` as signals that the architecture may be ahead of implementation or that the next step is first-time implementation.
+- Treat `no matches for glob` as a sign to clarify whether the declared ownership path is stale, overly broad, or simply not populated yet.
+- If the needed collaborator area is sparse or missing, clarify architectural intent before spreading implementation into adjacent undeclared areas.
+
+## Status meanings
+
+| Status | Meaning |
+| --- | --- |
+| `present` | One or more files matched the declared path. |
+| `directory exists but empty` | The owned directory exists, but it does not contain files yet. |
+| `path missing` | The declared file or directory root does not exist in the repository yet. |
+| `no matches for glob` | The root exists, but nothing currently matches the declared glob. |
+
+## Elements in this context
+
+- `architecture-governance` (focus)
+- `app-shell` (collaborator)
+- `navigation-service` (collaborator)
+- `continuity-service` (collaborator)
+
+## Code path coverage
+
+| Context role | Architectural element | Declared code path | Status | Matched files |
+| --- | --- | --- | --- | --- |
+| focus | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
+| focus | architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
+| focus | architecture-governance | `architecture/**` | present | 41 |
+| focus | architecture-governance | `repomix-instruction.md` | present | 1 |
+| focus | architecture-governance | `repomix.config.json` | present | 1 |
+| focus | architecture-governance | `scripts/architecture/**` | present | 4 |
+| collaborator | app-shell | `src/app.html` | present | 1 |
+| collaborator | app-shell | `src/lib/ui/shell/**` | path missing | 0 |
+| collaborator | app-shell | `src/routes/+layout.svelte` | path missing | 0 |
+| collaborator | app-shell | `src/routes/+layout.ts` | present | 1 |
+| collaborator | navigation-service | `src/lib/app/navigation/**` | path missing | 0 |
+| collaborator | navigation-service | `src/routes/+layout.ts` | present | 1 |
+| collaborator | navigation-service | `src/routes/+page.ts` | present | 1 |
+| collaborator | continuity-service | `src/lib/app/continuity/**` | path missing | 0 |
+| collaborator | continuity-service | `src/lib/platform/browser/db/**` | path missing | 0 |
+| collaborator | continuity-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+
+## Relevant filesystem tree
+
+### `.github/workflows/ci.yml`
+
+```text
+.github/workflows/ci.yml
+```
+
+### `.github/workflows/update-generated-artifacts.yml`
+
+```text
+.github/workflows/update-generated-artifacts.yml
+```
+
+### `architecture`
+
+```text
+architecture
+├── context-manifests/
+│   └── repo-code-path-coverage.md
+├── contexts/
+│   ├── activity-composer-service.context.xml
+│   ├── activity-service.context.xml
+│   ├── app-shell.context.xml
+│   ├── architecture-governance.context.xml
+│   ├── audio-engine.context.xml
+│   ├── continuity-service.context.xml
+│   ├── current-focus.context.xml
+│   ├── error-recovery-coordinator.context.xml
+│   ├── library-service.context.xml
+│   ├── navigation-service.context.xml
+│   ├── plan-service.context.xml
+│   ├── planner-screen.context.xml
+│   ├── player-session-service.context.xml
+│   ├── profile-service.context.xml
+│   ├── section-service.context.xml
+│   ├── selection-engine.context.xml
+│   └── waveform-engine.context.xml
+├── elements/
+│   ├── activity-composer-service.md
+│   ├── activity-service.md
+│   ├── app-shell.md
+│   ├── architecture-governance.md
+│   ├── audio-engine.md
+│   ├── continuity-service.md
+│   ├── error-recovery-coordinator.md
+│   ├── library-service.md
+│   ├── navigation-service.md
+│   ├── plan-service.md
+│   ├── planner-screen.md
+│   ├── player-session-service.md
+│   ├── profile-service.md
+│   ├── section-service.md
+│   ├── selection-engine.md
+│   └── waveform-engine.md
+├── context-settings.json
+├── lifecycle-map.md
+├── ownership-matrix.md
+├── README.md
+├── recovery-map.md
+├── target-architecture.md
+└── target-architecture.template.md
+```
+
+### `repomix-instruction.md`
+
+```text
+repomix-instruction.md
+```
+
+### `repomix.config.json`
+
+```text
+repomix.config.json
+```
+
+### `scripts/architecture`
+
+```text
+scripts/architecture
+├── generate-context-configs.mjs
+├── generate-target-architecture.mjs
+├── lib.mjs
+└── validate-architecture-consistency.mjs
+```
+
+### `src/app.html`
+
+```text
+src/app.html
+```
+
+### `src/lib/app/continuity`
+
+```text
+src/lib/app/continuity (missing)
+```
+
+### `src/lib/app/navigation`
+
+```text
+src/lib/app/navigation (missing)
+```
+
+### `src/lib/platform/browser/db`
+
+```text
+src/lib/platform/browser/db (missing)
+```
+
+### `src/lib/platform/browser/fs`
+
+```text
+src/lib/platform/browser/fs (missing)
+```
+
+### `src/lib/ui/shell`
+
+```text
+src/lib/ui/shell (missing)
+```
+
+### `src/routes/+layout.svelte`
+
+```text
+src/routes/+layout.svelte (missing)
+```
+
+### `src/routes/+layout.ts`
+
+```text
+src/routes/+layout.ts
+```
+
+### `src/routes/+page.ts`
+
+```text
+src/routes/+page.ts
+```
+</file>
+
+<file path="architecture/context-manifests/repo-code-path-coverage.md">
+# Repository Code Path Coverage Manifest
+
+This generated manifest summarizes how the architecture maps onto the current filesystem so implementation sessions can tell the difference between missing code, empty owned areas, and genuinely populated code paths.
+
+Use this manifest before concluding that an architectural area is absent or before borrowing nearby files that are outside the declared ownership paths.
+
+## How to use this manifest
+
+- When a requested slice depends on paths marked `present`, start from those files.
+- When a requested slice depends on paths marked `path missing`, `directory exists but empty`, or `no matches for glob`, clarify whether the architecture is intentionally ahead of implementation.
+- When several collaborator areas are sparse, prefer expanding or refreshing architectural context before making cross-cutting implementation changes.
+
+## Code path coverage
+
+| Architectural element | Declared code path | Status | Matched files |
+| --- | --- | --- | --- |
+| architecture-governance | `.github/workflows/ci.yml` | present | 1 |
+| architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
+| architecture-governance | `architecture/**` | present | 40 |
+| architecture-governance | `repomix-instruction.md` | present | 1 |
+| architecture-governance | `repomix.config.json` | present | 1 |
+| architecture-governance | `scripts/architecture/**` | present | 4 |
+| app-shell | `src/app.html` | present | 1 |
+| app-shell | `src/lib/ui/shell/**` | path missing | 0 |
+| app-shell | `src/routes/+layout.svelte` | path missing | 0 |
+| app-shell | `src/routes/+layout.ts` | present | 1 |
+| planner-screen | `src/lib/ui/planner/**` | path missing | 0 |
+| planner-screen | `src/routes/planner/+page.svelte` | present | 1 |
+| profile-service | `src/lib/app/profile/**` | path missing | 0 |
+| profile-service | `src/lib/domains/profiles/**` | path missing | 0 |
+| navigation-service | `src/lib/app/navigation/**` | path missing | 0 |
+| navigation-service | `src/routes/+layout.ts` | present | 1 |
+| navigation-service | `src/routes/+page.ts` | present | 1 |
+| library-service | `src/lib/domains/library/**` | path missing | 0 |
+| library-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+| library-service | `src/lib/platform/browser/permissions/**` | path missing | 0 |
+| section-service | `src/lib/app/sections/**` | path missing | 0 |
+| section-service | `src/lib/domains/sections/**` | path missing | 0 |
+| activity-service | `src/lib/app/activities/**` | path missing | 0 |
+| activity-service | `src/lib/domains/activities/**` | path missing | 0 |
+| activity-composer-service | `src/lib/app/activity-composer/**` | path missing | 0 |
+| activity-composer-service | `src/lib/ui/planner/**` | path missing | 0 |
+| activity-composer-service | `src/lib/ui/player/**` | path missing | 0 |
+| plan-service | `src/lib/app/plans/**` | path missing | 0 |
+| plan-service | `src/lib/domains/plans/**` | path missing | 0 |
+| player-session-service | `src/lib/app/player-session/**` | path missing | 0 |
+| player-session-service | `src/lib/ui/player/**` | path missing | 0 |
+| player-session-service | `src/routes/+layout.ts` | present | 1 |
+| audio-engine | `src/lib/engines/audio/**` | path missing | 0 |
+| audio-engine | `src/lib/platform/browser/audio/**` | path missing | 0 |
+| audio-engine | `src/lib/platform/browser/media/**` | path missing | 0 |
+| waveform-engine | `src/lib/engines/waveform/**` | path missing | 0 |
+| waveform-engine | `src/lib/platform/browser/media/**` | path missing | 0 |
+| waveform-engine | `src/lib/ui/player/**` | path missing | 0 |
+| selection-engine | `src/lib/app/selection/**` | path missing | 0 |
+| selection-engine | `src/lib/engines/selection/**` | path missing | 0 |
+| selection-engine | `src/lib/ui/player/**` | path missing | 0 |
+| continuity-service | `src/lib/app/continuity/**` | path missing | 0 |
+| continuity-service | `src/lib/platform/browser/db/**` | path missing | 0 |
+| continuity-service | `src/lib/platform/browser/fs/**` | path missing | 0 |
+| error-recovery-coordinator | `src/lib/app/recovery/**` | path missing | 0 |
+| error-recovery-coordinator | `src/lib/ui/shared/**` | path missing | 0 |
+| error-recovery-coordinator | `src/routes/+layout.ts` | present | 1 |
+
+## Relevant filesystem tree
+
+### `.github/workflows/ci.yml`
+
+```text
+.github/workflows/ci.yml
+```
+
+### `.github/workflows/update-generated-artifacts.yml`
+
+```text
+.github/workflows/update-generated-artifacts.yml
+```
+
+### `architecture`
+
+```text
+architecture
+├── context-manifests/
+├── contexts/
+│   ├── activity-composer-service.context.xml
+│   ├── activity-service.context.xml
+│   ├── app-shell.context.xml
+│   ├── architecture-governance.context.xml
+│   ├── audio-engine.context.xml
+│   ├── continuity-service.context.xml
+│   ├── current-focus.context.xml
+│   ├── error-recovery-coordinator.context.xml
+│   ├── library-service.context.xml
+│   ├── navigation-service.context.xml
+│   ├── plan-service.context.xml
+│   ├── planner-screen.context.xml
+│   ├── player-session-service.context.xml
+│   ├── profile-service.context.xml
+│   ├── section-service.context.xml
+│   ├── selection-engine.context.xml
+│   └── waveform-engine.context.xml
+├── elements/
+│   ├── activity-composer-service.md
+│   ├── activity-service.md
+│   ├── app-shell.md
+│   ├── architecture-governance.md
+│   ├── audio-engine.md
+│   ├── continuity-service.md
+│   ├── error-recovery-coordinator.md
+│   ├── library-service.md
+│   ├── navigation-service.md
+│   ├── plan-service.md
+│   ├── planner-screen.md
+│   ├── player-session-service.md
+│   ├── profile-service.md
+│   ├── section-service.md
+│   ├── selection-engine.md
+│   └── waveform-engine.md
+├── context-settings.json
+├── lifecycle-map.md
+├── ownership-matrix.md
+├── README.md
+├── recovery-map.md
+├── target-architecture.md
+└── target-architecture.template.md
+```
+
+### `repomix-instruction.md`
+
+```text
+repomix-instruction.md
+```
+
+### `repomix.config.json`
+
+```text
+repomix.config.json
+```
+
+### `scripts/architecture`
+
+```text
+scripts/architecture
+├── generate-context-configs.mjs
+├── generate-target-architecture.mjs
+├── lib.mjs
+└── validate-architecture-consistency.mjs
+```
+
+### `src/app.html`
+
+```text
+src/app.html
+```
+
+### `src/lib/app/activities`
+
+```text
+src/lib/app/activities (missing)
+```
+
+### `src/lib/app/activity-composer`
+
+```text
+src/lib/app/activity-composer (missing)
+```
+
+### `src/lib/app/continuity`
+
+```text
+src/lib/app/continuity (missing)
+```
+
+### `src/lib/app/navigation`
+
+```text
+src/lib/app/navigation (missing)
+```
+
+### `src/lib/app/plans`
+
+```text
+src/lib/app/plans (missing)
+```
+
+### `src/lib/app/player-session`
+
+```text
+src/lib/app/player-session (missing)
+```
+
+### `src/lib/app/profile`
+
+```text
+src/lib/app/profile (missing)
+```
+
+### `src/lib/app/recovery`
+
+```text
+src/lib/app/recovery (missing)
+```
+
+### `src/lib/app/sections`
+
+```text
+src/lib/app/sections (missing)
+```
+
+### `src/lib/app/selection`
+
+```text
+src/lib/app/selection (missing)
+```
+
+### `src/lib/domains/activities`
+
+```text
+src/lib/domains/activities (missing)
+```
+
+### `src/lib/domains/library`
+
+```text
+src/lib/domains/library (missing)
+```
+
+### `src/lib/domains/plans`
+
+```text
+src/lib/domains/plans (missing)
+```
+
+### `src/lib/domains/profiles`
+
+```text
+src/lib/domains/profiles (missing)
+```
+
+### `src/lib/domains/sections`
+
+```text
+src/lib/domains/sections (missing)
+```
+
+### `src/lib/engines/audio`
+
+```text
+src/lib/engines/audio (missing)
+```
+
+### `src/lib/engines/selection`
+
+```text
+src/lib/engines/selection (missing)
+```
+
+### `src/lib/engines/waveform`
+
+```text
+src/lib/engines/waveform (missing)
+```
+
+### `src/lib/platform/browser/audio`
+
+```text
+src/lib/platform/browser/audio (missing)
+```
+
+### `src/lib/platform/browser/db`
+
+```text
+src/lib/platform/browser/db (missing)
+```
+
+### `src/lib/platform/browser/fs`
+
+```text
+src/lib/platform/browser/fs (missing)
+```
+
+### `src/lib/platform/browser/media`
+
+```text
+src/lib/platform/browser/media (missing)
+```
+
+### `src/lib/platform/browser/permissions`
+
+```text
+src/lib/platform/browser/permissions (missing)
+```
+
+### `src/lib/ui/planner`
+
+```text
+src/lib/ui/planner (missing)
+```
+
+### `src/lib/ui/player`
+
+```text
+src/lib/ui/player (missing)
+```
+
+### `src/lib/ui/shared`
+
+```text
+src/lib/ui/shared (missing)
+```
+
+### `src/lib/ui/shell`
+
+```text
+src/lib/ui/shell (missing)
+```
+
+### `src/routes/+layout.svelte`
+
+```text
+src/routes/+layout.svelte (missing)
+```
+
+### `src/routes/+layout.ts`
+
+```text
+src/routes/+layout.ts
+```
+
+### `src/routes/+page.ts`
+
+```text
+src/routes/+page.ts
+```
+
+### `src/routes/planner/+page.svelte`
+
+```text
+src/routes/planner/+page.svelte
+```
+</file>
+
 <file path="architecture/elements/error-recovery-coordinator.md">
 ---
 id: error-recovery-coordinator
@@ -3471,368 +3468,6 @@ Define and maintain the runtime contract for error recovery coordinator.
   ],
   "defaultFocusElement": "architecture-governance",
   "currentFocusContextName": "current-focus.context.xml"
-}
-</file>
-
-<file path="architecture/element-seed-metadata.json">
-{
-  "elements": [
-    {
-      "id": "architecture-governance",
-      "title": "Architecture Governance",
-      "order": 5,
-      "kind": "governance",
-      "branch_aliases": [
-        "architecture-governance",
-        "repo-architecture",
-        "architecture-artifacts"
-      ],
-      "collaborators": [
-        "app-shell",
-        "navigation-service",
-        "continuity-service"
-      ],
-      "code_paths": [
-        "architecture/**",
-        "scripts/architecture/**",
-        ".github/workflows/ci.yml",
-        ".github/workflows/update-generated-artifacts.yml",
-        "repomix.config.json",
-        "repomix-instruction.md"
-      ]
-    },
-    {
-      "id": "app-shell",
-      "title": "App Shell",
-      "order": 10,
-      "kind": "ui-shell",
-      "branch_aliases": [
-        "app-shell",
-        "shell"
-      ],
-      "collaborators": [
-        "navigation-service",
-        "player-session-service",
-        "error-recovery-coordinator",
-        "profile-service"
-      ],
-      "code_paths": [
-        "src/routes/+layout.ts",
-        "src/routes/+layout.svelte",
-        "src/app.html",
-        "src/lib/ui/shell/**"
-      ]
-    },
-    {
-      "id": "planner-screen",
-      "title": "Planner Screen",
-      "order": 20,
-      "kind": "screen",
-      "branch_aliases": [
-        "planner-screen",
-        "planner-ui",
-        "planner"
-      ],
-      "collaborators": [
-        "activity-service",
-        "activity-composer-service",
-        "plan-service",
-        "profile-service",
-        "navigation-service",
-        "player-session-service"
-      ],
-      "code_paths": [
-        "src/routes/planner/+page.svelte",
-        "src/lib/ui/planner/**"
-      ]
-    },
-    {
-      "id": "profile-service",
-      "title": "Profile Service",
-      "order": 30,
-      "kind": "application-service",
-      "branch_aliases": [
-        "profile-service",
-        "profiles"
-      ],
-      "collaborators": [
-        "continuity-service",
-        "planner-screen",
-        "app-shell"
-      ],
-      "code_paths": [
-        "src/lib/domains/profiles/**",
-        "src/lib/app/profile/**"
-      ]
-    },
-    {
-      "id": "navigation-service",
-      "title": "Navigation Service",
-      "order": 40,
-      "kind": "application-service",
-      "branch_aliases": [
-        "navigation-service",
-        "navigation",
-        "nav"
-      ],
-      "collaborators": [
-        "app-shell",
-        "planner-screen",
-        "player-session-service",
-        "error-recovery-coordinator"
-      ],
-      "code_paths": [
-        "src/lib/app/navigation/**",
-        "src/routes/+layout.ts",
-        "src/routes/+page.ts"
-      ]
-    },
-    {
-      "id": "library-service",
-      "title": "Library Service",
-      "order": 50,
-      "kind": "application-service",
-      "branch_aliases": [
-        "library-service",
-        "library",
-        "folder-connection"
-      ],
-      "collaborators": [
-        "continuity-service",
-        "player-session-service",
-        "error-recovery-coordinator",
-        "section-service",
-        "activity-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/library/**",
-        "src/lib/platform/browser/fs/**",
-        "src/lib/platform/browser/permissions/**"
-      ]
-    },
-    {
-      "id": "section-service",
-      "title": "Section Service",
-      "order": 60,
-      "kind": "application-service",
-      "branch_aliases": [
-        "section-service",
-        "sections"
-      ],
-      "collaborators": [
-        "selection-engine",
-        "player-session-service",
-        "library-service",
-        "continuity-service",
-        "activity-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/sections/**",
-        "src/lib/app/sections/**"
-      ]
-    },
-    {
-      "id": "activity-service",
-      "title": "Activity Service",
-      "order": 70,
-      "kind": "application-service",
-      "branch_aliases": [
-        "activity-service",
-        "activities"
-      ],
-      "collaborators": [
-        "activity-composer-service",
-        "plan-service",
-        "library-service",
-        "section-service",
-        "player-session-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/activities/**",
-        "src/lib/app/activities/**"
-      ]
-    },
-    {
-      "id": "activity-composer-service",
-      "title": "Activity Composer Service",
-      "order": 80,
-      "kind": "application-service",
-      "branch_aliases": [
-        "activity-composer-service",
-        "activity-composer",
-        "composer"
-      ],
-      "collaborators": [
-        "activity-service",
-        "player-session-service",
-        "library-service",
-        "section-service",
-        "planner-screen"
-      ],
-      "code_paths": [
-        "src/lib/app/activity-composer/**",
-        "src/lib/ui/planner/**",
-        "src/lib/ui/player/**"
-      ]
-    },
-    {
-      "id": "plan-service",
-      "title": "Plan Service",
-      "order": 90,
-      "kind": "application-service",
-      "branch_aliases": [
-        "plan-service",
-        "practice-plan",
-        "plan-items"
-      ],
-      "collaborators": [
-        "planner-screen",
-        "activity-service",
-        "player-session-service"
-      ],
-      "code_paths": [
-        "src/lib/domains/plans/**",
-        "src/lib/app/plans/**"
-      ]
-    },
-    {
-      "id": "player-session-service",
-      "title": "Player Session Service",
-      "order": 100,
-      "kind": "application-service",
-      "branch_aliases": [
-        "player-session-service",
-        "player-session",
-        "player"
-      ],
-      "collaborators": [
-        "audio-engine",
-        "waveform-engine",
-        "selection-engine",
-        "library-service",
-        "section-service",
-        "continuity-service",
-        "navigation-service"
-      ],
-      "code_paths": [
-        "src/lib/app/player-session/**",
-        "src/lib/ui/player/**",
-        "src/routes/+layout.ts"
-      ]
-    },
-    {
-      "id": "audio-engine",
-      "title": "Audio Engine",
-      "order": 110,
-      "kind": "interaction-engine",
-      "branch_aliases": [
-        "audio-engine",
-        "playback-engine",
-        "transport"
-      ],
-      "collaborators": [
-        "player-session-service",
-        "waveform-engine",
-        "selection-engine",
-        "error-recovery-coordinator",
-        "continuity-service"
-      ],
-      "code_paths": [
-        "src/lib/engines/audio/**",
-        "src/lib/platform/browser/audio/**",
-        "src/lib/platform/browser/media/**"
-      ]
-    },
-    {
-      "id": "waveform-engine",
-      "title": "Waveform Engine",
-      "order": 120,
-      "kind": "interaction-engine",
-      "branch_aliases": [
-        "waveform-engine",
-        "waveform"
-      ],
-      "collaborators": [
-        "player-session-service",
-        "audio-engine",
-        "selection-engine",
-        "error-recovery-coordinator"
-      ],
-      "code_paths": [
-        "src/lib/engines/waveform/**",
-        "src/lib/platform/browser/media/**",
-        "src/lib/ui/player/**"
-      ]
-    },
-    {
-      "id": "selection-engine",
-      "title": "Selection Engine",
-      "order": 130,
-      "kind": "interaction-engine",
-      "branch_aliases": [
-        "selection-engine",
-        "selection"
-      ],
-      "collaborators": [
-        "player-session-service",
-        "waveform-engine",
-        "audio-engine",
-        "section-service"
-      ],
-      "code_paths": [
-        "src/lib/engines/selection/**",
-        "src/lib/ui/player/**",
-        "src/lib/app/selection/**"
-      ]
-    },
-    {
-      "id": "continuity-service",
-      "title": "Continuity Service",
-      "order": 140,
-      "kind": "application-service",
-      "branch_aliases": [
-        "continuity-service",
-        "continuity"
-      ],
-      "collaborators": [
-        "profile-service",
-        "library-service",
-        "section-service",
-        "player-session-service",
-        "error-recovery-coordinator"
-      ],
-      "code_paths": [
-        "src/lib/app/continuity/**",
-        "src/lib/platform/browser/db/**",
-        "src/lib/platform/browser/fs/**"
-      ]
-    },
-    {
-      "id": "error-recovery-coordinator",
-      "title": "Error Recovery Coordinator",
-      "order": 150,
-      "kind": "application-service",
-      "branch_aliases": [
-        "error-recovery-coordinator",
-        "recovery",
-        "error-recovery"
-      ],
-      "collaborators": [
-        "app-shell",
-        "library-service",
-        "player-session-service",
-        "audio-engine",
-        "waveform-engine",
-        "continuity-service",
-        "navigation-service"
-      ],
-      "code_paths": [
-        "src/lib/app/recovery/**",
-        "src/lib/ui/shared/**",
-        "src/routes/+layout.ts"
-      ]
-    }
-  ]
 }
 </file>
 
@@ -4942,60 +4577,6 @@ The current planning focus is to keep implementation aligned with the planner-fi
 Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
 </file>
 
-<file path="architecture/elements/architecture-governance.md">
----
-id: architecture-governance
-title: Architecture Governance
-order: 5
-kind: governance
-branch_aliases:
-  - architecture-governance
-  - repo-architecture
-  - architecture-artifacts
-collaborators:
-  - app-shell
-  - navigation-service
-  - continuity-service
-code_paths:
-  - architecture/**
-  - scripts/architecture/**
-  - .github/workflows/ci.yml
-  - .github/workflows/update-generated-artifacts.yml
-  - repomix.config.json
-  - repomix-instruction.md
----
-# Architecture Governance
-
-## Responsibility
-Define and maintain the runtime contract for architecture governance.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- navigation-service
-- continuity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- architecture/**
-- scripts/architecture/**
-- .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
-- repomix.config.json
-- repomix-instruction.md
-</file>
-
 <file path="architecture/lifecycle-map.md">
 <!--
   @role architecture-artifact
@@ -5152,7 +4733,7 @@ Define and maintain the runtime contract for architecture governance.
 - architecture/**
 - scripts/architecture/**
 - .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
+- .github/workflows/update-generated-artifacts.yml
 - repomix.config.json
 - repomix-instruction.md
 
@@ -5723,6 +5304,60 @@ Define and maintain the runtime contract for activity composer service.
 - src/lib/app/activity-composer/**
 - src/lib/ui/planner/**
 - src/lib/ui/player/**
+</file>
+
+<file path="architecture/elements/architecture-governance.md">
+---
+id: architecture-governance
+title: Architecture Governance
+order: 5
+kind: governance
+branch_aliases:
+  - architecture-governance
+  - repo-architecture
+  - architecture-artifacts
+collaborators:
+  - app-shell
+  - navigation-service
+  - continuity-service
+code_paths:
+  - architecture/**
+  - scripts/architecture/**
+  - .github/workflows/ci.yml
+  - .github/workflows/update-generated-artifacts.yml
+  - repomix.config.json
+  - repomix-instruction.md
+---
+# Architecture Governance
+
+## Responsibility
+Define and maintain the runtime contract for architecture governance.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- app-shell
+- navigation-service
+- continuity-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- architecture/**
+- scripts/architecture/**
+- .github/workflows/ci.yml
+- .github/workflows/update-generated-artifacts.yml
+- repomix.config.json
+- repomix-instruction.md
 </file>
 
 <file path="scripts/architecture/validate-architecture-consistency.mjs">

@@ -16,7 +16,7 @@ Use this manifest before concluding that an architectural area is absent or befo
 | --- | --- | --- | --- |
 | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
 | architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
-| architecture-governance | `architecture/**` | present | 41 |
+| architecture-governance | `architecture/**` | present | 40 |
 | architecture-governance | `repomix-instruction.md` | present | 1 |
 | architecture-governance | `repomix.config.json` | present | 1 |
 | architecture-governance | `scripts/architecture/**` | present | 4 |
@@ -117,7 +117,6 @@ architecture
 │   ├── selection-engine.md
 │   └── waveform-engine.md
 ├── context-settings.json
-├── element-seed-metadata.json
 ├── lifecycle-map.md
 ├── ownership-matrix.md
 ├── README.md
