@@ -1,7 +1,7 @@
 # @role workflow
 # @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build.
+# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle before enforcing strict freshness checks.
 
 name: CI
 
@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -42,48 +43,103 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Wait for generated-artifact refresh workflow on pull requests
+        id: wait_for_artifact_refresh
+        if: github.event_name == 'pull_request'
+        run: >
+          node scripts/ci/wait-for-branch-workflow.mjs
+          --repo "${REPO}"
+          --branch "${BRANCH_NAME}"
+          --workflow-path ".github/workflows/update-repo-context.yml"
+          --current-head-sha "${CURRENT_HEAD_SHA}"
+          --timeout-seconds "900"
+          --poll-seconds "10"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH_NAME: ${{ github.head_ref }}
+          CURRENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Mark superseded pull-request runs
+        if: github.event_name == 'pull_request' && steps.wait_for_artifact_refresh.outputs.superseded == 'true'
+        run: echo "CI_SUPERSEDED=true" >> "$GITHUB_ENV"
+
+      - name: Announce superseded pull-request run
+        if: env.CI_SUPERSEDED == 'true'
+        run: |
+          echo "This CI run is superseded."
+          echo "The branch head advanced while waiting for generated artifacts to refresh."
+          echo "A newer CI run should validate the refreshed branch head."
+
       - name: Validate architecture metadata and focus element policy
+        if: env.CI_SUPERSEDED != 'true'
         run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${BRANCH_NAME}" --require-focus-update
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           GITHUB_BASE_REF: ${{ github.base_ref }}
 
       - name: Generate target architecture
+        if: env.CI_SUPERSEDED != 'true'
         run: node scripts/architecture/generate-target-architecture.mjs
 
       - name: Generate architecture context configs
+        if: env.CI_SUPERSEDED != 'true'
         run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
       - name: Generate repo context
+        if: env.CI_SUPERSEDED != 'true'
         run: npx --yes repomix --config repomix.config.json
 
       - name: Generate architectural element contexts
+        if: env.CI_SUPERSEDED != 'true'
         run: |
           for config in .tmp/architecture-context-configs/*.config.json; do
             echo "Generating context from $config"
             npx --yes repomix --config "$config"
           done
 
-        - name: Verify generated artifacts are committed
+      - name: Check generated artifact freshness
+        if: env.CI_SUPERSEDED != 'true'
+        shell: bash
         run: |
-          if ! git diff --quiet -- \
+          if git diff --quiet -- \
             repo-context.xml \
             architecture/target-architecture.md \
             architecture/contexts; then
-            echo "Generated artifacts are stale."
-            echo "Wait for the 'Update Generated Artifacts' workflow to commit refreshed outputs to the branch, then rerun CI."
-            echo ""
-            echo "Changed generated files:"
-            git diff --name-only -- \
-              repo-context.xml \
-              architecture/target-architecture.md \
-              architecture/contexts
-            exit 1
+            echo "Generated artifacts are current."
+            exit 0
           fi
-          
+
+          echo "Generated artifacts are stale."
+          echo ""
+          echo "Changed generated files:"
+          git diff --name-only -- \
+            repo-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts
+          echo ""
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "This is a branch push."
+            echo "The 'Update Generated Artifacts' workflow should commit refreshed outputs automatically."
+            echo "Continuing without failing this job."
+            exit 0
+          fi
+
+          echo "This is a pull request after waiting for branch artifact refresh workflows to settle."
+          echo "Generated artifacts must already be committed before merge."
+          exit 1
+
+      - name: Explain generated artifact behavior on branch pushes
+        if: github.event_name == 'push' && env.CI_SUPERSEDED != 'true'
+        run: |
+          echo "Branch pushes use a self-healing artifact flow."
+          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits them back to the branch."
+
       - name: Build static app for Cloudflare Pages
+        if: env.CI_SUPERSEDED != 'true'
         run: npm run build
         env:
           BASE_PATH: ""

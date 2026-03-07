@@ -2,75 +2,106 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { inferFocusElement, loadElements } from './lib.mjs';
 
+class ValidationError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'ValidationError';
+	}
+}
+
 const branchFlagIndex = process.argv.indexOf('--branch');
 const branchName = branchFlagIndex >= 0 ? process.argv[branchFlagIndex + 1] : process.env.BRANCH_NAME;
 const requireFocusUpdate = process.argv.includes('--require-focus-update');
-const { settings, elements } = loadElements();
 
-const ids = new Set();
-const aliases = new Map();
-
-for (const element of elements) {
-	if (ids.has(element.id)) {
-		throw new Error(`Duplicate architectural element id: ${element.id}`);
+main().catch((error) => {
+	if (error instanceof ValidationError) {
+		console.error(`Architecture validation failed: ${error.message}`);
+		process.exit(1);
 	}
 
-	ids.add(element.id);
+	console.error(error);
+	process.exit(1);
+});
 
-	for (const collaboratorId of element.collaborators ?? []) {
-		if (!elements.some((candidate) => candidate.id === collaboratorId)) {
-			throw new Error(`Unknown collaborator "${collaboratorId}" referenced by "${element.id}".`);
+async function main() {
+	const { settings, elements } = loadElements();
+
+	const ids = new Set();
+	const aliases = new Map();
+
+	for (const element of elements) {
+		if (ids.has(element.id)) {
+			throw new ValidationError(`Duplicate architectural element id: ${element.id}`);
+		}
+
+		ids.add(element.id);
+
+		for (const collaboratorId of element.collaborators ?? []) {
+			if (!elements.some((candidate) => candidate.id === collaboratorId)) {
+				throw new ValidationError(
+					`Unknown collaborator "${collaboratorId}" referenced by "${element.id}".`
+				);
+			}
+		}
+
+		for (const alias of element.branch_aliases ?? []) {
+			const normalizedAlias = alias.toLowerCase();
+
+			if (aliases.has(normalizedAlias)) {
+				throw new ValidationError(
+					`Duplicate branch alias "${alias}" used by "${element.id}" and "${aliases.get(normalizedAlias)}".`
+				);
+			}
+
+			aliases.set(normalizedAlias, element.id);
 		}
 	}
 
-	for (const alias of element.branch_aliases ?? []) {
-		const normalizedAlias = alias.toLowerCase();
+	const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
+	const focusElement = focusResult.element;
 
-		if (aliases.has(normalizedAlias)) {
-			throw new Error(
-				`Duplicate branch alias "${alias}" used by "${element.id}" and "${aliases.get(normalizedAlias)}".`
-			);
+	if (requireFocusUpdate) {
+		const changedFiles = getChangedFiles();
+		const ignoredPrefixes = [
+			'repo-context.xml',
+			'architecture/target-architecture.md',
+			'architecture/contexts/',
+			'.tmp/'
+		];
+
+		const meaningfulChangedFiles = changedFiles.filter(
+			(filePath) => !ignoredPrefixes.some((prefix) => filePath === prefix || filePath.startsWith(prefix))
+		);
+
+		if (meaningfulChangedFiles.length > 0) {
+			if (!focusResult.usedDefault && !meaningfulChangedFiles.includes(focusElement.path)) {
+				throw new ValidationError(
+					`The focus element file "${focusElement.path}" must be updated as part of this branch before code changes land.`
+				);
+			}
+
+			if (focusResult.usedDefault) {
+				console.warn(
+					`[architecture validation] Branch "${branchName}" is using the default focus element "${focusElement.id}". ` +
+						`A focus-element file update is not required for default-fallback branches.`
+				);
+			}
 		}
-
-		aliases.set(normalizedAlias, element.id);
 	}
-}
 
-const focusResult = inferFocusElement(branchName, elements, settings.defaultFocusElement);
-const focusElement = focusResult.element;
-
-if (requireFocusUpdate) {
-	const changedFiles = getChangedFiles();
-	const ignoredPrefixes = [
-		'repo-context.xml',
-		'architecture/target-architecture.md',
-		'architecture/contexts/',
-		'.tmp/'
-	];
-
-	const meaningfulChangedFiles = changedFiles.filter(
-		(filePath) => !ignoredPrefixes.some((prefix) => filePath === prefix || filePath.startsWith(prefix))
-	);
-
-	if (meaningfulChangedFiles.length > 0 && !meaningfulChangedFiles.includes(focusElement.path)) {
-		throw new Error(
-			`The focus element file "${focusElement.path}" must be updated as part of this branch before code changes land.`
+	if (focusResult.usedDefault) {
+		console.warn(
+			`[architecture validation] Branch "${branchName}" did not match any architectural element alias. ` +
+				`Falling back to default focus element "${focusElement.id}".`
 		);
 	}
-}
 
-if (focusResult.usedDefault) {
-	console.warn(
-		`[architecture validation] Branch "${branchName}" did not match any architectural element alias. ` +
-			`Falling back to default focus element "${focusElement.id}".`
+	console.log(
+		focusResult.usedDefault
+			? `Architecture metadata is consistent. Focus element: ${focusElement.id} (default fallback).`
+			: `Architecture metadata is consistent. Focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}").`
 	);
 }
-
-console.log(
-	focusResult.usedDefault
-		? `Architecture metadata is consistent. Focus element: ${focusElement.id} (default fallback).`
-		: `Architecture metadata is consistent. Focus element: ${focusElement.id} (matched alias "${focusResult.matchedAlias}").`
-);
 
 function getChangedFiles() {
 	const baseRef = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : 'origin/main';
