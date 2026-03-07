@@ -7,15 +7,17 @@
 
 # Recovery Map
 
-| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
-| --- | --- | --- | --- | --- |
-| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
-| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
-| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
-| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
-| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
-| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
-| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
-| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
-| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
-| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
+| Condition | Primary detector | Recovery coordinator | User surface | Primary user action | Persistence rule |
+| --- | --- | --- | --- | --- | --- |
+| no folder selected | library-service | error-recovery-coordinator | planner-screen | choose a local folder | preserve active profile, plan, and saved non-library data |
+| folder permission lost | library-service | error-recovery-coordinator | planner-screen, player-drawer-surface | reconnect the existing folder or choose a replacement | preserve stored library reference until the user explicitly replaces it |
+| stored folder handle is stale | library-service | error-recovery-coordinator | planner-screen | reconnect folder | keep last known track references explicit and mark them unavailable |
+| active track missing from inventory | library-service | error-recovery-coordinator | player-drawer-surface, planner-screen | choose a different track or reconnect library | do not silently clear the broken track reference |
+| section target missing | section-service | error-recovery-coordinator | planner-screen, player-drawer-surface | relink, delete, or ignore the section | preserve the section record until the user resolves it |
+| activity target unavailable | activity-service | error-recovery-coordinator | planner-screen | edit the activity or remove the broken target | preserve activity identity and plan membership |
+| plan item target unavailable | plan-service | error-recovery-coordinator | planner-screen | edit, skip, or remove the plan item | preserve plan order and item identity |
+| audio decode or media load failure | audio-engine | error-recovery-coordinator | player-drawer-surface | retry or choose another track | keep the launch context but classify the track as unavailable |
+| continuity reference cannot be restored | continuity-service | error-recovery-coordinator | app-shell, planner-screen | continue with cleared session state or reconnect missing references | clear only the invalid session fragment, not unrelated durable data |
+| storage read or write failure | continuity-service | error-recovery-coordinator | app-shell | reload after recovery or storage repair | stop partial writes and keep the last known good durable snapshot |
+| offline shell assets unavailable | app-shell | error-recovery-coordinator | app-shell | retry when cached assets are available | keep local durable data untouched |
+| update ready during active playback | app-shell | error-recovery-coordinator | app-shell, player-drawer-surface | defer update until playback stops | never interrupt active practice playback automatically |

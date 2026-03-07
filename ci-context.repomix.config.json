@@ -20,11 +20,6 @@
     ".github/workflows/*.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     "scripts/**/*.mjs",
-    "architecture/*.md",
-    "architecture/elements/*.md",
-    "architecture/context-settings.json",
-    "planning-context.md",
-    "repomix-instruction.md",
     "package.json",
     "repomix.config.json",
     "ci-context.repomix.config.json"

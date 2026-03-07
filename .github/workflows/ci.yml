@@ -3,7 +3,7 @@
 # @not-owns production deployment, runtime behavior, or branch protection settings
 # @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
 
-name: CI
+name: Branch Validation
 
 on:
   pull_request:
@@ -27,6 +27,7 @@ concurrency:
 
 jobs:
   validate:
+    name: ci-validate
     runs-on: ubuntu-latest
 
     steps:

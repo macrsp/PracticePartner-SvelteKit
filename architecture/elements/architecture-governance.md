@@ -15,37 +15,47 @@ code_paths:
   - architecture/**
   - scripts/architecture/**
   - .github/workflows/ci.yml
-  - .github/workflows/update-repo-context.yml
+  - .github/workflows/update-generated-artifacts.yml
   - repomix.config.json
   - repomix-instruction.md
 ---
 # Architecture Governance
 
 ## Responsibility
-Define and maintain the runtime contract for architecture governance.
+Keep the repository’s architectural source of truth, generated artifacts, focus-element discipline, and context-generation rules coherent and enforceable.
 
 ## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
+- the architectural element model under `architecture/elements/`
+- artifact-generation rules for `target-architecture.md` and focused contexts
+- focus-element alias policy and collaborator integrity
+- architectural documentation discipline for coding sessions
 
 ## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
+- product behavior decisions in `planning-context.md`
+- runtime UI behavior
+- domain rules, playback semantics, or persistence semantics
+- deployment settings outside architecture-artifact workflow needs
 
 ## Collaborators
 - app-shell
 - navigation-service
 - continuity-service
 
+## Lifecycle notes
+Architecture governance is always-on repository infrastructure.
+It is exercised during planning, implementation, CI validation, artifact generation, and pull-request review.
+
 ## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
+- every architectural element id is unique
+- collaborator references resolve to real architectural elements
+- generated architecture artifacts are reproducible from checked-in source files
+- focus-element selection is deterministic from branch aliases or the configured default
+- architectural context generation never becomes the source of truth; the markdown artifacts remain authoritative
 
 ## Code ownership hints
 - architecture/**
 - scripts/architecture/**
 - .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
+- .github/workflows/update-generated-artifacts.yml
 - repomix.config.json
 - repomix-instruction.md
