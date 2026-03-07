@@ -1552,7 +1552,7 @@ jobs:
           node scripts/ci/wait-for-branch-workflow.mjs
           --repo "${REPO}"
           --branch "${BRANCH_NAME}"
-          --workflow-path ".github/workflows/update-repo-context.yml"
+          --workflow-path ".github/workflows/update-generated-artifacts.yml"
           --timeout-seconds "900"
           --poll-seconds "10"
         env:
