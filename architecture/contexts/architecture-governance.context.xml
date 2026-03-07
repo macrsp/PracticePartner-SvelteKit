@@ -2811,6 +2811,55 @@ export function buildRepomixConfig({ outputPath, include, headerText }) {
 }
 </file>
 
+<file path="src/routes/+page.ts">
+import { redirect } from '@sveltejs/kit';
+import { resolve } from '$app/paths';
+
+export function load() {
+  throw redirect(307, resolve('/planner'));
+}
+</file>
+
+<file path="repomix.config.json">
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "repo-context.xml",
+    "style": "xml",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "includeEmptyDirectories": false,
+    "git": {
+      "sortByChanges": true,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": ["**/*"],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "build",
+      ".svelte-kit",
+      "repo-context.xml",
+      "architecture/contexts",
+      ".tmp"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
+</file>
+
 <file path="scripts/architecture/wait-for-branch-workflow.mjs">
 /**
  * @role ci-helper-script
@@ -2818,8 +2867,6 @@ export function buildRepomixConfig({ outputPath, include, headerText }) {
  * @not-owns build validation, architecture generation, or artifact freshness checks themselves
  * @notes Expected operational failures return concise messages with exit code 1 rather than stack traces.
  */
-
-import fs from 'node:fs';
 
 class WorkflowWaitError extends Error {
 	constructor(message) {
@@ -2875,19 +2922,14 @@ async function main() {
 		throw new WorkflowWaitError(`Invalid repo value "${repo}". Expected "owner/repo".`);
 	}
 
-	const workflow = await findWorkflowByPath({
-		owner,
-		repoName,
-		workflowPath,
-		token
-	});
+	const workflow = await findWorkflowByPath({ owner, repoName, workflowPath, token });
 
 	if (!workflow) {
 		throw new WorkflowWaitError(`Could not find workflow at path "${workflowPath}".`);
 	}
 
 	const deadline = Date.now() + timeoutSeconds * 1000;
-	let hasWaited = false;
+	let printedWaitMessage = false;
 
 	while (true) {
 		const activeRuns = await listActiveWorkflowRuns({
@@ -2902,10 +2944,14 @@ async function main() {
 			break;
 		}
 
-		hasWaited = true;
-		console.log(
-			`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
-		);
+		if (!printedWaitMessage) {
+			console.log(
+				`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
+			);
+			printedWaitMessage = true;
+		} else {
+			console.log(`Still waiting on ${activeRuns.length} "${workflow.name}" run(s)...`);
+		}
 
 		if (Date.now() >= deadline) {
 			throw new WorkflowWaitError(
@@ -2916,27 +2962,18 @@ async function main() {
 		await sleep(pollSeconds * 1000);
 	}
 
-	const latestHeadSha = await getBranchHeadSha({
-		owner,
-		repoName,
-		branch,
-		token
-	});
-
+	const latestHeadSha = await getBranchHeadSha({ owner, repoName, branch, token });
 	const superseded = latestHeadSha !== currentHeadSha;
 
 	writeOutput('superseded', superseded ? 'true' : 'false');
 	writeOutput('latest_head_sha', latestHeadSha);
-	writeOutput('waited', hasWaited ? 'true' : 'false');
 
 	if (superseded) {
 		console.log(
 			`Branch head advanced from ${currentHeadSha} to ${latestHeadSha} while waiting for generated artifacts.`
 		);
-	} else if (hasWaited) {
-		console.log(`Workflow runs settled and branch head remained at ${currentHeadSha}.`);
 	} else {
-		console.log(`No active "${workflow.name}" runs were found for branch "${branch}".`);
+		console.log(`Branch head stayed at ${currentHeadSha}.`);
 	}
 }
 
@@ -2975,7 +3012,7 @@ async function findWorkflowByPath({ owner, repoName, workflowPath, token }) {
 
 async function listActiveWorkflowRuns({ owner, repoName, workflowId, branch, token }) {
 	const response = await githubApiRequest({
-		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=100`,
+		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=50`,
 		token
 	});
 
@@ -3014,7 +3051,7 @@ async function githubApiRequest({ path, token }) {
 		);
 	}
 
-	return await response.json();
+	return response.json();
 }
 
 function writeOutput(name, value) {
@@ -3024,60 +3061,18 @@ function writeOutput(name, value) {
 		return;
 	}
 
-	fs.appendFileSync(outputPath, `${name}=${value}\n`, 'utf8');
+	process.stdout.write(`::notice title=${name}::${value}\n`);
+	awaitAppend(outputPath, `${name}=${value}\n`);
+}
+
+function awaitAppend(filePath, content) {
+	import('node:fs').then((fs) => {
+		fs.appendFileSync(filePath, content, 'utf8');
+	});
 }
 
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-</file>
-
-<file path="src/routes/+page.ts">
-import { redirect } from '@sveltejs/kit';
-import { resolve } from '$app/paths';
-
-export function load() {
-  throw redirect(307, resolve('/planner'));
-}
-</file>
-
-<file path="repomix.config.json">
-{
-  "$schema": "https://repomix.com/schemas/latest/schema.json",
-  "output": {
-    "filePath": "repo-context.xml",
-    "style": "xml",
-    "instructionFilePath": "repomix-instruction.md",
-    "fileSummary": true,
-    "directoryStructure": true,
-    "files": true,
-    "removeComments": false,
-    "removeEmptyLines": false,
-    "includeEmptyDirectories": false,
-    "git": {
-      "sortByChanges": true,
-      "includeDiffs": false,
-      "includeLogs": false
-    }
-  },
-  "include": ["**/*"],
-  "ignore": {
-    "useGitignore": true,
-    "useDefaultPatterns": true,
-    "customPatterns": [
-      "build",
-      ".svelte-kit",
-      "repo-context.xml",
-      "architecture/contexts",
-      ".tmp"
-    ]
-  },
-  "security": {
-    "enableSecurityCheck": true
-  },
-  "tokenCount": {
-    "encoding": "o200k_base"
-  }
 }
 </file>
 
