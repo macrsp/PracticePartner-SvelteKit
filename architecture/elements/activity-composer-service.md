@@ -1,29 +1,27 @@
 ---
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
+id: activity-composer-service
+title: Activity Composer Service
+order: 80
 kind: application-service
 branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
+  - activity-composer-service
+  - activity-composer
+  - composer
 collaborators:
-  - app-shell
-  - library-service
+  - activity-service
   - player-session-service
-  - audio-engine
-  - waveform-engine
-  - continuity-service
-  - navigation-service
+  - library-service
+  - section-service
+  - planner-screen
 code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
-  - src/routes/+layout.ts
+  - src/lib/app/activity-composer/**
+  - src/lib/ui/planner/**
+  - src/lib/ui/player/**
 ---
-# Error Recovery Coordinator
+# Activity Composer Service
 
 ## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
+Define and maintain the runtime contract for activity composer service.
 
 ## Owns
 - responsibilities to be refined during implementation
@@ -34,13 +32,11 @@ Define and maintain the runtime contract for error recovery coordinator.
 - concerns outside this element’s declared boundary
 
 ## Collaborators
-- app-shell
-- library-service
+- activity-service
 - player-session-service
-- audio-engine
-- waveform-engine
-- continuity-service
-- navigation-service
+- library-service
+- section-service
+- planner-screen
 
 ## Invariants
 - this element must maintain an explicit contract
@@ -48,6 +44,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 - collaborators must stay current with implementation reality
 
 ## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
-- src/routes/+layout.ts
+- src/lib/app/activity-composer/**
+- src/lib/ui/planner/**
+- src/lib/ui/player/**

@@ -1,29 +1,27 @@
 ---
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
-kind: application-service
+id: audio-engine
+title: Audio Engine
+order: 110
+kind: interaction-engine
 branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
-collaborators:
-  - app-shell
-  - library-service
-  - player-session-service
   - audio-engine
+  - playback-engine
+  - transport
+collaborators:
+  - player-session-service
   - waveform-engine
+  - selection-engine
+  - error-recovery-coordinator
   - continuity-service
-  - navigation-service
 code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
-  - src/routes/+layout.ts
+  - src/lib/engines/audio/**
+  - src/lib/platform/browser/audio/**
+  - src/lib/platform/browser/media/**
 ---
-# Error Recovery Coordinator
+# Audio Engine
 
 ## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
+Define and maintain the runtime contract for audio engine.
 
 ## Owns
 - responsibilities to be refined during implementation
@@ -34,13 +32,11 @@ Define and maintain the runtime contract for error recovery coordinator.
 - concerns outside this element’s declared boundary
 
 ## Collaborators
-- app-shell
-- library-service
 - player-session-service
-- audio-engine
 - waveform-engine
+- selection-engine
+- error-recovery-coordinator
 - continuity-service
-- navigation-service
 
 ## Invariants
 - this element must maintain an explicit contract
@@ -48,6 +44,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 - collaborators must stay current with implementation reality
 
 ## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
-- src/routes/+layout.ts
+- src/lib/engines/audio/**
+- src/lib/platform/browser/audio/**
+- src/lib/platform/browser/media/**

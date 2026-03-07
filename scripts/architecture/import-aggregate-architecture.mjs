@@ -70,18 +70,20 @@ writeWithGuard(
 
 for (const element of manifest.elements) {
 	const sourceSection = elementSectionMap.get(element.title);
-
-	if (!sourceSection) {
-		throw new Error(
-			`Could not find architectural element section "${element.title}" in ${sourcePath}. ` +
-				`Update ${manifestPath} or the aggregate architecture markdown.`
-		);
-	}
-
 	const outputPath = path.join(elementsDir, `${element.id}.md`).replace(/\\/g, '/');
-	const body = normalizeElementBody(sourceSection.raw, element.title);
+
+	const body = sourceSection
+		? normalizeElementBody(sourceSection.raw, element.title)
+		: buildFallbackElementBody(element);
 
 	writeWithGuard(outputPath, buildElementFile(element, body), args.force);
+
+	if (!sourceSection) {
+		console.warn(
+			`[architecture import] No aggregate section found for "${element.title}". ` +
+				`Generated a metadata-backed stub at ${outputPath}.`
+		);
+	}
 }
 
 if (args.writeTemplate || !fs.existsSync(path.resolve(templatePath))) {
@@ -201,6 +203,35 @@ function normalizeDocumentSection(content, title) {
 
 function normalizeElementBody(rawSection, title) {
 	return rawSection.replace(/^##\s+.*$/m, `# ${title}`).trim();
+}
+
+function buildFallbackElementBody(element) {
+	const collaborators = (element.collaborators ?? []).map((value) => `- ${value}`).join('\n') || '- none yet';
+	const codePaths = (element.code_paths ?? []).map((value) => `- ${value}`).join('\n') || '- none yet';
+
+	return `# ${element.title}
+
+## Responsibility
+Define and maintain the runtime contract for ${element.title.toLowerCase()}.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+${collaborators}
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+${codePaths}`;
 }
 
 function buildMarkdownArtifact({ role, owns, notOwns, notes, body }) {

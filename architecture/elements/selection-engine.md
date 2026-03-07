@@ -1,29 +1,25 @@
 ---
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
-kind: application-service
+id: selection-engine
+title: Selection Engine
+order: 130
+kind: interaction-engine
 branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
+  - selection-engine
+  - selection
 collaborators:
-  - app-shell
-  - library-service
   - player-session-service
-  - audio-engine
   - waveform-engine
-  - continuity-service
-  - navigation-service
+  - audio-engine
+  - section-service
 code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
-  - src/routes/+layout.ts
+  - src/lib/engines/selection/**
+  - src/lib/ui/player/**
+  - src/lib/app/selection/**
 ---
-# Error Recovery Coordinator
+# Selection Engine
 
 ## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
+Define and maintain the runtime contract for selection engine.
 
 ## Owns
 - responsibilities to be refined during implementation
@@ -34,13 +30,10 @@ Define and maintain the runtime contract for error recovery coordinator.
 - concerns outside this element’s declared boundary
 
 ## Collaborators
-- app-shell
-- library-service
 - player-session-service
-- audio-engine
 - waveform-engine
-- continuity-service
-- navigation-service
+- audio-engine
+- section-service
 
 ## Invariants
 - this element must maintain an explicit contract
@@ -48,6 +41,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 - collaborators must stay current with implementation reality
 
 ## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
-- src/routes/+layout.ts
+- src/lib/engines/selection/**
+- src/lib/ui/player/**
+- src/lib/app/selection/**

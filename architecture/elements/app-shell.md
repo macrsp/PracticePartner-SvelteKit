@@ -1,29 +1,26 @@
 ---
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
-kind: application-service
+id: app-shell
+title: App Shell
+order: 10
+kind: ui-shell
 branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
-collaborators:
   - app-shell
-  - library-service
-  - player-session-service
-  - audio-engine
-  - waveform-engine
-  - continuity-service
+  - shell
+collaborators:
   - navigation-service
+  - player-session-service
+  - error-recovery-coordinator
+  - profile-service
 code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
   - src/routes/+layout.ts
+  - src/routes/+layout.svelte
+  - src/app.html
+  - src/lib/ui/shell/**
 ---
-# Error Recovery Coordinator
+# App Shell
 
 ## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
+Define and maintain the runtime contract for app shell.
 
 ## Owns
 - responsibilities to be refined during implementation
@@ -34,13 +31,10 @@ Define and maintain the runtime contract for error recovery coordinator.
 - concerns outside this element’s declared boundary
 
 ## Collaborators
-- app-shell
-- library-service
-- player-session-service
-- audio-engine
-- waveform-engine
-- continuity-service
 - navigation-service
+- player-session-service
+- error-recovery-coordinator
+- profile-service
 
 ## Invariants
 - this element must maintain an explicit contract
@@ -48,6 +42,7 @@ Define and maintain the runtime contract for error recovery coordinator.
 - collaborators must stay current with implementation reality
 
 ## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
 - src/routes/+layout.ts
+- src/routes/+layout.svelte
+- src/app.html
+- src/lib/ui/shell/**

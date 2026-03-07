@@ -1,29 +1,25 @@
 ---
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
-kind: application-service
+id: waveform-engine
+title: Waveform Engine
+order: 120
+kind: interaction-engine
 branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
+  - waveform-engine
+  - waveform
 collaborators:
-  - app-shell
-  - library-service
   - player-session-service
   - audio-engine
-  - waveform-engine
-  - continuity-service
-  - navigation-service
+  - selection-engine
+  - error-recovery-coordinator
 code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
-  - src/routes/+layout.ts
+  - src/lib/engines/waveform/**
+  - src/lib/platform/browser/media/**
+  - src/lib/ui/player/**
 ---
-# Error Recovery Coordinator
+# Waveform Engine
 
 ## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
+Define and maintain the runtime contract for waveform engine.
 
 ## Owns
 - responsibilities to be refined during implementation
@@ -34,13 +30,10 @@ Define and maintain the runtime contract for error recovery coordinator.
 - concerns outside this element’s declared boundary
 
 ## Collaborators
-- app-shell
-- library-service
 - player-session-service
 - audio-engine
-- waveform-engine
-- continuity-service
-- navigation-service
+- selection-engine
+- error-recovery-coordinator
 
 ## Invariants
 - this element must maintain an explicit contract
@@ -48,6 +41,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 - collaborators must stay current with implementation reality
 
 ## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
-- src/routes/+layout.ts
+- src/lib/engines/waveform/**
+- src/lib/platform/browser/media/**
+- src/lib/ui/player/**

@@ -1,29 +1,29 @@
 ---
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
+id: player-session-service
+title: Player Session Service
+order: 100
 kind: application-service
 branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
-collaborators:
-  - app-shell
-  - library-service
   - player-session-service
+  - player-session
+  - player
+collaborators:
   - audio-engine
   - waveform-engine
+  - selection-engine
+  - library-service
+  - section-service
   - continuity-service
   - navigation-service
 code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
+  - src/lib/app/player-session/**
+  - src/lib/ui/player/**
   - src/routes/+layout.ts
 ---
-# Error Recovery Coordinator
+# Player Session Service
 
 ## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
+Define and maintain the runtime contract for player session service.
 
 ## Owns
 - responsibilities to be refined during implementation
@@ -34,11 +34,11 @@ Define and maintain the runtime contract for error recovery coordinator.
 - concerns outside this element’s declared boundary
 
 ## Collaborators
-- app-shell
-- library-service
-- player-session-service
 - audio-engine
 - waveform-engine
+- selection-engine
+- library-service
+- section-service
 - continuity-service
 - navigation-service
 
@@ -48,6 +48,6 @@ Define and maintain the runtime contract for error recovery coordinator.
 - collaborators must stay current with implementation reality
 
 ## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
+- src/lib/app/player-session/**
+- src/lib/ui/player/**
 - src/routes/+layout.ts
