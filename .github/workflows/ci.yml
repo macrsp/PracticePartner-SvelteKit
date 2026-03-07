@@ -66,12 +66,22 @@ jobs:
             npx --yes repomix --config "$config"
           done
 
-      - name: Verify generated artifacts are committed
+        - name: Verify generated artifacts are committed
         run: |
-          git diff --exit-code -- \
+          if ! git diff --quiet -- \
             repo-context.xml \
             architecture/target-architecture.md \
-            architecture/contexts
+            architecture/contexts; then
+            echo "Generated artifacts are stale."
+            echo "Wait for the 'Update Generated Artifacts' workflow to commit refreshed outputs to the branch, then rerun CI."
+            echo ""
+            echo "Changed generated files:"
+            git diff --name-only -- \
+              repo-context.xml \
+              architecture/target-architecture.md \
+              architecture/contexts
+            exit 1
+          fi
           
       - name: Build static app for Cloudflare Pages
         run: npm run build
