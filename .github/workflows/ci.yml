@@ -12,6 +12,7 @@ on:
       - main
     paths-ignore:
       - repo-context.xml
+      - ci-context.xml
       - architecture/target-architecture.md
       - architecture/contexts/**
   workflow_dispatch:
@@ -83,6 +84,9 @@ jobs:
       - name: Generate repo context
         run: npx --yes repomix --config repomix.config.json
 
+      - name: Generate CI context
+        run: npx --yes repomix --config ci-context.repomix.config.json
+
       - name: Generate architectural element contexts
         run: |
           for config in .tmp/architecture-context-configs/*.config.json; do
@@ -95,6 +99,7 @@ jobs:
         run: |
           if git diff --quiet -- \
             repo-context.xml \
+            ci-context.xml \
             architecture/target-architecture.md \
             architecture/contexts; then
             echo "Generated artifacts are current."
@@ -106,6 +111,7 @@ jobs:
           echo "Changed generated files:"
           git diff --name-only -- \
             repo-context.xml \
+            ci-context.xml \
             architecture/target-architecture.md \
             architecture/contexts
           echo ""
