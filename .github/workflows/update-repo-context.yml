@@ -1,9 +1,9 @@
 # @role workflow
-# @owns regeneration and commit-back of repo-context.xml on non-main branch updates
-# @not-owns Pages deployment, runtime behavior, or repository architecture rules
-# @notes Keeps AI context current during migration work without touching main automatically.
+# @owns regeneration and commit-back of repo-context.xml, generated architecture docs, and generated element context artifacts on non-main branch updates
+# @not-owns Pages deployment, runtime behavior, or product-level architecture decisions
+# @notes Keeps AI context and generated architecture artifacts current without requiring local environment setup.
 
-name: Update Repo Context
+name: Update Generated Artifacts
 
 on:
   push:
@@ -11,13 +11,15 @@ on:
       - main
     paths-ignore:
       - repo-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-repo-context-${{ github.ref }}
+  group: update-generated-artifacts-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,8 +38,27 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate architecture metadata
+        run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${GITHUB_REF_NAME}"
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${GITHUB_REF_NAME}"
+
       - name: Generate repo context
         run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
 
       - name: Compute safe artifact name
         shell: bash
@@ -51,22 +72,25 @@ jobs:
 
           echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
 
-      - name: Upload repo context artifact
+      - name: Upload generated context artifact
         uses: actions/upload-artifact@v4
         with:
-          name: repo-context-${{ env.safe_ref }}
-          path: repo-context.xml
+          name: generated-context-${{ env.safe_ref }}
+          path: |
+            repo-context.xml
+            architecture/target-architecture.md
+            architecture/contexts
 
-      - name: Commit updated repo context to branch
+      - name: Commit updated generated artifacts to branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add repo-context.xml
+          git add repo-context.xml architecture/target-architecture.md architecture/contexts
 
           if git diff --cached --quiet; then
-            echo "No repo context changes."
+            echo "No generated artifact changes."
             exit 0
           fi
 
-          git commit -m "chore: refresh repo context"
+          git commit -m "chore: refresh generated architecture and context artifacts"
           git push origin HEAD:${GITHUB_REF_NAME}

@@ -1,7 +1,7 @@
 # @role workflow
-# @owns pull-request and branch validation for Cloudflare Pages build health and repo-context generation
+# @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates the static Cloudflare Pages build and repomix context generation.
+# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build.
 
 name: CI
 
@@ -12,6 +12,8 @@ on:
       - main
     paths-ignore:
       - repo-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
   workflow_dispatch:
 
 permissions:
@@ -28,6 +30,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -38,10 +42,38 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate architecture metadata and focus element policy
+        run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${BRANCH_NAME}" --require-focus-update
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+      - name: Generate repo context
+        run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
+
+      - name: Verify generated artifacts are committed
+        run: |
+          git diff --exit-code -- \
+            repo-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts
+          
       - name: Build static app for Cloudflare Pages
         run: npm run build
         env:
           BASE_PATH: ""
-
-      - name: Validate repo context generation
-        run: npx --yes repomix --config repomix.config.json

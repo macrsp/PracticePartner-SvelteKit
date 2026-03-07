@@ -1,6 +1,6 @@
 <!--
   @role repository-instructions
-  @owns repository-wide implementation rules, instruction priority, output contract, and maintenance conventions
+  @owns repository-wide implementation rules, instruction priority, output contract, architecture-artifact discipline, and maintenance conventions
   @not-owns product requirements or per-file responsibilities
   @notes This file is the primary execution surface for AI implementation behavior in this repository.
 -->
@@ -29,8 +29,9 @@ When instructions or signals conflict, use this order:
 
 1. **This file (`repomix-instruction.md`)**
 2. **`planning-context.md`** for product direction and accepted behavior
-3. **file headers** for per-file ownership and boundaries
-4. **the current codebase** for implementation details
+3. **architecture artifacts** under `architecture/`
+4. **file headers** for per-file ownership and boundaries
+5. **the current codebase** for implementation details
 
 ### Tie-breaker rule
 
@@ -86,6 +87,79 @@ Do not introduce:
 - server endpoints as required application infrastructure
 - hosting assumptions that depend on path-prefixed deployment
 - implementation choices that require anything other than static output deployed to Cloudflare Pages
+
+---
+
+## Development Environment Rules
+
+Assume a **CI/CD-first** execution model for this repository.
+
+Implementation and validation should assume:
+
+- there is **no local development environment**
+- validation happens primarily through **GitHub Actions**
+- repository edits plus CI validation are the default workflow
+- local-machine-specific setup should not be assumed
+
+Do not default to telling the user to run commands locally.
+
+Use **GitHub Codespaces** only when it is clearly necessary and the task cannot reasonably be completed through repository changes plus the existing CI/CD pipeline.
+
+Prefer:
+
+- repository edits
+- workflow-based validation
+- static build verification in CI
+- deployment validation through the existing GitHub Actions pipeline
+
+Avoid introducing:
+
+- instructions that assume a persistent local machine setup
+- tooling that is only justified by local development convenience
+- implementation steps that require local execution when CI/CD validation is sufficient
+
+---
+
+## Architecture Artifact Rules
+
+The architecture source of truth lives under `architecture/`.
+
+The architecture set is split as follows:
+
+- `architecture/ownership-matrix.md` is the smallest high-signal architectural reference and should be safe to include in all coding sessions
+- `architecture/lifecycle-map.md` captures runtime lifecycle transitions
+- `architecture/recovery-map.md` captures failure and recovery behavior
+- `architecture/elements/*.md` are the source files for individual architectural elements
+- `architecture/target-architecture.template.md` is the template for the generated architecture document
+- `architecture/target-architecture.md` is a generated artifact
+- `architecture/contexts/*.xml` are generated artifacts
+
+Do not hand-edit:
+
+- `architecture/target-architecture.md`
+- `architecture/contexts/*.xml`
+
+Those are generated and maintained automatically by GitHub Actions.
+
+---
+
+## Focus Element Rules
+
+Every meaningful coding session must have a **focus architectural element**.
+
+The focus element is determined from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+
+The first step in any coding session is to update the focus element’s architecture file, including:
+
+- collaborators
+- ownership boundaries
+- invariants
+- lifecycle notes
+- any architecture details that are changing in the session
+
+Do not start implementation by changing code first and updating architecture later.
+
+If a branch cannot be mapped to a focus architectural element, treat that as a repository-consistency problem and fix the branch naming or architecture metadata before continuing.
 
 ---
 
