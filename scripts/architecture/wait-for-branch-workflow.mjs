@@ -5,6 +5,8 @@
  * @notes Expected operational failures return concise messages with exit code 1 rather than stack traces.
  */
 
+import fs from 'node:fs';
+
 class WorkflowWaitError extends Error {
 	constructor(message) {
 		super(message);
@@ -59,14 +61,19 @@ async function main() {
 		throw new WorkflowWaitError(`Invalid repo value "${repo}". Expected "owner/repo".`);
 	}
 
-	const workflow = await findWorkflowByPath({ owner, repoName, workflowPath, token });
+	const workflow = await findWorkflowByPath({
+		owner,
+		repoName,
+		workflowPath,
+		token
+	});
 
 	if (!workflow) {
 		throw new WorkflowWaitError(`Could not find workflow at path "${workflowPath}".`);
 	}
 
 	const deadline = Date.now() + timeoutSeconds * 1000;
-	let printedWaitMessage = false;
+	let hasWaited = false;
 
 	while (true) {
 		const activeRuns = await listActiveWorkflowRuns({
@@ -81,14 +88,10 @@ async function main() {
 			break;
 		}
 
-		if (!printedWaitMessage) {
-			console.log(
-				`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
-			);
-			printedWaitMessage = true;
-		} else {
-			console.log(`Still waiting on ${activeRuns.length} "${workflow.name}" run(s)...`);
-		}
+		hasWaited = true;
+		console.log(
+			`Waiting for ${activeRuns.length} "${workflow.name}" run(s) on branch "${branch}" to complete...`
+		);
 
 		if (Date.now() >= deadline) {
 			throw new WorkflowWaitError(
@@ -99,18 +102,27 @@ async function main() {
 		await sleep(pollSeconds * 1000);
 	}
 
-	const latestHeadSha = await getBranchHeadSha({ owner, repoName, branch, token });
+	const latestHeadSha = await getBranchHeadSha({
+		owner,
+		repoName,
+		branch,
+		token
+	});
+
 	const superseded = latestHeadSha !== currentHeadSha;
 
 	writeOutput('superseded', superseded ? 'true' : 'false');
 	writeOutput('latest_head_sha', latestHeadSha);
+	writeOutput('waited', hasWaited ? 'true' : 'false');
 
 	if (superseded) {
 		console.log(
 			`Branch head advanced from ${currentHeadSha} to ${latestHeadSha} while waiting for generated artifacts.`
 		);
+	} else if (hasWaited) {
+		console.log(`Workflow runs settled and branch head remained at ${currentHeadSha}.`);
 	} else {
-		console.log(`Branch head stayed at ${currentHeadSha}.`);
+		console.log(`No active "${workflow.name}" runs were found for branch "${branch}".`);
 	}
 }
 
@@ -149,7 +161,7 @@ async function findWorkflowByPath({ owner, repoName, workflowPath, token }) {
 
 async function listActiveWorkflowRuns({ owner, repoName, workflowId, branch, token }) {
 	const response = await githubApiRequest({
-		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=50`,
+		path: `/repos/${owner}/${repoName}/actions/workflows/${workflowId}/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=100`,
 		token
 	});
 
@@ -188,7 +200,7 @@ async function githubApiRequest({ path, token }) {
 		);
 	}
 
-	return response.json();
+	return await response.json();
 }
 
 function writeOutput(name, value) {
@@ -198,14 +210,7 @@ function writeOutput(name, value) {
 		return;
 	}
 
-	process.stdout.write(`::notice title=${name}::${value}\n`);
-	awaitAppend(outputPath, `${name}=${value}\n`);
-}
-
-function awaitAppend(filePath, content) {
-	import('node:fs').then((fs) => {
-		fs.appendFileSync(filePath, content, 'utf8');
-	});
+	fs.appendFileSync(outputPath, `${name}=${value}\n`, 'utf8');
 }
 
 function sleep(ms) {
