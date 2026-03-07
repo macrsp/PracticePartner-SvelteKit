@@ -27,14 +27,14 @@ The content is organized as follows:
   between different files in the repository.
 - Be aware that this file may contain sensitive information. Handle it with
   the same level of security as you would the original repository.
-
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.
 - Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
 </usage_guidelines>
 
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: **/*
+- Only files matching these patterns are included: planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/architecture-governance.md, architecture/elements/app-shell.md, architecture/elements/navigation-service.md, architecture/elements/continuity-service.md, architecture/**, scripts/architecture/**, .github/workflows/ci.yml, .github/workflows/update-repo-context.yml, repomix.config.json, repomix-instruction.md, src/routes/+layout.ts, src/routes/+layout.svelte, src/app.html, src/lib/ui/shell/**, src/lib/app/navigation/**, src/routes/+page.ts, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/platform/browser/fs/**
 - Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, architecture/contexts, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -43,11 +43,14 @@ The content is organized as follows:
 
 </file_summary>
 
+<user_provided_header>
+Focused architectural context for Architecture Governance.
+</user_provided_header>
+
 <directory_structure>
 .github/
   workflows/
     ci.yml
-    deploy-cloudflare-pages.yml
     update-repo-context.yml
 architecture/
   elements/
@@ -84,80 +87,16 @@ scripts/
     validate-architecture-consistency.mjs
 src/
   routes/
-    planner/
-      +page.svelte
     +layout.ts
     +page.ts
-  app.d.ts
   app.html
-static/
-  favicon.svg
-.gitignore
-.npmrc
-package.json
 planning-context.md
 repomix-instruction.md
 repomix.config.json
-svelte.config.js
-tsconfig.json
-vite.config.ts
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path=".github/workflows/deploy-cloudflare-pages.yml">
-# @role workflow
-# @owns build-and-deploy of the static SvelteKit site to Cloudflare Pages
-# @not-owns runtime behavior, repo-context generation, or feature logic
-# @notes Builds adapter-static output from build/ and deploys it to the production Cloudflare Pages project at root path.
-
-name: Deploy Cloudflare Pages
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  deployments: write
-
-concurrency:
-  group: cloudflare-pages-production
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build static site for Cloudflare Pages
-        run: npm run build
-        env:
-          BASE_PATH: ""
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          command: pages deploy build --project-name=practicepartner-sveltekit
-</file>
 
 <file path="architecture/elements/activity-composer-service.md">
 ---
@@ -1969,29 +1908,8 @@ writeText(settings.targetArchitectureOutput, output);
 console.log(`Generated ${settings.targetArchitectureOutput}`);
 </file>
 
-<file path="src/routes/planner/+page.svelte">
-<h1>Planner</h1>
-<p>Hello from the SvelteKit target repo.</p>
-</file>
-
 <file path="src/routes/+layout.ts">
 export const prerender = true;
-</file>
-
-<file path="src/app.d.ts">
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
-declare global {
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
-	}
-}
-
-export {};
 </file>
 
 <file path="src/app.html">
@@ -2007,46 +1925,6 @@ export {};
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
-</file>
-
-<file path="static/favicon.svg">
-<svg xmlns="http://www.w3.org/2000/svg" width="107" height="128" viewBox="0 0 107 128"><title>svelte-logo</title><path d="M94.157 22.819c-10.4-14.885-30.94-19.297-45.792-9.835L22.282 29.608A29.92 29.92 0 0 0 8.764 49.65a31.5 31.5 0 0 0 3.108 20.231 30 30 0 0 0-4.477 11.183 31.9 31.9 0 0 0 5.448 24.116c10.402 14.887 30.942 19.297 45.791 9.835l26.083-16.624A29.92 29.92 0 0 0 98.235 78.35a31.53 31.53 0 0 0-3.105-20.232 30 30 0 0 0 4.474-11.182 31.88 31.88 0 0 0-5.447-24.116" style="fill:#ff3e00"/><path d="M45.817 106.582a20.72 20.72 0 0 1-22.237-8.243 19.17 19.17 0 0 1-3.277-14.503 18 18 0 0 1 .624-2.435l.49-1.498 1.337.981a33.6 33.6 0 0 0 10.203 5.098l.97.294-.09.968a5.85 5.85 0 0 0 1.052 3.878 6.24 6.24 0 0 0 6.695 2.485 5.8 5.8 0 0 0 1.603-.704L69.27 76.28a5.43 5.43 0 0 0 2.45-3.631 5.8 5.8 0 0 0-.987-4.371 6.24 6.24 0 0 0-6.698-2.487 5.7 5.7 0 0 0-1.6.704l-9.953 6.345a19 19 0 0 1-5.296 2.326 20.72 20.72 0 0 1-22.237-8.243 19.17 19.17 0 0 1-3.277-14.502 17.99 17.99 0 0 1 8.13-12.052l26.081-16.623a19 19 0 0 1 5.3-2.329 20.72 20.72 0 0 1 22.237 8.243 19.17 19.17 0 0 1 3.277 14.503 18 18 0 0 1-.624 2.435l-.49 1.498-1.337-.98a33.6 33.6 0 0 0-10.203-5.1l-.97-.294.09-.968a5.86 5.86 0 0 0-1.052-3.878 6.24 6.24 0 0 0-6.696-2.485 5.8 5.8 0 0 0-1.602.704L37.73 51.72a5.42 5.42 0 0 0-2.449 3.63 5.79 5.79 0 0 0 .986 4.372 6.24 6.24 0 0 0 6.698 2.486 5.8 5.8 0 0 0 1.602-.704l9.952-6.342a19 19 0 0 1 5.295-2.328 20.72 20.72 0 0 1 22.237 8.242 19.17 19.17 0 0 1 3.277 14.503 18 18 0 0 1-8.13 12.053l-26.081 16.622a19 19 0 0 1-5.3 2.328" style="fill:#fff"/></svg>
-</file>
-
-<file path=".npmrc">
-engine-strict=true
-</file>
-
-<file path="tsconfig.json">
-{
-	"extends": "./.svelte-kit/tsconfig.json",
-	"compilerOptions": {
-		"rewriteRelativeImportExtensions": true,
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"moduleResolution": "bundler"
-	}
-	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
-	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
-	//
-	// To make changes to top-level options such as include and exclude, we recommend extending
-	// the generated config; see https://svelte.dev/docs/kit/configuration#typescript
-}
-</file>
-
-<file path="vite.config.ts">
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-	plugins: [sveltekit()]
-});
 </file>
 
 <file path=".github/workflows/update-repo-context.yml">
@@ -3040,36 +2918,6 @@ export function load() {
 }
 </file>
 
-<file path=".gitignore">
-node_modules
-
-# Output
-.output
-.vercel
-.netlify
-.wrangler
-/.svelte-kit
-/build
-
-# Temporary generation
-.tmp/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Env
-.env
-.env.*
-!.env.example
-!.env.test
-
-# Vite
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
-_attic/
-</file>
-
 <file path="repomix.config.json">
 {
   "$schema": "https://repomix.com/schemas/latest/schema.json",
@@ -3107,52 +2955,6 @@ _attic/
   "tokenCount": {
     "encoding": "o200k_base"
   }
-}
-</file>
-
-<file path="svelte.config.js">
-import adapter from '@sveltejs/adapter-static';
-
-/** @type {import('@sveltejs/kit').Config} */
-const config = {
-  kit: {
-    adapter: adapter({
-      fallback: '404.html'
-    }),
-    paths: {
-      base: process.argv.includes('dev') ? '' : (process.env.BASE_PATH ?? '')
-    }
-  }
-};
-
-export default config;
-</file>
-
-<file path="package.json">
-{
-	"name": "practicepartner-sveltekit",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"architecture:import-aggregate": "node scripts/architecture/import-aggregate-architecture.mjs"
-	},
-	"devDependencies": {
-		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.50.2",
-		"@sveltejs/vite-plugin-svelte": "^6.2.4",
-		"repomix": "^1.12.0",
-		"svelte": "^5.51.0",
-		"svelte-check": "^4.4.2",
-		"typescript": "^5.9.3",
-		"vite": "^7.3.1"
-	}
 }
 </file>
 

@@ -1,0 +1,1359 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+- Pay special attention to the Repository Description. These contain important context and guidelines specific to this project.
+- Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/player-session-service.md, architecture/elements/audio-engine.md, architecture/elements/waveform-engine.md, architecture/elements/selection-engine.md, architecture/elements/library-service.md, architecture/elements/section-service.md, architecture/elements/continuity-service.md, architecture/elements/navigation-service.md, src/lib/app/player-session/**, src/lib/ui/player/**, src/routes/+layout.ts, src/lib/engines/audio/**, src/lib/platform/browser/audio/**, src/lib/platform/browser/media/**, src/lib/engines/waveform/**, src/lib/engines/selection/**, src/lib/app/selection/**, src/lib/domains/library/**, src/lib/platform/browser/fs/**, src/lib/platform/browser/permissions/**, src/lib/domains/sections/**, src/lib/app/sections/**, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/app/navigation/**, src/routes/+page.ts
+- Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, architecture/contexts, .tmp
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<user_provided_header>
+Focused architectural context for Player Session Service.
+</user_provided_header>
+
+<directory_structure>
+architecture/
+  elements/
+    audio-engine.md
+    continuity-service.md
+    library-service.md
+    navigation-service.md
+    player-session-service.md
+    section-service.md
+    selection-engine.md
+    waveform-engine.md
+  lifecycle-map.md
+  ownership-matrix.md
+  recovery-map.md
+src/
+  routes/
+    +layout.ts
+    +page.ts
+planning-context.md
+repomix-instruction.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="architecture/elements/audio-engine.md">
+---
+id: audio-engine
+title: Audio Engine
+order: 110
+kind: interaction-engine
+branch_aliases:
+  - audio-engine
+  - playback-engine
+  - transport
+collaborators:
+  - player-session-service
+  - waveform-engine
+  - selection-engine
+  - error-recovery-coordinator
+  - continuity-service
+code_paths:
+  - src/lib/engines/audio/**
+  - src/lib/platform/browser/audio/**
+  - src/lib/platform/browser/media/**
+---
+# Audio Engine
+
+## Responsibility
+Define and maintain the runtime contract for audio engine.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- player-session-service
+- waveform-engine
+- selection-engine
+- error-recovery-coordinator
+- continuity-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/engines/audio/**
+- src/lib/platform/browser/audio/**
+- src/lib/platform/browser/media/**
+</file>
+
+<file path="architecture/elements/continuity-service.md">
+---
+id: continuity-service
+title: Continuity Service
+order: 140
+kind: application-service
+branch_aliases:
+  - continuity-service
+  - continuity
+collaborators:
+  - profile-service
+  - library-service
+  - section-service
+  - player-session-service
+  - error-recovery-coordinator
+code_paths:
+  - src/lib/app/continuity/**
+  - src/lib/platform/browser/db/**
+  - src/lib/platform/browser/fs/**
+---
+# Continuity Service
+
+## Responsibility
+Define and maintain the runtime contract for continuity service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- profile-service
+- library-service
+- section-service
+- player-session-service
+- error-recovery-coordinator
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/continuity/**
+- src/lib/platform/browser/db/**
+- src/lib/platform/browser/fs/**
+</file>
+
+<file path="architecture/elements/library-service.md">
+---
+id: library-service
+title: Library Service
+order: 50
+kind: application-service
+branch_aliases:
+  - library-service
+  - library
+  - folder-connection
+collaborators:
+  - continuity-service
+  - player-session-service
+  - error-recovery-coordinator
+  - section-service
+  - activity-service
+code_paths:
+  - src/lib/domains/library/**
+  - src/lib/platform/browser/fs/**
+  - src/lib/platform/browser/permissions/**
+---
+# Library Service
+
+## Responsibility
+Define and maintain the runtime contract for library service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- continuity-service
+- player-session-service
+- error-recovery-coordinator
+- section-service
+- activity-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/domains/library/**
+- src/lib/platform/browser/fs/**
+- src/lib/platform/browser/permissions/**
+</file>
+
+<file path="architecture/elements/navigation-service.md">
+---
+id: navigation-service
+title: Navigation Service
+order: 40
+kind: application-service
+branch_aliases:
+  - navigation-service
+  - navigation
+  - nav
+collaborators:
+  - app-shell
+  - planner-screen
+  - player-session-service
+  - error-recovery-coordinator
+code_paths:
+  - src/lib/app/navigation/**
+  - src/routes/+layout.ts
+  - src/routes/+page.ts
+---
+# Navigation Service
+
+## Responsibility
+Define and maintain the runtime contract for navigation service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- app-shell
+- planner-screen
+- player-session-service
+- error-recovery-coordinator
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/navigation/**
+- src/routes/+layout.ts
+- src/routes/+page.ts
+</file>
+
+<file path="architecture/elements/player-session-service.md">
+---
+id: player-session-service
+title: Player Session Service
+order: 100
+kind: application-service
+branch_aliases:
+  - player-session-service
+  - player-session
+  - player
+collaborators:
+  - audio-engine
+  - waveform-engine
+  - selection-engine
+  - library-service
+  - section-service
+  - continuity-service
+  - navigation-service
+code_paths:
+  - src/lib/app/player-session/**
+  - src/lib/ui/player/**
+  - src/routes/+layout.ts
+---
+# Player Session Service
+
+## Responsibility
+Define and maintain the runtime contract for player session service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- audio-engine
+- waveform-engine
+- selection-engine
+- library-service
+- section-service
+- continuity-service
+- navigation-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/player-session/**
+- src/lib/ui/player/**
+- src/routes/+layout.ts
+</file>
+
+<file path="architecture/elements/section-service.md">
+---
+id: section-service
+title: Section Service
+order: 60
+kind: application-service
+branch_aliases:
+  - section-service
+  - sections
+collaborators:
+  - selection-engine
+  - player-session-service
+  - library-service
+  - continuity-service
+  - activity-service
+code_paths:
+  - src/lib/domains/sections/**
+  - src/lib/app/sections/**
+---
+# Section Service
+
+## Responsibility
+Define and maintain the runtime contract for section service.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- selection-engine
+- player-session-service
+- library-service
+- continuity-service
+- activity-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/domains/sections/**
+- src/lib/app/sections/**
+</file>
+
+<file path="architecture/elements/selection-engine.md">
+---
+id: selection-engine
+title: Selection Engine
+order: 130
+kind: interaction-engine
+branch_aliases:
+  - selection-engine
+  - selection
+collaborators:
+  - player-session-service
+  - waveform-engine
+  - audio-engine
+  - section-service
+code_paths:
+  - src/lib/engines/selection/**
+  - src/lib/ui/player/**
+  - src/lib/app/selection/**
+---
+# Selection Engine
+
+## Responsibility
+Define and maintain the runtime contract for selection engine.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- player-session-service
+- waveform-engine
+- audio-engine
+- section-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/engines/selection/**
+- src/lib/ui/player/**
+- src/lib/app/selection/**
+</file>
+
+<file path="architecture/elements/waveform-engine.md">
+---
+id: waveform-engine
+title: Waveform Engine
+order: 120
+kind: interaction-engine
+branch_aliases:
+  - waveform-engine
+  - waveform
+collaborators:
+  - player-session-service
+  - audio-engine
+  - selection-engine
+  - error-recovery-coordinator
+code_paths:
+  - src/lib/engines/waveform/**
+  - src/lib/platform/browser/media/**
+  - src/lib/ui/player/**
+---
+# Waveform Engine
+
+## Responsibility
+Define and maintain the runtime contract for waveform engine.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- player-session-service
+- audio-engine
+- selection-engine
+- error-recovery-coordinator
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/engines/waveform/**
+- src/lib/platform/browser/media/**
+- src/lib/ui/player/**
+</file>
+
+<file path="src/routes/+layout.ts">
+export const prerender = true;
+</file>
+
+<file path="architecture/lifecycle-map.md">
+<!--
+  @role architecture-artifact
+  @owns the high-level runtime lifecycle map
+  @not-owns detailed service contracts or UI copy
+  @notes Keep transitions concise and implementation-agnostic.
+-->
+
+# Lifecycle Map
+</file>
+
+<file path="architecture/ownership-matrix.md">
+<!--
+  @role architecture-artifact
+  @owns the compact ownership map for major state areas
+  @not-owns detailed service contracts or implementation mechanics
+  @notes Keep this file small enough to include in all coding sessions.
+-->
+
+# Ownership Matrix
+
+| State area | Authoritative owner | Writes through | Primary observers |
+| --- | --- | --- | --- |
+| active profile | Session context store | Profile service | App shell, planner screen, player session service |
+| profiles collection | Durable app store | Profile service | App shell, planner screen |
+| folder connection state | Session context store | Library service | App shell, planner screen, music player drawer |
+| track inventory | Durable app store plus cache metadata | Library service | Track picker, activity composer, player session service |
+| active track | Session context store | Library service, launch-to-player use case | Music player drawer, activity composer |
+| playback state | Audio engine | Audio engine commands only | Music player drawer, history service |
+| waveform viewport | Waveform engine | Waveform engine commands only | Music player drawer |
+| A/B selection | Selection engine | Selection engine commands only | Music player drawer, section service |
+| focused section | Session context store | Section service, player session service | Music player drawer, planner launch flows |
+| sections collection | Durable app store | Section service | Music player drawer, activity service |
+| activities collection | Durable app store | Activity service | Planner screen, activity composer, plan service |
+| activity draft | Activity draft store | Activity composer service | Activity composer sheet |
+| practice plan | Durable app store | Plan service | Planner screen, launch-to-player use case |
+| continuity settings | Durable app store | Continuity service, profile service, library service, section service | Bootstrap coordinator |
+| recovery state | Error recovery coordinator | Error recovery coordinator | App shell, planner screen, music player drawer |
+| overlay stack | Ephemeral UI registry | Navigation service | App shell |
+| update/install state | Session coordination services | Update lifecycle coordinator, install experience coordinator | App shell |
+</file>
+
+<file path="architecture/recovery-map.md">
+<!--
+  @role architecture-artifact
+  @owns the compact recovery-state map for major failure classes
+  @not-owns detailed error-copy or implementation mechanics
+  @notes Keep this file small and explicit.
+-->
+
+# Recovery Map
+
+| Condition | Primary detector | Surfaced state | Primary user action | Continuity policy |
+| --- | --- | --- | --- | --- |
+| no folder selected | Library service | connect-required | choose folder | preserve profile and planner state |
+| folder permission lost | Permission adapter via library service | permission-lost | reconnect folder | preserve stored reference until explicit replacement |
+| stored folder handle is stale | File-system adapter via library service | handle-invalid | reconnect folder | keep last known track key but mark unavailable |
+| active track missing from inventory | Library service | track-unavailable | choose a different track or reconnect | keep reference explicit rather than silently clearing |
+| section target missing | Section service or launch resolver | section-unavailable | remove, relink, or ignore | keep saved references explicit |
+| activity target unavailable | Activity service | activity-unavailable | edit activity or choose alternate launch | preserve activity and plan membership |
+| audio decode failure | Media-decode adapter via audio engine | media-load-failed | retry or choose another track | preserve continuity reference but classify as unavailable |
+| storage or schema failure | database adapter | fatal-storage | reload after fix or schema repair | do not continue with partial writes |
+| offline shell asset issue | service worker adapter | offline-not-ready | retry when assets are available | durable data remains local |
+| update ready while active playback is running | update lifecycle coordinator | update-deferred | apply update after playback stops | do not interrupt playback or drop continuity |
+</file>
+
+<file path="src/routes/+page.ts">
+import { redirect } from '@sveltejs/kit';
+import { resolve } from '$app/paths';
+
+export function load() {
+  throw redirect(307, resolve('/planner'));
+}
+</file>
+
+<file path="planning-context.md">
+<!--
+  @role planning-context
+  @owns accepted product behavior, planning decisions, and active deltas
+  @not-owns repository-wide implementation rules or file-level ownership details
+  @notes Keep this user-facing and implementation-agnostic.
+-->
+
+# Planning Context
+
+This repository contains the SvelteKit codebase for Suzuki Practice Partner.
+
+## Purpose
+
+This file is the product planning source of truth for the repository.
+
+Use it to capture:
+
+- accepted user-visible behavior
+- current product direction
+- active planning decisions
+- open questions that affect product behavior
+- the current planning delta for the next implementation slice
+
+Do not use this file for:
+
+- code structure
+- module boundaries
+- file ownership
+- implementation mechanics
+- repository workflow rules
+
+Those belong elsewhere.
+
+## Current status
+
+- The application is planner-first
+- `/planner` is the primary route
+- `/` redirects to `/planner`
+- The app shell owns lightweight global chrome and profile selection
+- Playback and time-based media interaction are expected to live in a reusable drawer or panel surface
+- Profile continuity and local persistence are core product behavior
+- The app is deployed as a static SvelteKit build to Cloudflare Pages
+
+## Stable goals
+
+- Cloudflare Pages hosting
+- installable PWA experience
+- touch-friendly mobile-first interaction
+- local-first behavior
+- profile-scoped continuity for user data
+- planner-oriented organization of practice work
+- reusable media player drawer or panel for execution behavior
+- modular SvelteKit architecture
+- future Tone.js integration path
+
+## Current UX direction
+
+- The planner is the main task surface
+- The app shell provides lightweight navigation and profile controls
+- Media playback, waveform interaction, A/B range work, and section execution belong in a reusable player surface rather than a separate full-screen route
+- Track selection should support both direct playback use and activity creation/editing flows
+- Recovery states must be explicit and actionable
+
+## Accepted product behavior
+
+### Profiles
+
+- The user can select a practice profile
+- The user can create a new practice profile
+- Saved work is scoped to the active profile
+- The app restores the active profile across refresh and reopen when possible
+- If no profile exists, the app creates a default profile automatically
+
+### Music library
+
+- The user can choose a local music folder
+- The app enumerates supported audio files from that folder
+- The user can reconnect the folder after refresh or reopen
+- The app surfaces permission loss and reconnect requirements clearly
+- The app restores the last active track when possible
+- Missing or unavailable tracks are surfaced clearly and recoverably
+
+### Playback and waveform interaction
+
+- The app can load the active track for playback
+- The user can scrub through the track
+- The user can view and interact with a waveform
+- The user can define an A/B range
+- The user can control playback speed
+- The user can enable or disable loop behavior
+- Playback bounds are explicit and respected
+- Playback continuity is preserved across route changes when appropriate
+
+### Sections
+
+- The user can save a selected A/B range as a section
+- Saved sections are associated with the active profile and track
+- The user can focus a saved section
+- The user can play a saved section
+- The user can loop a saved section
+- The user can delete a saved section
+- The app tracks practice history for sections
+- The app derives and shows mastery for sections
+
+### Activities
+
+- The user can create reusable activities
+- An activity can target:
+  - a whole track
+  - a saved section
+  - a custom reference
+- The user can edit and delete activities
+- Activity availability is surfaced clearly when referenced material is unavailable
+
+### Practice plan
+
+- The user can build a practice plan from reusable activities
+- The user can add activities to the plan
+- The user can remove activities from the plan
+- The user can reorder plan items
+- Plan items preserve references even when the target becomes unavailable
+- The user can launch activities and plan items into the media player surface
+
+### Continuity and recovery
+
+- The app preserves continuity across refresh and reopen where possible
+- The app supports offline-capable shell behavior as a PWA
+- The app surfaces clear empty states
+- The app surfaces clear unavailable states
+- The app surfaces clear permission and reconnect states
+- The app provides explicit recovery paths rather than silent resets
+
+## Product boundaries
+
+The product distinguishes these concepts and does not collapse them into one abstraction:
+
+- profiles
+- tracks
+- sections
+- activities
+- practice plan items
+
+The planner is the organizational surface.
+
+The media player drawer or panel is the execution surface.
+
+## Hosting assumptions
+
+- The production host is Cloudflare Pages
+- The deployed app is a static SvelteKit build
+- Production routing assumes root-path deployment
+- Product decisions should remain compatible with a browser-first PWA running without a server runtime
+
+## Current planning focus
+
+The current planning focus is to keep implementation aligned with the planner-first, player-drawer-centered product shape while preserving continuity, recovery, touch-first interaction quality, and Cloudflare Pages compatibility.
+
+## Open questions
+
+Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
+</file>
+
+<file path="repomix-instruction.md">
+<!--
+  @role repository-instructions
+  @owns repository-wide implementation rules, instruction priority, output contract, architecture-artifact discipline, and maintenance conventions
+  @not-owns product requirements or per-file responsibilities
+  @notes This file is the primary execution surface for AI implementation behavior in this repository.
+-->
+
+# Repository Instructions
+
+## Purpose
+
+This file defines repository-wide implementation behavior for AI-assisted coding sessions.
+
+Use it to decide:
+
+- how to interpret constraints
+- how to resolve ambiguities
+- how to prioritize simplicity versus abstraction
+- what output shape to return
+- how to preserve architectural boundaries
+
+Do not use it to redefine product behavior. Product behavior belongs in `planning-context.md`.
+
+---
+
+## Instruction Priority
+
+When instructions or signals conflict, use this order:
+
+1. **This file (`repomix-instruction.md`)**
+2. **`planning-context.md`** for product direction and accepted behavior
+3. **architecture artifacts** under `architecture/`
+4. **file headers** for per-file ownership and boundaries
+5. **the current codebase** for implementation details
+
+### Tie-breaker rule
+
+If an example structure, earlier scaffold, or informal pattern conflicts with:
+
+- SvelteKit correctness
+- current product direction
+- or the simplicity rules in this file
+
+prefer correctness and simplicity, and explain the deviation briefly.
+
+---
+
+## Core Implementation Rules
+
+- Favor **small, composable modules**.
+- Keep **browser APIs isolated** behind platform adapters.
+- Keep **route files thin**.
+- Prefer **SvelteKit-native patterns**.
+- Preserve **Cloudflare Pages compatibility**.
+- Preserve a clean path to **future Tone.js integration**.
+- Do not introduce unnecessary dependencies.
+- Prefer explicit contracts for services, engines, and adapters over incidental component logic.
+
+### Literalness rule
+
+Treat examples and suggested structures as **non-binding** unless they are explicitly labeled **required**.
+
+Do not infer mandatory structure from:
+
+- example directory layouts
+- phrases like “along these lines”
+- placeholder files
+- temporary scaffolding
+
+---
+
+## Hosting Rules
+
+Assume the production host is **Cloudflare Pages**.
+
+Implementation must remain compatible with:
+
+- a static SvelteKit build
+- root-path deployment
+- no Node server runtime
+- no server-only SvelteKit features
+- browser-first PWA behavior
+
+Do not introduce:
+
+- server runtime requirements
+- server endpoints as required application infrastructure
+- hosting assumptions that depend on path-prefixed deployment
+- implementation choices that require anything other than static output deployed to Cloudflare Pages
+
+---
+
+## Development Environment Rules
+
+Assume a **CI/CD-first** execution model for this repository.
+
+Implementation and validation should assume:
+
+- there is **no local development environment**
+- validation happens primarily through **GitHub Actions**
+- repository edits plus CI validation are the default workflow
+- local-machine-specific setup should not be assumed
+
+Do not default to telling the user to run commands locally.
+
+Use **GitHub Codespaces** only when it is clearly necessary and the task cannot reasonably be completed through repository changes plus the existing CI/CD pipeline.
+
+Prefer:
+
+- repository edits
+- workflow-based validation
+- static build verification in CI
+- deployment validation through the existing GitHub Actions pipeline
+
+Avoid introducing:
+
+- instructions that assume a persistent local machine setup
+- tooling that is only justified by local development convenience
+- implementation steps that require local execution when CI/CD validation is sufficient
+
+---
+
+## Architecture Artifact Rules
+
+The architecture source of truth lives under `architecture/`.
+
+The architecture set is split as follows:
+
+- `architecture/ownership-matrix.md` is the smallest high-signal architectural reference and should be safe to include in all coding sessions
+- `architecture/lifecycle-map.md` captures runtime lifecycle transitions
+- `architecture/recovery-map.md` captures failure and recovery behavior
+- `architecture/elements/*.md` are the source files for individual architectural elements
+- `architecture/target-architecture.template.md` is the template for the generated architecture document
+- `architecture/target-architecture.md` is a generated artifact
+- `architecture/contexts/*.xml` are generated artifacts
+
+Do not hand-edit:
+
+- `architecture/target-architecture.md`
+- `architecture/contexts/*.xml`
+
+Those are generated and maintained automatically by GitHub Actions.
+
+---
+
+## Focus Element Rules
+
+Every meaningful coding session should have a **focus architectural element**.
+
+The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+
+If a branch name does not match any declared alias, the repository falls back to the default focus element:
+
+- `architecture-governance`
+
+That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
+
+The first step in any coding session is to update the focus element’s architecture file, including:
+
+- collaborators
+- ownership boundaries
+- invariants
+- lifecycle notes
+- any architecture details that are changing in the session
+
+Do not start implementation by changing code first and updating architecture later.
+
+Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Product-shape Rules
+
+Implement the current product direction as follows:
+
+- prefer **planner-first** surfaces
+- prefer reusable **drawer/panel** execution surfaces for media interaction
+- keep organization and execution as distinct concerns
+- keep profiles, sections, activities, and plans as distinct concepts
+- do not collapse unrelated product concepts into a single convenience abstraction
+
+---
+
+## SvelteKit Guardrails
+
+- Prefer the **simplest valid SvelteKit routing structure**.
+- Do **not** introduce route groups unless they materially improve the solution.
+- Do **not** move or duplicate routes just to satisfy an example structure.
+- If a shared shell is needed, prefer a minimal `+layout.svelte` approach unless a more complex structure is justified.
+- If a suggested structure conflicts with filesystem routing behavior, prefer routing correctness.
+
+### Routing-specific tie-breaker
+
+If there is a choice between:
+
+- preserving an example route layout
+- and keeping routing simple and correct
+
+choose the simpler correct routing structure.
+
+---
+
+## Architecture Boundary Rules
+
+- Keep domain rules separate from UI composition.
+- Keep application orchestration separate from browser capability access.
+- Treat interaction-heavy systems such as playback, waveform handling, and selection as dedicated services or engines with explicit contracts.
+- Do not let route components or presentational components own persistence, audio control, or file-system logic.
+- Keep continuity and recovery behavior explicit rather than implicit.
+
+---
+
+## State and Browser Boundary Rules
+
+- No global mutable singleton app-state module unless explicitly requested.
+- Prefer state factories, context, or narrowly scoped stores over repo-wide mutable globals.
+- Keep durable state, session state, ephemeral UI state, and derived state conceptually distinct.
+- IndexedDB, file-system access, audio APIs, service worker behavior, and other browser-only integrations must live behind platform/browser modules.
+- Route components and presentational components must not own low-level browser persistence or audio logic.
+
+---
+
+## File Change Rules
+
+You may:
+
+- create files
+- delete files
+- move files
+- rename files
+
+when needed for a cleaner or more correct implementation.
+
+### Deletion / move rule
+
+Do not keep a bad scaffold, conflicting route, or obsolete placeholder file just to avoid deleting it.
+
+If you delete, move, or rename a file:
+
+- say so explicitly in a short list before the file contents
+- still return full contents of all remaining changed files
+
+---
+
+## Output Contract
+
+For implementation requests:
+
+1. Give a **brief explanation** of the chosen approach.
+2. List any **deleted, moved, or renamed files** explicitly.
+3. Then return the **full contents of each changed file only**.
+4. Do not return diff hunks unless explicitly requested.
+
+### When not to preserve suggestions
+
+If a user prompt includes a suggested structure, treat it as:
+
+- a preference
+- not a requirement
+
+unless the user explicitly says:
+
+- “must use this structure”
+- “required”
+- “do not deviate”
+
+---
+
+## Planning / Product Boundary
+
+`planning-context.md` is the source of truth for:
+
+- accepted behavior
+- product direction
+- user-visible goals
+
+Do not silently reinterpret accepted product direction during implementation.
+
+If the codebase or a prompt example points in a different direction than `planning-context.md`, follow `planning-context.md`.
+
+---
+
+## Session Focus Rules
+
+When implementing a slice, keep the change set focused on a small number of architectural elements.
+
+Prefer work that is scoped by:
+
+- explicit state owners
+- explicit service or engine boundaries
+- explicit recovery and continuity behavior
+
+Avoid vague scopes such as:
+
+- “planner work”
+- “player work”
+- “general cleanup”
+
+Prefer precise scopes such as:
+
+- profile selection continuity
+- activity composition flow
+- track library reconnection
+- playback bounds handling
+
+---
+
+## Maintenance Conventions
+
+- Keep headers current in comment-capable files.
+- When a file’s responsibility changes materially, update its header in the same change.
+- Keep this file concise, operational, and high-signal.
+- Add new repository-wide rules here only when they are broadly reusable across slices.
+</file>
+
+</files>
+
+
+
+<instruction>
+<!--
+  @role repository-instructions
+  @owns repository-wide implementation rules, instruction priority, output contract, architecture-artifact discipline, and maintenance conventions
+  @not-owns product requirements or per-file responsibilities
+  @notes This file is the primary execution surface for AI implementation behavior in this repository.
+-->
+
+# Repository Instructions
+
+## Purpose
+
+This file defines repository-wide implementation behavior for AI-assisted coding sessions.
+
+Use it to decide:
+
+- how to interpret constraints
+- how to resolve ambiguities
+- how to prioritize simplicity versus abstraction
+- what output shape to return
+- how to preserve architectural boundaries
+
+Do not use it to redefine product behavior. Product behavior belongs in `planning-context.md`.
+
+---
+
+## Instruction Priority
+
+When instructions or signals conflict, use this order:
+
+1. **This file (`repomix-instruction.md`)**
+2. **`planning-context.md`** for product direction and accepted behavior
+3. **architecture artifacts** under `architecture/`
+4. **file headers** for per-file ownership and boundaries
+5. **the current codebase** for implementation details
+
+### Tie-breaker rule
+
+If an example structure, earlier scaffold, or informal pattern conflicts with:
+
+- SvelteKit correctness
+- current product direction
+- or the simplicity rules in this file
+
+prefer correctness and simplicity, and explain the deviation briefly.
+
+---
+
+## Core Implementation Rules
+
+- Favor **small, composable modules**.
+- Keep **browser APIs isolated** behind platform adapters.
+- Keep **route files thin**.
+- Prefer **SvelteKit-native patterns**.
+- Preserve **Cloudflare Pages compatibility**.
+- Preserve a clean path to **future Tone.js integration**.
+- Do not introduce unnecessary dependencies.
+- Prefer explicit contracts for services, engines, and adapters over incidental component logic.
+
+### Literalness rule
+
+Treat examples and suggested structures as **non-binding** unless they are explicitly labeled **required**.
+
+Do not infer mandatory structure from:
+
+- example directory layouts
+- phrases like “along these lines”
+- placeholder files
+- temporary scaffolding
+
+---
+
+## Hosting Rules
+
+Assume the production host is **Cloudflare Pages**.
+
+Implementation must remain compatible with:
+
+- a static SvelteKit build
+- root-path deployment
+- no Node server runtime
+- no server-only SvelteKit features
+- browser-first PWA behavior
+
+Do not introduce:
+
+- server runtime requirements
+- server endpoints as required application infrastructure
+- hosting assumptions that depend on path-prefixed deployment
+- implementation choices that require anything other than static output deployed to Cloudflare Pages
+
+---
+
+## Development Environment Rules
+
+Assume a **CI/CD-first** execution model for this repository.
+
+Implementation and validation should assume:
+
+- there is **no local development environment**
+- validation happens primarily through **GitHub Actions**
+- repository edits plus CI validation are the default workflow
+- local-machine-specific setup should not be assumed
+
+Do not default to telling the user to run commands locally.
+
+Use **GitHub Codespaces** only when it is clearly necessary and the task cannot reasonably be completed through repository changes plus the existing CI/CD pipeline.
+
+Prefer:
+
+- repository edits
+- workflow-based validation
+- static build verification in CI
+- deployment validation through the existing GitHub Actions pipeline
+
+Avoid introducing:
+
+- instructions that assume a persistent local machine setup
+- tooling that is only justified by local development convenience
+- implementation steps that require local execution when CI/CD validation is sufficient
+
+---
+
+## Architecture Artifact Rules
+
+The architecture source of truth lives under `architecture/`.
+
+The architecture set is split as follows:
+
+- `architecture/ownership-matrix.md` is the smallest high-signal architectural reference and should be safe to include in all coding sessions
+- `architecture/lifecycle-map.md` captures runtime lifecycle transitions
+- `architecture/recovery-map.md` captures failure and recovery behavior
+- `architecture/elements/*.md` are the source files for individual architectural elements
+- `architecture/target-architecture.template.md` is the template for the generated architecture document
+- `architecture/target-architecture.md` is a generated artifact
+- `architecture/contexts/*.xml` are generated artifacts
+
+Do not hand-edit:
+
+- `architecture/target-architecture.md`
+- `architecture/contexts/*.xml`
+
+Those are generated and maintained automatically by GitHub Actions.
+
+---
+
+## Focus Element Rules
+
+Every meaningful coding session should have a **focus architectural element**.
+
+The preferred way to select the focus element is from the branch name by matching one of the `branch_aliases` declared in `architecture/elements/*.md`.
+
+If a branch name does not match any declared alias, the repository falls back to the default focus element:
+
+- `architecture-governance`
+
+That fallback is intended for cross-cutting repo work, artifact maintenance, and sessions whose branch names are not yet architecture-specific.
+
+The first step in any coding session is to update the focus element’s architecture file, including:
+
+- collaborators
+- ownership boundaries
+- invariants
+- lifecycle notes
+- any architecture details that are changing in the session
+
+Do not start implementation by changing code first and updating architecture later.
+
+Alias-based branch naming is still preferred because it produces a tighter focused context slice than the governance fallback.
+
+---
+
+## Product-shape Rules
+
+Implement the current product direction as follows:
+
+- prefer **planner-first** surfaces
+- prefer reusable **drawer/panel** execution surfaces for media interaction
+- keep organization and execution as distinct concerns
+- keep profiles, sections, activities, and plans as distinct concepts
+- do not collapse unrelated product concepts into a single convenience abstraction
+
+---
+
+## SvelteKit Guardrails
+
+- Prefer the **simplest valid SvelteKit routing structure**.
+- Do **not** introduce route groups unless they materially improve the solution.
+- Do **not** move or duplicate routes just to satisfy an example structure.
+- If a shared shell is needed, prefer a minimal `+layout.svelte` approach unless a more complex structure is justified.
+- If a suggested structure conflicts with filesystem routing behavior, prefer routing correctness.
+
+### Routing-specific tie-breaker
+
+If there is a choice between:
+
+- preserving an example route layout
+- and keeping routing simple and correct
+
+choose the simpler correct routing structure.
+
+---
+
+## Architecture Boundary Rules
+
+- Keep domain rules separate from UI composition.
+- Keep application orchestration separate from browser capability access.
+- Treat interaction-heavy systems such as playback, waveform handling, and selection as dedicated services or engines with explicit contracts.
+- Do not let route components or presentational components own persistence, audio control, or file-system logic.
+- Keep continuity and recovery behavior explicit rather than implicit.
+
+---
+
+## State and Browser Boundary Rules
+
+- No global mutable singleton app-state module unless explicitly requested.
+- Prefer state factories, context, or narrowly scoped stores over repo-wide mutable globals.
+- Keep durable state, session state, ephemeral UI state, and derived state conceptually distinct.
+- IndexedDB, file-system access, audio APIs, service worker behavior, and other browser-only integrations must live behind platform/browser modules.
+- Route components and presentational components must not own low-level browser persistence or audio logic.
+
+---
+
+## File Change Rules
+
+You may:
+
+- create files
+- delete files
+- move files
+- rename files
+
+when needed for a cleaner or more correct implementation.
+
+### Deletion / move rule
+
+Do not keep a bad scaffold, conflicting route, or obsolete placeholder file just to avoid deleting it.
+
+If you delete, move, or rename a file:
+
+- say so explicitly in a short list before the file contents
+- still return full contents of all remaining changed files
+
+---
+
+## Output Contract
+
+For implementation requests:
+
+1. Give a **brief explanation** of the chosen approach.
+2. List any **deleted, moved, or renamed files** explicitly.
+3. Then return the **full contents of each changed file only**.
+4. Do not return diff hunks unless explicitly requested.
+
+### When not to preserve suggestions
+
+If a user prompt includes a suggested structure, treat it as:
+
+- a preference
+- not a requirement
+
+unless the user explicitly says:
+
+- “must use this structure”
+- “required”
+- “do not deviate”
+
+---
+
+## Planning / Product Boundary
+
+`planning-context.md` is the source of truth for:
+
+- accepted behavior
+- product direction
+- user-visible goals
+
+Do not silently reinterpret accepted product direction during implementation.
+
+If the codebase or a prompt example points in a different direction than `planning-context.md`, follow `planning-context.md`.
+
+---
+
+## Session Focus Rules
+
+When implementing a slice, keep the change set focused on a small number of architectural elements.
+
+Prefer work that is scoped by:
+
+- explicit state owners
+- explicit service or engine boundaries
+- explicit recovery and continuity behavior
+
+Avoid vague scopes such as:
+
+- “planner work”
+- “player work”
+- “general cleanup”
+
+Prefer precise scopes such as:
+
+- profile selection continuity
+- activity composition flow
+- track library reconnection
+- playback bounds handling
+
+---
+
+## Maintenance Conventions
+
+- Keep headers current in comment-capable files.
+- When a file’s responsibility changes materially, update its header in the same change.
+- Keep this file concise, operational, and high-signal.
+- Add new repository-wide rules here only when they are broadly reusable across slices.
+</instruction>

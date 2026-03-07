@@ -1,3 +1,10 @@
+<!--
+  @role architecture-template
+  @owns the template used to generate the full target architecture document
+  @not-owns the source content for individual elements
+  @notes Do not place element-specific rules here; those belong in the element files.
+-->
+
 # Target Architecture
 
 > This file is generated from the source artifacts under `architecture/`.  
@@ -32,74 +39,6 @@
 
 # Lifecycle Map
 
-## Cold start
-
-1. Open IndexedDB and validate schema
-2. Load durable entities and continuity settings
-3. Ensure at least one profile exists
-4. Restore active profile
-5. Restore stored folder capability reference
-6. Validate folder permission and reconnect state
-7. Rebuild track inventory when the handle is usable
-8. Restore active track and focused section when resolvable
-9. Initialize audio, waveform, and selection engines
-10. Register service worker and update observers
-11. Enter `ready`, `needs-attention`, or `fatal`
-
-## Profile change
-
-1. Persist new active profile
-2. Re-scope activities, sections, plan, and mastery data
-3. Reconcile active track and focused section for the new profile
-4. Update planner and player-derived views
-
-## Folder connection or reconnect
-
-1. Request or validate the folder handle
-2. Enumerate supported audio files
-3. Persist the capability reference and inventory metadata
-4. Reconcile last active track
-5. Surface reconnect or recovery state if validation fails
-
-## Track change
-
-1. Persist active track continuity
-2. Cancel stale media-load work
-3. Load audio into the audio engine
-4. Load waveform data into the waveform engine
-5. Reset or restore selection and focused section
-6. Publish a new player-session snapshot
-
-## Launch from planner
-
-1. Resolve the activity or plan item target
-2. Update player launch context in session state
-3. Select track and optional section target
-4. Expand the player drawer
-5. Start playback only when the launch mode explicitly requests it
-
-## Foreground / background
-
-### Background
-
-- flush continuity settings
-- preserve session context
-- suspend audio according to policy
-
-### Foreground
-
-- revalidate folder handle and permissions
-- restore media readiness if still valid
-- surface recovery state if continuity is stale
-
-## Update activation
-
-1. Detect update readiness through the service worker
-2. Delay activation during active playback or uncommitted draft work
-3. Flush continuity settings
-4. Activate the update
-5. Reload into the restored planner-first shell
-
 ## Recovery Map
 
 # Recovery Map
@@ -121,32 +60,30 @@
 
 ## Architecture Governance
 
-### Responsibility
-Own the architecture artifact system itself: element metadata, collaborator definitions, generated target architecture, generated context slices, and the CI rules that keep them synchronized.
+# Architecture Governance
 
-### Owns
-- architecture artifact conventions
-- branch-to-focus-element discipline
-- generated artifact policy
-- context-generation workflow rules
+## Responsibility
+Define and maintain the runtime contract for architecture governance.
 
-### Does not own
-- product behavior
-- runtime application state
-- playback, planning, or persistence logic
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - app-shell
 - navigation-service
 - continuity-service
 
-### Invariants
-- each architectural element is defined in exactly one file
-- collaborator identifiers must resolve to real element files
-- generated artifacts are never hand-edited
-- every non-main branch resolves to a focus element
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - architecture/**
 - scripts/architecture/**
 - .github/workflows/ci.yml
@@ -156,33 +93,31 @@ Own the architecture artifact system itself: element metadata, collaborator defi
 
 ## App Shell
 
-### Responsibility
-Provide the persistent application shell that hosts planner content, the music player drawer, global overlays, and shell-level status.
+# App Shell
 
-### Owns
-- persistent chrome
-- overlay host
-- drawer host
-- shell-level status banners
+## Responsibility
+Define and maintain the runtime contract for app shell.
 
-### Does not own
-- business entities
-- audio timing
-- waveform rendering internals
-- file-system access
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - navigation-service
 - player-session-service
 - error-recovery-coordinator
 - profile-service
 
-### Invariants
-- the shell stays mounted across route changes
-- the player drawer is always available from the shell
-- shell presentation never becomes the source of truth for domain or engine state
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/routes/+layout.ts
 - src/routes/+layout.svelte
 - src/app.html
@@ -190,21 +125,20 @@ Provide the persistent application shell that hosts planner content, the music p
 
 ## Planner Screen
 
-### Responsibility
-Provide the primary planning surface for activities, plan composition, add-activity flows, and launch actions into the player.
+# Planner Screen
 
-### Owns
-- planner layout
-- planner-only ephemeral UI state
-- activity and plan list composition
+## Responsibility
+Define and maintain the runtime contract for planner screen.
 
-### Does not own
-- transport state
-- waveform state
-- track enumeration authority
-- persistence writes
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - activity-service
 - activity-composer-service
 - plan-service
@@ -212,249 +146,246 @@ Provide the primary planning surface for activities, plan composition, add-activ
 - navigation-service
 - player-session-service
 
-### Invariants
-- planner interactions mutate durable state only through services
-- planner launches resolve into player-session updates rather than direct component logic
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/routes/planner/+page.svelte
 - src/lib/ui/planner/**
 
 ## Profile Service
 
-### Responsibility
-Manage profiles, default-profile bootstrap, active-profile selection, and profile-scoped partitioning for durable data.
+# Profile Service
 
-### Owns
-- profile creation and renaming
-- active-profile continuity
-- profile-scoped rebind triggers
+## Responsibility
+Define and maintain the runtime contract for profile service.
 
-### Does not own
-- track inventory
-- activity composition UI
-- playback state
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - continuity-service
 - planner-screen
 - app-shell
 
-### Invariants
-- there is always at least one profile
-- the active profile is always valid
-- profile changes trigger deterministic re-scoping of dependent data
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/domains/profiles/**
 - src/lib/app/profile/**
 
 ## Navigation Service
 
-### Responsibility
-Own route state, overlay stack state, player-drawer history integration, and mobile back behavior.
+# Navigation Service
 
-### Owns
-- route transitions
-- overlay stack
-- drawer expansion history rules
+## Responsibility
+Define and maintain the runtime contract for navigation service.
 
-### Does not own
-- rendering
-- durable entities
-- transport state
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - app-shell
 - planner-screen
 - player-session-service
 - error-recovery-coordinator
 
-### Invariants
-- browser back closes the deepest overlay first
-- browser back collapses the player drawer before leaving the current planner state
-- overlay transitions are explicit and stack-based
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/app/navigation/**
 - src/routes/+layout.ts
 - src/routes/+page.ts
 
 ## Library Service
 
-### Responsibility
-Manage the selected music folder, permission validation, track enumeration, reconnect flows, and active-track continuity.
+# Library Service
 
-### Owns
-- folder connection state machine
-- track inventory refresh
-- active-track continuity
-- missing-track detection
+## Responsibility
+Define and maintain the runtime contract for library service.
 
-### Does not own
-- audio transport
-- waveform rendering
-- activity persistence
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - continuity-service
 - player-session-service
 - error-recovery-coordinator
 - section-service
 - activity-service
 
-### Invariants
-- inventory refresh occurs only from a validated folder handle
-- stored references are revalidated before use
-- missing tracks are surfaced explicitly, not silently cleared
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/domains/library/**
 - src/lib/platform/browser/fs/**
 - src/lib/platform/browser/permissions/**
 
 ## Section Service
 
-### Responsibility
-Manage saved sections, focused section continuity, and section actions tied to the current track and profile.
+# Section Service
 
-### Owns
-- section CRUD
-- focused-section selection
-- section filtering by active track
-- bounds validation on save
+## Responsibility
+Define and maintain the runtime contract for section service.
 
-### Does not own
-- gesture-driven selection
-- playback timing
-- waveform rendering
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - selection-engine
 - player-session-service
 - library-service
 - continuity-service
 - activity-service
 
-### Invariants
-- a saved section always belongs to exactly one profile and one track
-- a focused section either resolves to a valid saved range or is marked unavailable
-- section actions go through the service, not direct component mutation
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/domains/sections/**
 - src/lib/app/sections/**
 
 ## Activity Service
 
-### Responsibility
-Persist reusable activities, validate their targets, and expose availability status for planner and launch flows.
+# Activity Service
 
-### Owns
-- activity CRUD
-- target validation
-- activity availability classification
+## Responsibility
+Define and maintain the runtime contract for activity service.
 
-### Does not own
-- draft-composition UI
-- plan ordering
-- playback state
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - activity-composer-service
 - plan-service
 - library-service
 - section-service
 - player-session-service
 
-### Invariants
-- each activity has exactly one target type
-- unavailable references remain explicit rather than being silently rewritten
-- validation depends on current library and section state, not component-local heuristics
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/domains/activities/**
 - src/lib/app/activities/**
 
 ## Activity Composer Service
 
-### Responsibility
-Own the draft lifecycle for creating and editing activities from current media context or explicit custom input.
+# Activity Composer Service
 
-### Owns
-- activity draft creation
-- draft validation orchestration
-- current-media-context import
-- commit and cancel behavior
+## Responsibility
+Define and maintain the runtime contract for activity composer service.
 
-### Does not own
-- persisted activity collection
-- sheet presentation
-- track inventory authority
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - activity-service
 - player-session-service
 - library-service
 - section-service
 - planner-screen
 
-### Invariants
-- draft commit is blocked until validation succeeds
-- importing current media context is explicit and reversible
-- only one draft is active at a time
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/app/activity-composer/**
 - src/lib/ui/planner/**
 - src/lib/ui/player/**
 
 ## Plan Service
 
-### Responsibility
-Manage plan composition, ordered plan items, and transactional plan updates for the active profile.
+# Plan Service
 
-### Owns
-- plan persistence
-- item ordering
-- add/remove/reorder behavior
+## Responsibility
+Define and maintain the runtime contract for plan service.
 
-### Does not own
-- activity definitions
-- playback state
-- route navigation
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - planner-screen
 - activity-service
 - player-session-service
 
-### Invariants
-- each plan item references an activity
-- reorder operations preserve stable item identity
-- plan updates are atomic at the service boundary
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/domains/plans/**
 - src/lib/app/plans/**
 
 ## Player Session Service
 
-### Responsibility
-Bind session context to the player-facing engines so that track, section, and launch context produce coherent playback-ready state.
+# Player Session Service
 
-### Owns
-- player session state machine
-- engine load serialization
-- focus-to-selection synchronization
-- launch-context consumption
+## Responsibility
+Define and maintain the runtime contract for player session service.
 
-### Does not own
-- audio graph internals
-- waveform rendering internals
-- durable section storage
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - audio-engine
 - waveform-engine
 - selection-engine
@@ -463,167 +394,158 @@ Bind session context to the player-facing engines so that track, section, and la
 - continuity-service
 - navigation-service
 
-### Invariants
-- engine loads are cancellable and serialized
-- focused-section changes synchronize playback bounds explicitly
-- launch resolution always results in an explicit player state
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/app/player-session/**
 - src/lib/ui/player/**
 - src/routes/+layout.ts
 
 ## Audio Engine
 
-### Responsibility
-Provide low-latency transport, playback rate, loop mode, bounded playback, and transport-event emission.
+# Audio Engine
 
-### Owns
-- transport clock
-- play/pause state
-- playback rate
-- loop mode
-- playback bounds
-- decoded source lifecycle
+## Responsibility
+Define and maintain the runtime contract for audio engine.
 
-### Does not own
-- track inventory
-- section persistence
-- UI gesture recognition
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - player-session-service
 - waveform-engine
 - selection-engine
 - error-recovery-coordinator
 - continuity-service
 
-### Invariants
-- playback bounds are enforced inside the engine
-- rate is clamped to product-defined limits
-- commands remain safe when no track is loaded
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/engines/audio/**
 - src/lib/platform/browser/audio/**
 - src/lib/platform/browser/media/**
 
 ## Waveform Engine
 
-### Responsibility
-Load waveform data, manage render readiness, maintain viewport and zoom state, and map scrubbing gestures to media time.
+# Waveform Engine
 
-### Owns
-- waveform readiness
-- viewport
-- zoom
-- playhead projection
-- render scheduling
+## Responsibility
+Define and maintain the runtime contract for waveform engine.
 
-### Does not own
-- playback transport
-- selection invariants
-- persistence
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - player-session-service
 - audio-engine
 - selection-engine
 - error-recovery-coordinator
 
-### Invariants
-- waveform work is cancellable on track changes
-- gesture-to-time mapping is deterministic
-- render scheduling protects UI responsiveness
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/engines/waveform/**
 - src/lib/platform/browser/media/**
 - src/lib/ui/player/**
 
 ## Selection Engine
 
-### Responsibility
-Own A/B selection, focused-range synchronization, touch-driven selection gestures, and playback-bound updates.
+# Selection Engine
 
-### Owns
-- selection state machine
-- selection timestamps
-- focused range
-- selection validity and clamping
+## Responsibility
+Define and maintain the runtime contract for selection engine.
 
-### Does not own
-- section persistence
-- waveform rendering internals
-- audio decoding
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - player-session-service
 - waveform-engine
 - audio-engine
 - section-service
 
-### Invariants
-- selection start is always before selection end
-- focused range and playback bounds remain synchronized through explicit contracts
-- selection resets or restores deterministically on track changes
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/engines/selection/**
 - src/lib/ui/player/**
 - src/lib/app/selection/**
 
 ## Continuity Service
 
-### Responsibility
-Persist and restore continuity signals across refresh, reopen, backgrounding, and update activation.
+# Continuity Service
 
-### Owns
-- active-profile continuity
-- folder capability continuity
-- active-track continuity
-- focused-section continuity
-- player-context continuity policy
+## Responsibility
+Define and maintain the runtime contract for continuity service.
 
-### Does not own
-- entity CRUD
-- direct UI prompts
-- browser API implementations
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - profile-service
 - library-service
 - section-service
 - player-session-service
 - error-recovery-coordinator
 
-### Invariants
-- continuity never silently clears stale references
-- every unresolved restore becomes an explicit recovery state
-- continuity writes happen at the service boundary, not in components
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/app/continuity/**
 - src/lib/platform/browser/db/**
 - src/lib/platform/browser/fs/**
 
 ## Error Recovery Coordinator
 
-### Responsibility
-Classify failures and unavailable states, map them to recovery actions, and surface high-signal recovery models to the shell, planner, and player.
+# Error Recovery Coordinator
 
-### Owns
-- error taxonomy
-- recoverability classification
-- recommended recovery actions
-- recovery-state aggregation
+## Responsibility
+Define and maintain the runtime contract for error recovery coordinator.
 
-### Does not own
-- rendering
-- entity persistence
-- engine internals
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
 
-### Collaborators
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
 - app-shell
 - library-service
 - player-session-service
@@ -632,12 +554,12 @@ Classify failures and unavailable states, map them to recovery actions, and surf
 - continuity-service
 - navigation-service
 
-### Invariants
-- every problem is classified as auto-recovering, recoverable-with-action, or fatal
-- the UI receives actionable recovery state instead of raw exceptions
-- recovery rules remain explicit and centralized
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
 
-### Code ownership hints
+## Code ownership hints
 - src/lib/app/recovery/**
 - src/lib/ui/shared/**
 - src/routes/+layout.ts
