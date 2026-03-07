@@ -23,7 +23,7 @@ main().catch((error) => {
 	process.exit(1);
 });
 
-function main() {
+async function main() {
 	const { settings, elements } = loadElements();
 
 	const ids = new Set();
