@@ -1,7 +1,7 @@
 # @role workflow
 # @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
 # @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head before enforcing strict freshness checks.
+# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. Pull-request runs wait for the branch's generated-artifact refresh workflow to settle, then re-checkout the latest PR head with full history before enforcing strict freshness checks.
 
 name: CI
 
@@ -41,9 +41,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
       - name: Wait for generated-artifact refresh workflow on pull requests
         id: wait_for_artifact_refresh
         if: github.event_name == 'pull_request'
@@ -59,28 +56,15 @@ jobs:
           REPO: ${{ github.repository }}
           BRANCH_NAME: ${{ github.head_ref }}
 
-      - name: Refresh checkout to latest pull-request head
+      - name: Re-checkout latest pull-request head with full history
         if: github.event_name == 'pull_request'
-        run: |
-          CURRENT_SHA="$(git rev-parse HEAD)"
-          LATEST_SHA="${LATEST_HEAD_SHA}"
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.wait_for_artifact_refresh.outputs.latest_head_sha }}
 
-          if [ -z "${LATEST_SHA}" ]; then
-            echo "Latest PR head SHA was not provided."
-            exit 1
-          fi
-
-          if [ "${CURRENT_SHA}" = "${LATEST_SHA}" ]; then
-            echo "Checkout is already at the latest PR head (${CURRENT_SHA})."
-            exit 0
-          fi
-
-          echo "Updating checkout from ${CURRENT_SHA} to ${LATEST_SHA}."
-          git fetch origin "${BRANCH_NAME}" --depth=1
-          git checkout --force "${LATEST_SHA}"
-        env:
-          BRANCH_NAME: ${{ github.head_ref }}
-          LATEST_HEAD_SHA: ${{ steps.wait_for_artifact_refresh.outputs.latest_head_sha }}
+      - name: Install dependencies
+        run: npm ci
 
       - name: Validate architecture metadata and focus element policy
         run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${BRANCH_NAME}" --require-focus-update
