@@ -15,7 +15,7 @@ Use this manifest before concluding that an architectural area is absent or befo
 | Architectural element | Declared code path | Status | Matched files |
 | --- | --- | --- | --- |
 | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
-| architecture-governance | `.github/workflows/update-repo-context.yml` | path missing | 0 |
+| architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
 | architecture-governance | `architecture/**` | present | 41 |
 | architecture-governance | `repomix-instruction.md` | present | 1 |
 | architecture-governance | `repomix.config.json` | present | 1 |
@@ -70,10 +70,10 @@ Use this manifest before concluding that an architectural area is absent or befo
 .github/workflows/ci.yml
 ```
 
-### `.github/workflows/update-repo-context.yml`
+### `.github/workflows/update-generated-artifacts.yml`
 
 ```text
-.github/workflows/update-repo-context.yml (missing)
+.github/workflows/update-generated-artifacts.yml
 ```
 
 ### `architecture`

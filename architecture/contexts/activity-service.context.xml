@@ -919,6 +919,7 @@ The first steps in any coding session are
 - any architecture details that are changing in the session
 
 4. Finally, start making code changes. 
+5. After making code changes, advise the user what context.xml files would be useful to examine to verify the implementatoin was done as expected. 
 
 **Do not start implementation by changing code first and updating architecture later.**
 
@@ -1264,6 +1265,7 @@ The first steps in any coding session are
 - any architecture details that are changing in the session
 
 4. Finally, start making code changes. 
+5. After making code changes, advise the user what context.xml files would be useful to examine to verify the implementatoin was done as expected. 
 
 **Do not start implementation by changing code first and updating architecture later.**
 

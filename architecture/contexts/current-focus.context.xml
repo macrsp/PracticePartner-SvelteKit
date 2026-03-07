@@ -34,7 +34,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: architecture/context-manifests/architecture-governance.context-code-path-coverage.md, planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/architecture-governance.md, architecture/elements/app-shell.md, architecture/elements/navigation-service.md, architecture/elements/continuity-service.md, architecture/**, scripts/architecture/**, .github/workflows/ci.yml, .github/workflows/update-repo-context.yml, repomix.config.json, repomix-instruction.md, src/routes/+layout.ts, src/routes/+layout.svelte, src/app.html, src/lib/ui/shell/**, src/lib/app/navigation/**, src/routes/+page.ts, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/platform/browser/fs/**
+- Only files matching these patterns are included: architecture/context-manifests/architecture-governance.context-code-path-coverage.md, planning-context.md, repomix-instruction.md, architecture/ownership-matrix.md, architecture/lifecycle-map.md, architecture/recovery-map.md, architecture/elements/architecture-governance.md, architecture/elements/app-shell.md, architecture/elements/navigation-service.md, architecture/elements/continuity-service.md, architecture/**, scripts/architecture/**, .github/workflows/ci.yml, .github/workflows/update-generated-artifacts.yml, repomix.config.json, repomix-instruction.md, src/routes/+layout.ts, src/routes/+layout.svelte, src/app.html, src/lib/ui/shell/**, src/lib/app/navigation/**, src/routes/+page.ts, src/lib/app/continuity/**, src/lib/platform/browser/db/**, src/lib/platform/browser/fs/**
 - Files matching these patterns are excluded: build, .svelte-kit, repo-context.xml, architecture/contexts, .tmp
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -51,6 +51,7 @@ Current branch focus context for Architecture Governance. Generated using the de
 .github/
   workflows/
     ci.yml
+    update-generated-artifacts.yml
 architecture/
   context-manifests/
     activity-composer-service.context-code-path-coverage.md
@@ -547,7 +548,7 @@ Use this manifest before assuming that a missing file in the packed context mean
 | Context role | Architectural element | Declared code path | Status | Matched files |
 | --- | --- | --- | --- | --- |
 | focus | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
-| focus | architecture-governance | `.github/workflows/update-repo-context.yml` | path missing | 0 |
+| focus | architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
 | focus | architecture-governance | `architecture/**` | present | 42 |
 | focus | architecture-governance | `repomix-instruction.md` | present | 1 |
 | focus | architecture-governance | `repomix.config.json` | present | 1 |
@@ -571,10 +572,10 @@ Use this manifest before assuming that a missing file in the packed context mean
 .github/workflows/ci.yml
 ```
 
-### `.github/workflows/update-repo-context.yml`
+### `.github/workflows/update-generated-artifacts.yml`
 
 ```text
-.github/workflows/update-repo-context.yml (missing)
+.github/workflows/update-generated-artifacts.yml
 ```
 
 ### `architecture`
@@ -1983,7 +1984,7 @@ Use this manifest before concluding that an architectural area is absent or befo
 | Architectural element | Declared code path | Status | Matched files |
 | --- | --- | --- | --- |
 | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
-| architecture-governance | `.github/workflows/update-repo-context.yml` | path missing | 0 |
+| architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
 | architecture-governance | `architecture/**` | present | 41 |
 | architecture-governance | `repomix-instruction.md` | present | 1 |
 | architecture-governance | `repomix.config.json` | present | 1 |
@@ -2038,10 +2039,10 @@ Use this manifest before concluding that an architectural area is absent or befo
 .github/workflows/ci.yml
 ```
 
-### `.github/workflows/update-repo-context.yml`
+### `.github/workflows/update-generated-artifacts.yml`
 
 ```text
-.github/workflows/update-repo-context.yml (missing)
+.github/workflows/update-generated-artifacts.yml
 ```
 
 ### `architecture`
@@ -3236,6 +3237,243 @@ Define and maintain the runtime contract for waveform engine.
 - src/lib/ui/player/**
 </file>
 
+<file path="scripts/architecture/generate-target-architecture.mjs">
+import {
+	loadElements,
+	readText,
+	stripCommentHeader,
+	writeText
+} from './lib.mjs';
+
+const { settings, elements } = loadElements();
+
+const template = readText(settings.targetArchitectureTemplate);
+
+const includePattern = /\{\{INCLUDE:([^}]+)\}\}/g;
+const resolvedTemplate = template.replace(includePattern, (_, includePath) => {
+	return stripCommentHeader(readText(includePath.trim()));
+});
+
+const renderedElements = elements
+	.map((element) => `## ${element.title}\n\n${element.body}`)
+	.join('\n\n');
+
+const output = resolvedTemplate.replace('{{ELEMENTS}}', renderedElements).trimEnd() + '\n';
+
+writeText(settings.targetArchitectureOutput, output);
+console.log(`Generated ${settings.targetArchitectureOutput}`);
+</file>
+
+<file path="src/routes/+layout.ts">
+export const prerender = true;
+</file>
+
+<file path="src/app.html">
+<!doctype html>
+<html lang="en">
+	<head>
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
+</file>
+
+<file path=".github/workflows/update-generated-artifacts.yml">
+# @role workflow
+# @owns regeneration and commit-back of generated repository contexts, code-path coverage manifests, and architecture artifacts on non-main branch updates
+# @not-owns production deployment, runtime behavior, or branch protection settings
+# @notes Generates repo-context.xml, ci-context.xml, target architecture, focused architecture contexts, and coverage manifests, then commits refreshed artifacts back to the branch when they change.
+
+name: Update Generated Artifacts
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - repo-context.xml
+      - ci-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
+      - architecture/context-manifests/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-generated-artifacts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs and coverage manifests
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Generate repo context
+        run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate CI context
+        run: npx --yes repomix --config ci-context.repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
+
+      - name: Compute safe artifact name
+        shell: bash
+        run: |
+          raw_ref="${GITHUB_REF_NAME}"
+          safe_ref="$(printf '%s' "$raw_ref" | sed 's/[\":<>|*?\\/\r\n]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
+
+          if [ -z "$safe_ref" ]; then
+            safe_ref="unnamed-ref"
+          fi
+
+          echo "safe_ref=$safe_ref" >> "$GITHUB_ENV"
+
+      - name: Upload generated artifact bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-artifacts-${{ env.safe_ref }}
+          path: |
+            repo-context.xml
+            ci-context.xml
+            architecture/target-architecture.md
+            architecture/contexts
+            architecture/context-manifests
+          if-no-files-found: error
+
+      - name: Commit updated generated artifacts to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            repo-context.xml \
+            ci-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts \
+            architecture/context-manifests
+
+          if git diff --cached --quiet; then
+            echo "No generated artifact changes."
+            exit 0
+          fi
+
+          git commit -m "chore: refresh generated artifacts"
+          git push origin HEAD:${GITHUB_REF_NAME}
+</file>
+
+<file path="architecture/elements/error-recovery-coordinator.md">
+---
+id: error-recovery-coordinator
+title: Error Recovery Coordinator
+order: 150
+kind: application-service
+branch_aliases:
+  - error-recovery-coordinator
+  - recovery
+  - error-recovery
+collaborators:
+  - app-shell
+  - library-service
+  - player-session-service
+  - audio-engine
+  - waveform-engine
+  - continuity-service
+  - navigation-service
+code_paths:
+  - src/lib/app/recovery/**
+  - src/lib/ui/shared/**
+  - src/routes/+layout.ts
+---
+# Error Recovery Coordinator
+
+## Responsibility
+Define and maintain the runtime contract for error recovery coordinator.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- app-shell
+- library-service
+- player-session-service
+- audio-engine
+- waveform-engine
+- continuity-service
+- navigation-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- src/lib/app/recovery/**
+- src/lib/ui/shared/**
+- src/routes/+layout.ts
+</file>
+
+<file path="architecture/context-settings.json">
+{
+  "elementsDir": "architecture/elements",
+  "targetArchitectureTemplate": "architecture/target-architecture.template.md",
+  "targetArchitectureOutput": "architecture/target-architecture.md",
+  "generatedContextsDir": "architecture/contexts",
+  "contextConfigTempDir": ".tmp/architecture-context-configs",
+  "contextManifestDir": "architecture/context-manifests",
+  "repoContextManifestName": "repo-code-path-coverage.md",
+  "elementContextManifestSuffix": ".context-code-path-coverage.md",
+  "repoContextOutput": "repo-context.xml",
+  "alwaysIncludeInElementContexts": [
+    "planning-context.md",
+    "repomix-instruction.md",
+    "architecture/ownership-matrix.md",
+    "architecture/lifecycle-map.md",
+    "architecture/recovery-map.md"
+  ],
+  "defaultFocusElement": "architecture-governance",
+  "currentFocusContextName": "current-focus.context.xml"
+}
+</file>
+
 <file path="architecture/element-seed-metadata.json">
 {
   "elements": [
@@ -3258,7 +3496,7 @@ Define and maintain the runtime contract for waveform engine.
         "architecture/**",
         "scripts/architecture/**",
         ".github/workflows/ci.yml",
-        ".github/workflows/update-repo-context.yml",
+        ".github/workflows/update-generated-artifacts.yml",
         "repomix.config.json",
         "repomix-instruction.md"
       ]
@@ -3619,6 +3857,7 @@ These files are edited directly:
 - `recovery-map.md`
 - `target-architecture.template.md`
 - `elements/*.md`
+- `context-settings.json`
 
 Each file under `elements/` is one architectural element and is the authoritative place to define:
 
@@ -3631,172 +3870,74 @@ Each file under `elements/` is one architectural element and is the authoritativ
 
 ## Generated files
 
-These files are generated by GitHub Actions and should not be edited manually:
+These files are generated by the repository workflows and should not be edited manually:
 
 - `target-architecture.md`
 - `contexts/*.xml`
+- `context-manifests/*.md`
+
+Generated artifacts are refreshed on non-main branches and committed back automatically.
 
 ## Focus element workflow
 
-Each non-main branch should map to one architectural element through one of that element’s `branch_aliases`.
+Each meaningful implementation branch should map to one architectural element through one of that element’s `branch_aliases`.
 
 The focus element is used to:
 
-- select the current branch’s architectural context slice
-- enforce that architecture is updated before code changes
-- generate `architecture/contexts/current-focus.context.xml`
+- select the current branch’s focused architectural context
+- generate `contexts/current-focus.context.xml`
+- determine which architecture file must be updated before code changes land
+
+If a branch name does not match any alias, the repository falls back to the default focus element configured in `context-settings.json`.
 
 ## Branch naming guidance
 
 Use branch names that clearly include one of the configured aliases, for example:
 
-- `feat/activity-composer-add-track-targeting`
-- `feat/library-service-reconnect-flow`
+- `feat/library-service-folder-connection`
+- `feat/player-session-service-bottom-drawer`
 - `chore/architecture-governance-context-automation`
 
 ## Generation flow
 
 GitHub Actions performs the following automatically:
 
-1. validate element metadata and collaborator references
+1. validate architectural metadata and collaborator references
 2. infer the focus element from the branch name
 3. regenerate `target-architecture.md`
-4. regenerate per-element context XML files
-5. regenerate `current-focus.context.xml`
-6. regenerate `repo-context.xml`
-7. commit generated artifacts back to non-main branches
+4. regenerate repository and per-element code-path coverage manifests
+5. regenerate per-element focused context XML files
+6. regenerate `contexts/current-focus.context.xml`
+7. regenerate `repo-context.xml` and `ci-context.xml`
+8. commit refreshed generated artifacts back to non-main branches
+
+## Context artifacts
+
+The repository produces three kinds of generated context artifacts:
+
+- `repo-context.xml` for broad repository context
+- `contexts/*.xml` for focused architectural slices
+- `context-manifests/*.md` for code-path coverage and filesystem visibility
+
+The coverage manifests exist to clarify whether architecturally declared code paths are:
+
+- present
+- empty
+- missing
+- unmatched by a declared glob
+
+Use them to distinguish “not included in this packed context” from “not implemented in the repository”.
 
 ## Context policy
 
 - `repo-context.xml` is the broad repository context
-- `architecture/contexts/*.xml` are focused architectural slices
-- `repo-context.xml` must not contain the generated context XML files
-- `ownership-matrix.md` is intended to stay small enough for all coding sessions
-</file>
-
-<file path="scripts/architecture/generate-target-architecture.mjs">
-import {
-	loadElements,
-	readText,
-	stripCommentHeader,
-	writeText
-} from './lib.mjs';
-
-const { settings, elements } = loadElements();
-
-const template = readText(settings.targetArchitectureTemplate);
-
-const includePattern = /\{\{INCLUDE:([^}]+)\}\}/g;
-const resolvedTemplate = template.replace(includePattern, (_, includePath) => {
-	return stripCommentHeader(readText(includePath.trim()));
-});
-
-const renderedElements = elements
-	.map((element) => `## ${element.title}\n\n${element.body}`)
-	.join('\n\n');
-
-const output = resolvedTemplate.replace('{{ELEMENTS}}', renderedElements).trimEnd() + '\n';
-
-writeText(settings.targetArchitectureOutput, output);
-console.log(`Generated ${settings.targetArchitectureOutput}`);
-</file>
-
-<file path="src/routes/+layout.ts">
-export const prerender = true;
-</file>
-
-<file path="src/app.html">
-<!doctype html>
-<html lang="en">
-	<head>
-		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
-</html>
-</file>
-
-<file path="architecture/elements/error-recovery-coordinator.md">
----
-id: error-recovery-coordinator
-title: Error Recovery Coordinator
-order: 150
-kind: application-service
-branch_aliases:
-  - error-recovery-coordinator
-  - recovery
-  - error-recovery
-collaborators:
-  - app-shell
-  - library-service
-  - player-session-service
-  - audio-engine
-  - waveform-engine
-  - continuity-service
-  - navigation-service
-code_paths:
-  - src/lib/app/recovery/**
-  - src/lib/ui/shared/**
-  - src/routes/+layout.ts
----
-# Error Recovery Coordinator
-
-## Responsibility
-Define and maintain the runtime contract for error recovery coordinator.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- library-service
-- player-session-service
-- audio-engine
-- waveform-engine
-- continuity-service
-- navigation-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- src/lib/app/recovery/**
-- src/lib/ui/shared/**
-- src/routes/+layout.ts
-</file>
-
-<file path="architecture/context-settings.json">
-{
-  "elementsDir": "architecture/elements",
-  "targetArchitectureTemplate": "architecture/target-architecture.template.md",
-  "targetArchitectureOutput": "architecture/target-architecture.md",
-  "generatedContextsDir": "architecture/contexts",
-  "contextConfigTempDir": ".tmp/architecture-context-configs",
-  "contextManifestDir": "architecture/context-manifests",
-  "repoContextManifestName": "repo-code-path-coverage.md",
-  "elementContextManifestSuffix": ".context-code-path-coverage.md",
-  "repoContextOutput": "repo-context.xml",
-  "alwaysIncludeInElementContexts": [
-    "planning-context.md",
-    "repomix-instruction.md",
-    "architecture/ownership-matrix.md",
-    "architecture/lifecycle-map.md",
-    "architecture/recovery-map.md"
-  ],
-  "defaultFocusElement": "architecture-governance",
-  "currentFocusContextName": "current-focus.context.xml"
-}
+- `contexts/*.xml` are focused architectural slices
+- `context-manifests/*.md` explain architectural code-path coverage
+- `repo-context.xml` should include the repository-level coverage manifest
+- focused element contexts should include the relevant element coverage manifest
+- `repo-context.xml` must not include `contexts/*.xml`
+- `repo-context.xml` should not include per-element coverage manifests
+- `ownership-matrix.md` should remain small enough to include in all coding sessions
 </file>
 
 <file path="architecture/target-architecture.template.md">
@@ -3888,60 +4029,6 @@ Define and maintain the runtime contract for app shell.
 - src/routes/+layout.svelte
 - src/app.html
 - src/lib/ui/shell/**
-</file>
-
-<file path="architecture/elements/architecture-governance.md">
----
-id: architecture-governance
-title: Architecture Governance
-order: 5
-kind: governance
-branch_aliases:
-  - architecture-governance
-  - repo-architecture
-  - architecture-artifacts
-collaborators:
-  - app-shell
-  - navigation-service
-  - continuity-service
-code_paths:
-  - architecture/**
-  - scripts/architecture/**
-  - .github/workflows/ci.yml
-  - .github/workflows/update-repo-context.yml
-  - repomix.config.json
-  - repomix-instruction.md
----
-# Architecture Governance
-
-## Responsibility
-Define and maintain the runtime contract for architecture governance.
-
-## Owns
-- responsibilities to be refined during implementation
-- authoritative boundaries for this architectural element
-
-## Does not own
-- responsibilities owned by collaborator elements
-- concerns outside this element’s declared boundary
-
-## Collaborators
-- app-shell
-- navigation-service
-- continuity-service
-
-## Invariants
-- this element must maintain an explicit contract
-- ownership must stay aligned with the ownership matrix
-- collaborators must stay current with implementation reality
-
-## Code ownership hints
-- architecture/**
-- scripts/architecture/**
-- .github/workflows/ci.yml
-- .github/workflows/update-repo-context.yml
-- repomix.config.json
-- repomix-instruction.md
 </file>
 
 <file path="architecture/elements/planner-screen.md">
@@ -4853,6 +4940,60 @@ The current planning focus is to keep implementation aligned with the planner-fi
 ## Open questions
 
 Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
+</file>
+
+<file path="architecture/elements/architecture-governance.md">
+---
+id: architecture-governance
+title: Architecture Governance
+order: 5
+kind: governance
+branch_aliases:
+  - architecture-governance
+  - repo-architecture
+  - architecture-artifacts
+collaborators:
+  - app-shell
+  - navigation-service
+  - continuity-service
+code_paths:
+  - architecture/**
+  - scripts/architecture/**
+  - .github/workflows/ci.yml
+  - .github/workflows/update-generated-artifacts.yml
+  - repomix.config.json
+  - repomix-instruction.md
+---
+# Architecture Governance
+
+## Responsibility
+Define and maintain the runtime contract for architecture governance.
+
+## Owns
+- responsibilities to be refined during implementation
+- authoritative boundaries for this architectural element
+
+## Does not own
+- responsibilities owned by collaborator elements
+- concerns outside this element’s declared boundary
+
+## Collaborators
+- app-shell
+- navigation-service
+- continuity-service
+
+## Invariants
+- this element must maintain an explicit contract
+- ownership must stay aligned with the ownership matrix
+- collaborators must stay current with implementation reality
+
+## Code ownership hints
+- architecture/**
+- scripts/architecture/**
+- .github/workflows/ci.yml
+- .github/workflows/update-repo-context.yml
+- repomix.config.json
+- repomix-instruction.md
 </file>
 
 <file path="architecture/lifecycle-map.md">
@@ -5919,6 +6060,7 @@ The first steps in any coding session are
 - any architecture details that are changing in the session
 
 4. Finally, start making code changes. 
+5. After making code changes, advise the user what context.xml files would be useful to examine to verify the implementatoin was done as expected. 
 
 **Do not start implementation by changing code first and updating architecture later.**
 
@@ -6410,6 +6552,7 @@ The first steps in any coding session are
 - any architecture details that are changing in the session
 
 4. Finally, start making code changes. 
+5. After making code changes, advise the user what context.xml files would be useful to examine to verify the implementatoin was done as expected. 
 
 **Do not start implementation by changing code first and updating architecture later.**
 

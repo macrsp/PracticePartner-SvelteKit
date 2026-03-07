@@ -32,7 +32,7 @@ Use this manifest before assuming that a missing file in the packed context mean
 | Context role | Architectural element | Declared code path | Status | Matched files |
 | --- | --- | --- | --- | --- |
 | focus | architecture-governance | `.github/workflows/ci.yml` | present | 1 |
-| focus | architecture-governance | `.github/workflows/update-repo-context.yml` | path missing | 0 |
+| focus | architecture-governance | `.github/workflows/update-generated-artifacts.yml` | present | 1 |
 | focus | architecture-governance | `architecture/**` | present | 42 |
 | focus | architecture-governance | `repomix-instruction.md` | present | 1 |
 | focus | architecture-governance | `repomix.config.json` | present | 1 |
@@ -56,10 +56,10 @@ Use this manifest before assuming that a missing file in the packed context mean
 .github/workflows/ci.yml
 ```
 
-### `.github/workflows/update-repo-context.yml`
+### `.github/workflows/update-generated-artifacts.yml`
 
 ```text
-.github/workflows/update-repo-context.yml (missing)
+.github/workflows/update-generated-artifacts.yml
 ```
 
 ### `architecture`
