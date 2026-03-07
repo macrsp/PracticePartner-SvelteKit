@@ -3319,98 +3319,6 @@ The current planning focus is to keep implementation aligned with the planner-fi
 Add only current, unresolved product questions here. Remove resolved questions promptly so this file stays high-signal.
 </file>
 
-<file path=".github/workflows/ci.yml">
-# @role workflow
-# @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
-# @not-owns production deployment, runtime behavior, or branch protection settings
-# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build.
-
-name: CI
-
-on:
-  pull_request:
-  push:
-    branches-ignore:
-      - main
-    paths-ignore:
-      - repo-context.xml
-      - architecture/target-architecture.md
-      - architecture/contexts/**
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate architecture metadata and focus element policy
-        run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${BRANCH_NAME}" --require-focus-update
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-          GITHUB_BASE_REF: ${{ github.base_ref }}
-
-      - name: Generate target architecture
-        run: node scripts/architecture/generate-target-architecture.mjs
-
-      - name: Generate architecture context configs
-        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-
-      - name: Generate repo context
-        run: npx --yes repomix --config repomix.config.json
-
-      - name: Generate architectural element contexts
-        run: |
-          for config in .tmp/architecture-context-configs/*.config.json; do
-            echo "Generating context from $config"
-            npx --yes repomix --config "$config"
-          done
-
-        - name: Verify generated artifacts are committed
-        run: |
-          if ! git diff --quiet -- \
-            repo-context.xml \
-            architecture/target-architecture.md \
-            architecture/contexts; then
-            echo "Generated artifacts are stale."
-            echo "Wait for the 'Update Generated Artifacts' workflow to commit refreshed outputs to the branch, then rerun CI."
-            echo ""
-            echo "Changed generated files:"
-            git diff --name-only -- \
-              repo-context.xml \
-              architecture/target-architecture.md \
-              architecture/contexts
-            exit 1
-          fi
-          
-      - name: Build static app for Cloudflare Pages
-        run: npm run build
-        env:
-          BASE_PATH: ""
-</file>
-
 <file path="repomix-instruction.md">
 <!--
   @role repository-instructions
@@ -3725,6 +3633,118 @@ Prefer precise scopes such as:
 - When a file’s responsibility changes materially, update its header in the same change.
 - Keep this file concise, operational, and high-signal.
 - Add new repository-wide rules here only when they are broadly reusable across slices.
+</file>
+
+<file path=".github/workflows/ci.yml">
+# @role workflow
+# @owns pull-request and branch validation for Cloudflare Pages build health, architecture artifact consistency, and repo-context generation
+# @not-owns production deployment, runtime behavior, or branch protection settings
+# @notes Validates generated architecture artifacts, focused context configuration, and the static Cloudflare Pages build. On branch pushes, stale generated artifacts are reported but not failed because the dedicated update workflow commits them back. On pull requests, stale generated artifacts fail validation.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - repo-context.xml
+      - architecture/target-architecture.md
+      - architecture/contexts/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate architecture metadata and focus element policy
+        run: node scripts/architecture/validate-architecture-consistency.mjs --branch "${BRANCH_NAME}" --require-focus-update
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+
+      - name: Generate target architecture
+        run: node scripts/architecture/generate-target-architecture.mjs
+
+      - name: Generate architecture context configs
+        run: node scripts/architecture/generate-context-configs.mjs --branch "${BRANCH_NAME}"
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+      - name: Generate repo context
+        run: npx --yes repomix --config repomix.config.json
+
+      - name: Generate architectural element contexts
+        run: |
+          for config in .tmp/architecture-context-configs/*.config.json; do
+            echo "Generating context from $config"
+            npx --yes repomix --config "$config"
+          done
+
+      - name: Check generated artifact freshness
+        shell: bash
+        run: |
+          if git diff --quiet -- \
+            repo-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts; then
+            echo "Generated artifacts are current."
+            exit 0
+          fi
+
+          echo "Generated artifacts are stale."
+          echo ""
+          echo "Changed generated files:"
+          git diff --name-only -- \
+            repo-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts
+          echo ""
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "This is a branch push."
+            echo "The 'Update Generated Artifacts' workflow should commit refreshed outputs automatically."
+            echo "Continuing without failing this job."
+            exit 0
+          fi
+
+          echo "This is a pull request."
+          echo "Generated artifacts must already be committed before merge."
+          exit 1
+
+      - name: Explain generated artifact behavior on branch pushes
+        if: github.event_name == 'push'
+        run: |
+          echo "Branch pushes use a self-healing artifact flow."
+          echo "If generated artifacts are stale, the dedicated 'Update Generated Artifacts' workflow commits them back to the branch."
+
+      - name: Build static app for Cloudflare Pages
+        run: npm run build
+        env:
+          BASE_PATH: ""
 </file>
 
 </files>
