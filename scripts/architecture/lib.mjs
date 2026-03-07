@@ -29,6 +29,14 @@ export function stripCommentHeader(markdown) {
 	return markdown.replace(/^<!--[\s\S]*?-->\s*/m, '').trim();
 }
 
+export function stripLeadingHeading(markdown) {
+	const normalized = stripCommentHeader(markdown);
+
+	return normalized
+		.replace(/^#{1,6}[^\n]*\n+/, '')
+		.trim();
+}
+
 export function parseFrontmatter(markdown) {
 	if (!markdown.startsWith('---\n')) {
 		return { data: {}, body: markdown.trim() };
@@ -323,7 +331,7 @@ export function buildRepomixConfig({ outputPath, include, headerText }) {
 			includeEmptyDirectories: false,
 			headerText,
 			git: {
-				sortByChanges: true,
+				sortByChanges: false,
 				includeDiffs: false,
 				includeLogs: false
 			}

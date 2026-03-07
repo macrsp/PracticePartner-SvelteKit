@@ -109,10 +109,21 @@ jobs:
             exit 0
           fi
 
-          echo "Generated artifacts are stale."
+          echo "Generated artifacts differ from the committed versions in this checkout."
+          echo "This does not necessarily mean GitHub is missing commits."
+          echo "It means regenerating artifacts in CI produced different bytes than the tracked files."
+          echo "Common causes are nondeterministic generation, generator changes without refreshed outputs, or checkout-sensitive generation."
           echo ""
           echo "Changed generated files:"
           git diff --name-only -- \
+            repo-context.xml \
+            ci-context.xml \
+            architecture/target-architecture.md \
+            architecture/contexts \
+            architecture/context-manifests
+          echo ""
+          echo "Diff summary:"
+          git diff --stat -- \
             repo-context.xml \
             ci-context.xml \
             architecture/target-architecture.md \
@@ -128,7 +139,7 @@ jobs:
           fi
 
           echo "This is a pull request after waiting for branch artifact refresh workflows to settle."
-          echo "Generated artifacts must already be committed before merge."
+          echo "Generated artifacts must be reproducible and match the committed versions before merge."
           exit 1
 
       - name: Explain generated artifact behavior on branch pushes
